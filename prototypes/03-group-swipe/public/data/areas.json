@@ -1,0 +1,247 @@
+[
+  {
+    "id": "soho",
+    "name": "Soho",
+    "lat": 51.5136,
+    "lng": -0.1337,
+    "region": "Central"
+  },
+  {
+    "id": "covent",
+    "name": "Covent Garden",
+    "lat": 51.5117,
+    "lng": -0.124,
+    "region": "Central"
+  },
+  {
+    "id": "shoreditch",
+    "name": "Shoreditch",
+    "lat": 51.5246,
+    "lng": -0.0786,
+    "region": "East"
+  },
+  {
+    "id": "dalston",
+    "name": "Dalston",
+    "lat": 51.5462,
+    "lng": -0.075,
+    "region": "East"
+  },
+  {
+    "id": "hackney",
+    "name": "Hackney Central",
+    "lat": 51.5466,
+    "lng": -0.0558,
+    "region": "East"
+  },
+  {
+    "id": "hwick",
+    "name": "Hackney Wick",
+    "lat": 51.5436,
+    "lng": -0.0244,
+    "region": "East"
+  },
+  {
+    "id": "bethnal",
+    "name": "Bethnal Green",
+    "lat": 51.527,
+    "lng": -0.0549,
+    "region": "East"
+  },
+  {
+    "id": "stokey",
+    "name": "Stoke Newington",
+    "lat": 51.5617,
+    "lng": -0.0772,
+    "region": "North"
+  },
+  {
+    "id": "camden",
+    "name": "Camden",
+    "lat": 51.539,
+    "lng": -0.1426,
+    "region": "North"
+  },
+  {
+    "id": "kingsx",
+    "name": "King’s Cross",
+    "lat": 51.5352,
+    "lng": -0.124,
+    "region": "North"
+  },
+  {
+    "id": "angel",
+    "name": "Angel",
+    "lat": 51.537,
+    "lng": -0.104,
+    "region": "North"
+  },
+  {
+    "id": "peckham",
+    "name": "Peckham",
+    "lat": 51.4703,
+    "lng": -0.069,
+    "region": "South"
+  },
+  {
+    "id": "brixton",
+    "name": "Brixton",
+    "lat": 51.4625,
+    "lng": -0.1146,
+    "region": "South"
+  },
+  {
+    "id": "clapham",
+    "name": "Clapham",
+    "lat": 51.4627,
+    "lng": -0.1378,
+    "region": "South"
+  },
+  {
+    "id": "deptford",
+    "name": "Deptford",
+    "lat": 51.479,
+    "lng": -0.0262,
+    "region": "South"
+  },
+  {
+    "id": "bermondsey",
+    "name": "Bermondsey",
+    "lat": 51.4985,
+    "lng": -0.081,
+    "region": "South"
+  },
+  {
+    "id": "notting",
+    "name": "Notting Hill",
+    "lat": 51.514,
+    "lng": -0.201,
+    "region": "West"
+  },
+  {
+    "id": "farringdon",
+    "name": "Farringdon & Clerkenwell",
+    "lat": 51.5225,
+    "lng": -0.105,
+    "region": "Central"
+  },
+  {
+    "id": "londonbridge",
+    "name": "London Bridge & Borough",
+    "lat": 51.505,
+    "lng": -0.0905,
+    "region": "Central"
+  },
+  {
+    "id": "southbank",
+    "name": "Waterloo & South Bank",
+    "lat": 51.504,
+    "lng": -0.113,
+    "region": "Central"
+  },
+  {
+    "id": "marylebone",
+    "name": "Marylebone",
+    "lat": 51.519,
+    "lng": -0.152,
+    "region": "Central"
+  },
+  {
+    "id": "fitzrovia",
+    "name": "Fitzrovia",
+    "lat": 51.519,
+    "lng": -0.137,
+    "region": "Central"
+  },
+  {
+    "id": "mayfair",
+    "name": "Mayfair",
+    "lat": 51.51,
+    "lng": -0.147,
+    "region": "Central"
+  },
+  {
+    "id": "chelsea",
+    "name": "Chelsea (King's Road)",
+    "lat": 51.4875,
+    "lng": -0.1687,
+    "region": "West"
+  },
+  {
+    "id": "southken",
+    "name": "South Kensington",
+    "lat": 51.4941,
+    "lng": -0.1738,
+    "region": "West"
+  },
+  {
+    "id": "highstken",
+    "name": "High Street Kensington",
+    "lat": 51.5009,
+    "lng": -0.1925,
+    "region": "West"
+  },
+  {
+    "id": "fulham",
+    "name": "Fulham",
+    "lat": 51.479,
+    "lng": -0.199,
+    "region": "West"
+  },
+  {
+    "id": "hammersmith",
+    "name": "Hammersmith",
+    "lat": 51.4927,
+    "lng": -0.224,
+    "region": "West"
+  },
+  {
+    "id": "shepherds",
+    "name": "Shepherd's Bush",
+    "lat": 51.5045,
+    "lng": -0.218,
+    "region": "West"
+  },
+  {
+    "id": "battersea",
+    "name": "Battersea",
+    "lat": 51.4818,
+    "lng": -0.1445,
+    "region": "South"
+  },
+  {
+    "id": "vauxhall",
+    "name": "Vauxhall",
+    "lat": 51.486,
+    "lng": -0.123,
+    "region": "South"
+  },
+  {
+    "id": "kentish",
+    "name": "Kentish Town",
+    "lat": 51.55,
+    "lng": -0.141,
+    "region": "North"
+  },
+  {
+    "id": "hernehill",
+    "name": "Herne Hill",
+    "lat": 51.453,
+    "lng": -0.102,
+    "region": "South"
+  },
+  {
+    "id": "walthamstow",
+    "name": "Walthamstow",
+    "lat": 51.583,
+    "lng": -0.02,
+    "region": "East"
+  },
+  {
+    "id": "greenwich",
+    "name": "Greenwich",
+    "lat": 51.481,
+    "lng": -0.009,
+    "region": "South"
+  }
+]

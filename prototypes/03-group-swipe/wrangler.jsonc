@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "night-out-london",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-05-01",
+  // Static page + OSM venue snapshots; the Worker only answers /api/*.
+  "assets": { "directory": "./public/", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  // Curation (your picks/avoids) and usage stats (shown/swapped). Free tier.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "night-out", "database_id": "87f67cfa-04e3-4fe2-bead-6cdec465b6b9", "migrations_dir": "migrations" }
+  ],
+  // Per-IP cap on usage events, so one person can't tank a venue. Approximate, per location.
+  "ratelimits": [
+    { "name": "LIMITER", "namespace_id": "1001", "simple": { "limit": 30, "period": 60 } }
+  ]
+}

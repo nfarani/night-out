@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan It — curated itinerary engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14120f;
+    --ink-2:#1e1a16;
+    --paper:#f7f3ec;
+    --accent:#e2543f;
+    --accent-soft:#fbe7e2;
+    --line: rgba(20,18,15,0.12);
+    --dim: rgba(20,18,15,0.5);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex; justify-content:center;
+  }
+  .app{ width:100%; max-width: 470px; min-height:100vh; padding-bottom: 100px; position:relative; }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 18px 20px 12px;
+  }
+  .brand{ display:flex; align-items:center; gap:9px; }
+  .brand .mark{
+    width:30px; height:30px; border-radius:9px;
+    background: var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:14px;
+  }
+  .brand .wordmark{ font-weight:800; font-size:15px; letter-spacing:-0.01em; }
+  .brand .wordmark small{ display:block; font-weight:500; font-size:10px; color:var(--dim); letter-spacing:0.04em; }
+  .mode-toggle{ display:flex; background:#fff; border:1px solid var(--line); border-radius:11px; padding:3px; }
+  .mode-toggle button{
+    border:none; background:none; font-family:'Inter',sans-serif;
+    font-size:11.5px; font-weight:700; padding:7px 11px; border-radius:8px;
+    cursor:pointer; color: var(--dim);
+  }
+  .mode-toggle button.active{ background: var(--ink); color:#fff; }
+
+  .demo-note{
+    margin: 0 20px 14px;
+    background: var(--accent-soft);
+    border-radius: 10px;
+    padding: 10px 13px;
+    font-size:11.5px; line-height:1.6; color:#8c3628;
+  }
+
+  /* ---------- reader: collection grid ---------- */
+  .section-head{ padding: 6px 20px 12px; }
+  .section-head h1{
+    font-family:'Fraunces', serif; font-weight:700; font-size:26px;
+    line-height:1.15; margin:0 0 5px;
+  }
+  .section-head p{ margin:0; font-size:13px; color: var(--dim); line-height:1.6; }
+
+  .collection-grid{ padding: 0 20px; display:grid; gap:12px; }
+  .collection-card{
+    position:relative; height:150px; border-radius:18px; overflow:hidden;
+    cursor:pointer; background:#2a231c;
+    display:flex; align-items:flex-end;
+  }
+  .collection-card .bg{
+    position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    transition: transform 0.4s ease;
+  }
+  .collection-card:hover .bg{ transform: scale(1.05); }
+  .collection-card::after{
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(20,18,15,0.05) 30%, rgba(20,18,15,0.85) 100%);
+  }
+  .collection-card .cc-body{ position:relative; z-index:2; padding:16px; color:#fff; }
+  .collection-card .cc-kicker{
+    font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.09em;
+    background: var(--accent); display:inline-block; padding:4px 8px; border-radius:5px; margin-bottom:8px;
+  }
+  .collection-card h3{ font-family:'Fraunces',serif; font-size:19px; margin:0 0 3px; font-weight:700; }
+  .collection-card p{ margin:0; font-size:11.5px; opacity:0.8; }
+
+  /* ---------- reader: plan view ---------- */
+  .back-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:none; border:none; color:var(--dim);
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; padding: 0 20px 10px;
+  }
+  .plan-head{ padding: 0 20px 14px; }
+  .plan-head .credit{
+    font-size:11px; color:var(--dim); margin: 0 0 6px; font-weight:600;
+  }
+  .plan-head h2{ font-family:'Fraunces',serif; font-size:24px; margin:0 0 6px; font-weight:700; }
+  .plan-head .blurb{ font-size:13px; color:var(--dim); line-height:1.65; margin:0; }
+
+  .plan-controls{ display:flex; gap:8px; padding: 14px 20px 4px; }
+  .len-btn{
+    flex:1; background:#fff; border:1.5px solid var(--line); border-radius:12px;
+    padding:11px 6px; font-family:'Inter',sans-serif; font-size:12.5px; font-weight:700;
+    cursor:pointer; color:var(--ink);
+  }
+  .len-btn.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+
+  .stops{ padding: 16px 20px 0; }
+  .stop{
+    display:flex; gap:12px; margin-bottom:14px; position:relative;
+  }
+  .stop .rail{ display:flex; flex-direction:column; align-items:center; padding-top:4px; }
+  .stop .dot{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--ink); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:800; flex-shrink:0;
+  }
+  .stop .line{ flex:1; width:2px; background:var(--line); margin:5px 0; min-height:16px; }
+  .stop:last-child .line{ display:none; }
+  .stop-card{
+    flex:1; background:#fff; border:1px solid var(--line); border-radius:16px;
+    overflow:hidden;
+  }
+  .stop-photo{
+    height:112px; background-size:cover; background-position:center; background-color:#e6e0d6;
+    position:relative; cursor:pointer;
+  }
+  .stop-photo .walk{
+    position:absolute; bottom:8px; left:8px;
+    background: rgba(20,18,15,0.72); color:#fff;
+    font-size:10.5px; font-weight:700; padding:4px 8px; border-radius:20px;
+  }
+  .stop-body{ padding: 12px 14px 13px; }
+  .stop-cat{
+    font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.07em;
+    color: var(--accent); margin:0 0 4px;
+  }
+  .stop-name{ font-family:'Fraunces',serif; font-size:16.5px; font-weight:700; margin:0 0 5px; }
+  .stop-blurb{ font-size:12.5px; line-height:1.6; color:var(--dim); margin:0 0 10px; }
+  .stop-actions{ display:flex; gap:7px; }
+  .sa{
+    flex:1; text-align:center; text-decoration:none;
+    border:1.5px solid var(--line); border-radius:9px;
+    padding:8px 4px; font-size:11.5px; font-weight:700; color:var(--ink);
+    background:#fff; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .sa.swap{ background: var(--accent-soft); border-color:transparent; color:#a83f2d; }
+
+  .plan-footer{ padding: 6px 20px 0; display:flex; gap:9px; }
+  .pf-btn{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+    border-radius:13px; padding:14px 8px; font-size:13.5px; font-weight:700;
+    font-family:'Inter',sans-serif; cursor:pointer; text-decoration:none; border:none;
+  }
+  .pf-btn.primary{ background:var(--ink); color:#fff; }
+  .pf-btn.ghost{ background:#fff; border:1.5px solid var(--line); color:var(--ink); }
+  .toast{
+    text-align:center; font-size:12px; color:var(--dim); padding:10px 20px 0; min-height:18px;
+  }
+
+  /* ---------- editor ---------- */
+  .ed-wrap{ padding: 0 20px; }
+  .ed-block{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:12px; }
+  .ed-block h4{ font-size:12px; text-transform:uppercase; letter-spacing:0.07em; color:var(--dim); margin:0 0 12px; }
+  .fld{ margin-bottom:11px; }
+  .fld label{ display:block; font-size:11px; font-weight:700; color:var(--dim); margin-bottom:5px; }
+  .fld input, .fld textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-family:'Inter',sans-serif; font-size:13.5px; outline:none;
+    background:#fff; color:var(--ink); resize:vertical;
+  }
+  .fld input:focus, .fld textarea:focus{ border-color: var(--accent); }
+  .ed-venue{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 12px; border:1px solid var(--line); border-radius:12px; margin-bottom:8px;
+  }
+  .ed-venue .v-main{ flex:1; min-width:0; }
+  .ed-venue .v-name{ font-size:13.5px; font-weight:700; }
+  .ed-venue .v-cat{ font-size:11px; color:var(--dim); }
+  .ed-venue button{
+    background:none; border:none; color:var(--dim); font-size:17px; cursor:pointer; padding:2px 6px;
+  }
+  .ed-btn{
+    width:100%; background:var(--ink); color:#fff; border:none; border-radius:12px;
+    padding:13px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .ed-btn.alt{ background:#fff; color:var(--ink); border:1.5px solid var(--line); margin-top:9px; }
+
+  /* ---------- metrics ---------- */
+  .metrics{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .metric{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
+  .metric .n{ font-family:'Fraunces',serif; font-size:26px; font-weight:700; line-height:1; }
+  .metric .l{ font-size:10.5px; color:var(--dim); font-weight:600; margin-top:5px; text-transform:uppercase; letter-spacing:0.05em; }
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">P</div>
+      <div class="wordmark">Plan It<small>ITINERARY ENGINE</small></div>
+    </div>
+    <div class="mode-toggle">
+      <button id="tabReader" class="active">Reader</button>
+      <button id="tabEditor">Editor</button>
+      <button id="tabStats">Stats</button>
+    </div>
+  </div>
+
+  <div class="demo-note">
+    <b>Demo build.</b> Sample collections and venue copy are placeholder data for demonstration only — not affiliated with, or sourced from, any publisher. Swap in real editorial to pitch.
+  </div>
+
+  <!-- ================= READER ================= -->
+  <div id="readerView">
+
+    <div id="browseView">
+      <div class="section-head">
+        <h1>What are you doing this weekend?</h1>
+        <p>Pick a collection. We'll turn it into a walkable plan you can share with the group.</p>
+      </div>
+      <div class="collection-grid" id="collectionGrid"></div>
+    </div>
+
+    <div id="planView" class="hidden">
+      <button class="back-btn" id="backBtn">← All collections</button>
+      <div class="plan-head">
+        <p class="credit" id="planCredit"></p>
+        <h2 id="planTitle"></h2>
+        <p class="blurb" id="planBlurb"></p>
+      </div>
+      <div class="plan-controls">
+        <button class="len-btn" data-len="2">Quick · 2 stops</button>
+        <button class="len-btn active" data-len="3">Classic · 3</button>
+        <button class="len-btn" data-len="5">Full day · 5</button>
+      </div>
+      <div class="stops" id="stopsEl"></div>
+      <div class="plan-footer">
+        <button class="pf-btn ghost" id="reshuffleBtn">↻ Reshuffle</button>
+        <a class="pf-btn primary" id="routeBtn" href="#" target="_blank" rel="noopener">Walking route</a>
+      </div>
+      <div class="plan-footer" style="margin-top:9px;">
+        <button class="pf-btn ghost" id="shareBtn" style="flex:1;">Share this plan with the group</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+
+  </div>
+
+  <!-- ================= EDITOR ================= -->
+  <div id="editorView" class="hidden">
+    <div class="section-head">
+      <h1>Build a collection</h1>
+      <p>This is the publisher-side tool. An editor defines the venues; readers get plans built only from those picks.</p>
+    </div>
+    <div class="ed-wrap">
+      <div class="ed-block">
+        <h4>Collection details</h4>
+        <div class="fld"><label>Title</label><input id="edTitle" placeholder="e.g. A perfect Saturday in Peckham"></div>
+        <div class="fld"><label>Credit line</label><input id="edCredit" placeholder="e.g. Curated by the Weekend desk"></div>
+        <div class="fld"><label>Standfirst</label><textarea id="edBlurb" rows="2" placeholder="One or two lines of editorial framing."></textarea></div>
+        <div class="fld"><label>Area / neighbourhood</label><input id="edArea" placeholder="e.g. Peckham"></div>
+      </div>
+
+      <div class="ed-block">
+        <h4>Venues in this collection</h4>
+        <div id="edVenueList"></div>
+        <div class="fld"><label>Venue name</label><input id="edVName" placeholder="e.g. The Corner Bakery"></div>
+        <div class="fld"><label>Category</label><input id="edVCat" placeholder="e.g. Coffee, Dinner, Drinks"></div>
+        <div class="fld"><label>Editor's note</label><textarea id="edVBlurb" rows="2" placeholder="Why this one? One line in your house voice."></textarea></div>
+        <div class="fld" style="display:flex; gap:9px;">
+          <div style="flex:1;"><label>Lat</label><input id="edVLat" placeholder="51.4742"></div>
+          <div style="flex:1;"><label>Lng</label><input id="edVLng" placeholder="-0.0694"></div>
+        </div>
+        <button class="ed-btn" id="edAddVenue">Add venue to collection</button>
+      </div>
+
+      <button class="ed-btn" id="edPublish">Publish collection to reader view</button>
+      <button class="ed-btn alt" id="edExport">Export collection as JSON</button>
+      <div class="toast" id="edToast"></div>
+    </div>
+  </div>
+
+  <!-- ================= STATS ================= -->
+  <div id="statsView" class="hidden">
+    <div class="section-head">
+      <h1>Engagement</h1>
+      <p>The numbers a publisher actually cares about: does editorial convert into action?</p>
+    </div>
+    <div class="ed-wrap">
+      <div class="metrics">
+        <div class="metric"><div class="n" id="mPlans">0</div><div class="l">Plans generated</div></div>
+        <div class="metric"><div class="n" id="mSwaps">0</div><div class="l">Stops swapped</div></div>
+        <div class="metric"><div class="n" id="mShares">0</div><div class="l">Plans shared</div></div>
+        <div class="metric"><div class="n" id="mRoutes">0</div><div class="l">Routes opened</div></div>
+      </div>
+      <div class="ed-block" style="margin-top:12px;">
+        <h4>Why this matters</h4>
+        <p style="font-size:12.5px; line-height:1.7; color:var(--dim); margin:0;">
+          A listicle produces a pageview. A plan produces intent — a routed, shared, acted-on decision.
+          Swap rate shows which picks readers reject; share rate shows which collections travel.
+          That's a feedback loop no listings page currently has.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  // ---------- placeholder demo data (clearly fictional) ----------
+  const IMG = n => 'https://images.unsplash.com/' + n + '?auto=format&fit=crop&w=800&q=70';
+  const P = {
+    cafe:'photo-1554118811-1e0d58224f24', bar:'photo-1514933651103-005eec06c04b',
+    food:'photo-1517248135467-4c7edcad34c4', shop:'photo-1441986300917-64674bd600d8',
+    park:'photo-1519331379826-f10be5486c6f', gal:'photo-1518998053901-5348d3961a04',
+    music:'photo-1470229722913-7c0e2dbbafd3', book:'photo-1507842217343-583bb7270b66'
+  };
+
+  let COLLECTIONS = [
+    {
+      id:'c1', title:'A slow Saturday in Peckham', credit:'Curated by the Weekend desk',
+      blurb:'Coffee, records, something fried, and a rooftop before the light goes.',
+      area:'Peckham', hero:P.cafe,
+      venues:[
+        {name:'Sample Roastery Co.', cat:'Coffee', blurb:'Placeholder note: the flat white that justifies the queue.', lat:51.4735, lng:-0.0695, photo:P.cafe},
+        {name:'Placeholder Records', cat:'Browsing', blurb:'Placeholder note: crates worth losing an hour in.', lat:51.4741, lng:-0.0688, photo:P.book},
+        {name:'Demo Rooftop Bar', cat:'Drinks', blurb:'Placeholder note: go for golden hour, stay past it.', lat:51.4728, lng:-0.0702, photo:P.bar},
+        {name:'Example Fried Chicken', cat:'Dinner', blurb:'Placeholder note: no seats, no regrets.', lat:51.4752, lng:-0.0675, photo:P.food},
+        {name:'Test Gallery Space', cat:'Culture', blurb:'Placeholder note: free, small, consistently good.', lat:51.4746, lng:-0.0710, photo:P.gal},
+        {name:'Mock Park Corner', cat:'Outdoors', blurb:'Placeholder note: the view everyone photographs.', lat:51.4719, lng:-0.0668, photo:P.park}
+      ]
+    },
+    {
+      id:'c2', title:'Cheap date night in Soho', credit:'Curated by the Weekend desk',
+      blurb:'Under £40 each, no bookings needed, all within eight minutes on foot.',
+      area:'Soho', hero:P.bar,
+      venues:[
+        {name:'Sample Wine Room', cat:'Drinks', blurb:'Placeholder note: carafes, candlelight, low bill.', lat:51.5136, lng:-0.1339, photo:P.bar},
+        {name:'Placeholder Noodle Bar', cat:'Dinner', blurb:'Placeholder note: counter seats, fast turnaround.', lat:51.5129, lng:-0.1352, photo:P.food},
+        {name:'Demo Basement Jazz', cat:'Live music', blurb:'Placeholder note: small room, late sets.', lat:51.5142, lng:-0.1327, photo:P.music},
+        {name:'Example Late Bookshop', cat:'Browsing', blurb:'Placeholder note: open past ten, oddly romantic.', lat:51.5133, lng:-0.1345, photo:P.book},
+        {name:'Test Dessert Counter', cat:'Sweet', blurb:'Placeholder note: one thing, done properly.', lat:51.5125, lng:-0.1333, photo:P.cafe}
+      ]
+    },
+    {
+      id:'c3', title:'Sunday recovery in Hackney', credit:'Curated by the Weekend desk',
+      blurb:'Nothing before eleven. Nothing that requires a decision.',
+      area:'Hackney', hero:P.park,
+      venues:[
+        {name:'Sample Brunch Room', cat:'Brunch', blurb:'Placeholder note: eggs, no queue after twelve.', lat:51.5451, lng:-0.0553, photo:P.food},
+        {name:'Placeholder Lido', cat:'Outdoors', blurb:'Placeholder note: cold water, clear head.', lat:51.5462, lng:-0.0571, photo:P.park},
+        {name:'Demo Corner Pub', cat:'Drinks', blurb:'Placeholder note: roast, fireplace, no music.', lat:51.5438, lng:-0.0539, photo:P.bar},
+        {name:'Example Vinyl Cafe', cat:'Coffee', blurb:'Placeholder note: slow service, on purpose.', lat:51.5445, lng:-0.0562, photo:P.cafe},
+        {name:'Test Flower Market', cat:'Browsing', blurb:'Placeholder note: go late for the cheap bunches.', lat:51.5429, lng:-0.0548, photo:P.shop}
+      ]
+    }
+  ];
+
+  // ---------- state ----------
+  let current = null;      // active collection
+  let plan = [];           // active list of venues
+  let planLen = 3;
+  let editorVenues = [];
+  let stats = JSON.parse(localStorage.getItem('pi_stats') || '{"plans":0,"swaps":0,"shares":0,"routes":0}');
+
+  const $ = id => document.getElementById(id);
+  const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function bump(k){ stats[k]++; localStorage.setItem('pi_stats', JSON.stringify(stats)); renderStats(); }
+  function renderStats(){
+    $('mPlans').textContent = stats.plans; $('mSwaps').textContent = stats.swaps;
+    $('mShares').textContent = stats.shares; $('mRoutes').textContent = stats.routes;
+  }
+  renderStats();
+
+  function haversine(a,b,c,d){
+    const R=6371000, r=x=>x*Math.PI/180;
+    const dLat=r(c-a), dLon=r(d-b);
+    const h=Math.sin(dLat/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dLon/2)**2;
+    return R*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+  }
+
+  // ---------- reader: browse ----------
+  function renderCollections(){
+    $('collectionGrid').innerHTML = COLLECTIONS.map(c =>
+      '<div class="collection-card" data-id="'+c.id+'">' +
+        '<div class="bg" style="background-image:url(\''+IMG(c.hero)+'\')"></div>' +
+        '<div class="cc-body">' +
+          '<span class="cc-kicker">'+esc(c.area)+'</span>' +
+          '<h3>'+esc(c.title)+'</h3>' +
+          '<p>'+c.venues.length+' hand-picked spots</p>' +
+        '</div>' +
+      '</div>'
+    ).join('');
+    $('collectionGrid').querySelectorAll('.collection-card').forEach(el => {
+      el.addEventListener('click', () => openCollection(el.dataset.id));
+    });
+  }
+
+  function openCollection(id){
+    current = COLLECTIONS.find(c => c.id === id);
+    if (!current) return;
+    $('planCredit').textContent = current.credit;
+    $('planTitle').textContent = current.title;
+    $('planBlurb').textContent = current.blurb;
+    $('browseView').classList.add('hidden');
+    $('planView').classList.remove('hidden');
+    buildPlan();
+  }
+
+  // ---------- reader: plan ----------
+  function orderRoute(list){
+    if (!list.length) return list;
+    const rem = list.slice();
+    const out = [rem.shift()];
+    while (rem.length){
+      let bi=0, bd=Infinity;
+      const cur = out[out.length-1];
+      rem.forEach((v,i)=>{ const d=haversine(cur.lat,cur.lng,v.lat,v.lng); if(d<bd){bd=d;bi=i;} });
+      out.push(rem.splice(bi,1)[0]);
+    }
+    return out;
+  }
+
+  function buildPlan(){
+    const pool = current.venues.slice();
+    const n = Math.min(planLen, pool.length);
+    const picked = [];
+    while (picked.length < n && pool.length){
+      picked.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+    }
+    plan = orderRoute(picked);
+    renderPlan();
+    bump('plans');
+  }
+
+  function renderPlan(){
+    $('stopsEl').innerHTML = plan.map((v,i) => {
+      const walk = i === 0 ? 'Start here'
+        : Math.max(1, Math.round(haversine(plan[i-1].lat,plan[i-1].lng,v.lat,v.lng)/80)) + ' min walk';
+      const q = encodeURIComponent(v.name + ' ' + (current.area||'London'));
+      return '<div class="stop">' +
+        '<div class="rail"><div class="dot">'+(i+1)+'</div><div class="line"></div></div>' +
+        '<div class="stop-card">' +
+          '<div class="stop-photo" data-q="'+q+'" style="background-image:url(\''+IMG(v.photo||P.cafe)+'\')">' +
+            '<span class="walk">'+walk+'</span>' +
+          '</div>' +
+          '<div class="stop-body">' +
+            '<p class="stop-cat">'+esc(v.cat)+'</p>' +
+            '<p class="stop-name">'+esc(v.name)+'</p>' +
+            '<p class="stop-blurb">'+esc(v.blurb)+'</p>' +
+            '<div class="stop-actions">' +
+              '<button class="sa swap" data-swap="'+i+'">Not this one</button>' +
+              '<a class="sa" href="https://www.google.com/maps/search/?api=1&query='+q+'" target="_blank" rel="noopener">Info & map</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    $('stopsEl').querySelectorAll('[data-swap]').forEach(b =>
+      b.addEventListener('click', () => swapStop(Number(b.dataset.swap))));
+    $('stopsEl').querySelectorAll('.stop-photo').forEach(el =>
+      el.addEventListener('click', () =>
+        window.open('https://www.google.com/maps/search/?api=1&query='+el.dataset.q,'_blank','noopener')));
+
+    const pts = plan.map(v => v.lat+','+v.lng);
+    let url = 'https://www.google.com/maps/dir/?api=1&origin='+pts[0]+'&destination='+pts[pts.length-1]+'&travelmode=walking';
+    if (pts.length > 2) url += '&waypoints='+encodeURIComponent(pts.slice(1,-1).join('|'));
+    $('routeBtn').href = url;
+  }
+
+  function swapStop(i){
+    const inPlan = new Set(plan.map(v=>v.name));
+    const alts = current.venues.filter(v => !inPlan.has(v.name));
+    if (!alts.length){ toast("That's every pick in this collection — try a longer plan."); return; }
+    plan[i] = alts[Math.floor(Math.random()*alts.length)];
+    plan = orderRoute(plan);
+    renderPlan();
+    bump('swaps');
+  }
+
+  function toast(msg, el){ ( el || $('toast') ).textContent = msg; }
+
+  async function sharePlan(){
+    const payload = { c: current.id, v: plan.map(v=>v.name) };
+    const url = location.origin + location.pathname + '#p=' + btoa(encodeURIComponent(JSON.stringify(payload)));
+    const text = current.title + '\n\n' + plan.map((v,i)=>(i+1)+'. '+v.name+' — '+v.cat).join('\n') + '\n\n' + url;
+    try {
+      if (navigator.share) { await navigator.share({ title: current.title, text }); }
+      else { await navigator.clipboard.writeText(text); toast('Plan copied — paste it in the group chat.'); }
+      bump('shares');
+    } catch(e){ toast('Copy this: ' + url); }
+  }
+
+  function loadHash(){
+    const m = location.hash.match(/#p=(.+)/);
+    if (!m) return;
+    try {
+      const d = JSON.parse(decodeURIComponent(atob(m[1])));
+      const col = COLLECTIONS.find(c=>c.id===d.c);
+      if (!col) return;
+      current = col;
+      $('planCredit').textContent = col.credit;
+      $('planTitle').textContent = col.title;
+      $('planBlurb').textContent = col.blurb;
+      plan = d.v.map(n => col.venues.find(v=>v.name===n)).filter(Boolean);
+      $('browseView').classList.add('hidden');
+      $('planView').classList.remove('hidden');
+      renderPlan();
+      toast('Someone shared this plan with you. Swap anything you dont fancy.');
+    } catch(e){}
+  }
+
+  // ---------- editor ----------
+  function renderEdVenues(){
+    $('edVenueList').innerHTML = editorVenues.length
+      ? editorVenues.map((v,i)=>
+        '<div class="ed-venue"><div class="v-main"><div class="v-name">'+esc(v.name)+'</div>' +
+        '<div class="v-cat">'+esc(v.cat)+'</div></div><button data-i="'+i+'">×</button></div>').join('')
+      : '<p style="font-size:12.5px;color:var(--dim);margin:0 0 12px;">No venues yet. Add at least two.</p>';
+    $('edVenueList').querySelectorAll('button').forEach(b =>
+      b.addEventListener('click', ()=>{ editorVenues.splice(Number(b.dataset.i),1); renderEdVenues(); }));
+  }
+  renderEdVenues();
+
+  $('edAddVenue').addEventListener('click', ()=>{
+    const name = $('edVName').value.trim();
+    if (!name){ toast('Give the venue a name.', $('edToast')); return; }
+    editorVenues.push({
+      name, cat: $('edVCat').value.trim() || 'Stop',
+      blurb: $('edVBlurb').value.trim() || '',
+      lat: parseFloat($('edVLat').value) || 51.5074,
+      lng: parseFloat($('edVLng').value) || -0.1278,
+      photo: P.cafe
+    });
+    ['edVName','edVCat','edVBlurb','edVLat','edVLng'].forEach(id=>$(id).value='');
+    renderEdVenues();
+    toast('Venue added.', $('edToast'));
+  });
+
+  $('edPublish').addEventListener('click', ()=>{
+    const title = $('edTitle').value.trim();
+    if (!title){ toast('Give the collection a title.', $('edToast')); return; }
+    if (editorVenues.length < 2){ toast('Add at least two venues.', $('edToast')); return; }
+    COLLECTIONS.unshift({
+      id:'u'+Date.now(), title,
+      credit: $('edCredit').value.trim() || 'Curated collection',
+      blurb: $('edBlurb').value.trim() || '',
+      area: $('edArea').value.trim() || 'London',
+      hero: P.shop, venues: editorVenues.slice()
+    });
+    editorVenues = []; renderEdVenues();
+    ['edTitle','edCredit','edBlurb','edArea'].forEach(id=>$(id).value='');
+    renderCollections();
+    toast('Published — switch to Reader to see it live.', $('edToast'));
+  });
+
+  $('edExport').addEventListener('click', ()=>{
+    const out = {
+      title: $('edTitle').value.trim(), credit: $('edCredit').value.trim(),
+      blurb: $('edBlurb').value.trim(), area: $('edArea').value.trim(),
+      venues: editorVenues
+    };
+    navigator.clipboard.writeText(JSON.stringify(out,null,2))
+      .then(()=>toast('JSON copied to clipboard.', $('edToast')))
+      .catch(()=>toast('Could not copy — check console.', $('edToast')));
+    console.log(JSON.stringify(out,null,2));
+  });
+
+  // ---------- nav ----------
+  function setTab(tab){
+    ['tabReader','tabEditor','tabStats'].forEach(t=>$(t).classList.remove('active'));
+    $('tab'+tab).classList.add('active');
+    $('readerView').classList.toggle('hidden', tab!=='Reader');
+    $('editorView').classList.toggle('hidden', tab!=='Editor');
+    $('statsView').classList.toggle('hidden', tab!=='Stats');
+  }
+  $('tabReader').addEventListener('click', ()=>setTab('Reader'));
+  $('tabEditor').addEventListener('click', ()=>setTab('Editor'));
+  $('tabStats').addEventListener('click', ()=>setTab('Stats'));
+
+  $('backBtn').addEventListener('click', ()=>{
+    $('planView').classList.add('hidden');
+    $('browseView').classList.remove('hidden');
+    toast('');
+  });
+  $('reshuffleBtn').addEventListener('click', buildPlan);
+  $('shareBtn').addEventListener('click', sharePlan);
+  $('routeBtn').addEventListener('click', ()=>bump('routes'));
+  document.querySelectorAll('.len-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.len-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      planLen = Number(b.dataset.len);
+      buildPlan();
+    });
+  });
+
+  renderCollections();
+  loadHash();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "_comment": "Template showing the pack schema. Venue data below is fictional placeholder content — replace with real curated venues before use. See docs/product-brief.md on why curation is the moat.",
+  "id": "example-pack",
+  "title": "A slow Saturday in <neighbourhood>",
+  "credit": "Curated by <name>",
+  "standfirst": "One or two lines of framing. What kind of day is this, and who is it for?",
+  "area": "<neighbourhood>",
+  "city": "London",
+  "venues": [
+    {
+      "name": "<venue name>",
+      "category": "Coffee",
+      "note": "One line in your own voice. Say something Google could not — why this one, what to order, when to go, what it's like in the rain. If it reads like a review summary, the pack isn't curated.",
+      "placeId": null,
+      "lat": 51.4735,
+      "lng": -0.0695
+    },
+    {
+      "name": "<venue name>",
+      "category": "Browsing",
+      "note": "<your note>",
+      "placeId": null,
+      "lat": 51.4741,
+      "lng": -0.0688
+    }
+  ],
+  "_schema_notes": {
+    "venues": "8-12 is the sweet spot. Fewer and reshuffle produces the same plan twice; more and curation stops being curation.",
+    "placeId": "Null until batch-resolved from the name. Once resolved, placeId is the storable key — do not persist other Google Places fields; hydrate them on read. Verify current Google Maps Platform terms.",
+    "lat_lng": "For a small demo pack, right-click the venue in Google Maps and copy coordinates. Faster and more reliable than a resolver script.",
+    "category": "Short display label — Coffee, Dinner, Drinks, Browsing, Culture, Outdoors.",
+    "walking": "All venues in a pack should be within sensible walking distance of each other, or the routing produces a bad day out."
+  }
+}

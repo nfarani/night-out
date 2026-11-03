@@ -1,0 +1,23 @@
+
+# --- Added 2026-11-03: secrets, local state, dependencies and large media ---
+.env
+.env.*
+!.env.example
+.dev.vars
+*.pem
+*.key
+.wrangler/
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+.DS_Store
+~$*
+*.mp4
+*.mov
+*.mkv
+*.webm

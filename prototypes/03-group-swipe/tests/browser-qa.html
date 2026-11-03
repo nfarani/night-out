@@ -1,0 +1,65 @@
+<!doctype html><meta charset="utf-8"><body><pre id="out">running</pre>
+<iframe id="f" src="/" style="width:390px;height:700px;border:0"></iframe>
+<script>
+const out=[]; const log=(ok,msg)=>out.push((ok?'PASS ':'FAIL ')+msg);
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const until=async(fn,ms=6000)=>{const t=Date.now();while(Date.now()-t<ms){try{if(fn())return true}catch(e){}await wait(50)}return false};
+document.getElementById('f').onload=async()=>{
+  const w=document.getElementById('f').contentWindow, d=w.document, $=s=>d.querySelector(s), $$=s=>[...d.querySelectorAll(s)];
+  const errs=[]; w.addEventListener('error',e=>errs.push(e.message));
+  try{
+  await until(()=>$$('#stops-n button').length===6);
+  log($('#s-home').classList.contains('on'),'home screen shows on load');
+  $('#stops-n').scrollIntoView({block:'center'}); await wait(100);
+  const y0=w.scrollY;
+  $$('#stops-n button')[4].click(); await wait(80);
+  $$('#start button')[2].click(); await wait(80);
+  $$('#end button')[3].click(); await wait(80);
+  $$('#types .chip')[1].click(); await wait(80);
+  log(y0>300 && Math.abs(w.scrollY-y0)<2,'no scroll jump after 4 taps (y '+Math.round(y0)+' -> '+Math.round(w.scrollY)+')');
+  log($$('#stops-n button')[4].classList.contains('on'),'tapped stop count is selected');
+  log($$('#start button')[2].classList.contains('on') && $$('#end button')[3].classList.contains('on'),'start and end selected');
+  $$('#stops-n button')[0].click(); await wait(50);
+  log(/picks for 1 stop/.test($('#stops-hint').textContent),'hint when picks > stops');
+  $$('#stops-n button')[3].click(); await wait(50);
+  const h0=w.history.length;
+  $$('.preset')[1].click(); $$('.preset')[1].click();
+  await until(()=>$('#s-plan').classList.contains('on') && $$('#plan .stop').length>0);
+  log($('#s-plan').classList.contains('on'),'ready-made night opens the plan');
+  log(w.history.length===h0+1,'one history entry for a double tap');
+  log(/p=/.test(w.location.hash),'plan is in the URL for sharing');
+  log($$('#plan .stop').length===4,'pub crawl has 4 stops');
+  const sw=$('[data-swap]'); sw.scrollIntoView({block:'center'}); await wait(100); const y1=w.scrollY;
+  const before=$$('#plan h3')[0].textContent; sw.click(); await wait(200);
+  log($$('#plan h3')[0].textContent!==before,'swap changes the venue');
+  log(Math.abs(w.scrollY-y1)<2,'swap keeps scroll position');
+  $('#reshuffle').click(); await wait(300);
+  log(w.history.length===h0+1 && $$('#plan .stop').length===4,'reshuffle without history entry');
+  w.history.back(); await until(()=>$('#s-home').classList.contains('on'));
+  log($('#s-home').classList.contains('on'),'back from plan returns home');
+  log($$('#stops-n button')[3].classList.contains('on') && $$('#start button')[2].classList.contains('on'),'builder keeps your choices after back (4 stops, 8pm)');
+  w.history.forward(); await until(()=>$('#s-plan').classList.contains('on') && $$('#plan h3').length>0);
+  log($('#s-plan').classList.contains('on'),'forward reopens the plan');
+  $('#edit').click(); await until(()=>$('#s-home').classList.contains('on'));
+  log($('#s-home').classList.contains('on'),'"Change the plan" goes home');
+  $('#about-link').click(); await wait(100);
+  log($('#s-about').classList.contains('on'),'about opens');
+  w.history.back(); await until(()=>$('#s-home').classList.contains('on'));
+  log($('#s-home').classList.contains('on'),'back from about returns home');
+  const sel=$('#area'); sel.value='marylebone'; sel.dispatchEvent(new w.Event('change')); await wait(100);
+  log($('#area-label').textContent==='Marylebone' && /Marylebone/.test($('#ready-title').textContent),'area change updates headline and section');
+  $('.preset.featured').click(); await until(()=>$('#s-plan').classList.contains('on') && $$('#plan h3').length>0);
+  log($('#plan-area').textContent==='Marylebone' && !$$('#plan .empty').length,'surprise me stays in Marylebone, no empty stops');
+  w.history.back(); await until(()=>$('#s-home').classList.contains('on'));
+  log($('#area-label').textContent==='Marylebone','back keeps Marylebone');
+  sel.value='@new'; sel.dispatchEvent(new w.Event('change')); await wait(100);
+  log($('#area-label').textContent!=='Marylebone','somewhere new switches area');
+  $$('#types .chip.on').forEach(c=>c.click()); await wait(50); const h2=w.history.length;
+  $('#go').click(); await wait(200);
+  log($('#s-home').classList.contains('on') && w.history.length===h2,'no plan with zero activities');
+  log(d.documentElement.scrollWidth<=391,'no horizontal overflow at 390px');
+  log(!errs.length,'no JS errors'+(errs.length?': '+errs.join('; '):''));
+  }catch(e){log(false,'exception: '+e.message)}
+  document.getElementById('out').textContent=out.join('\n');
+};
+</script>

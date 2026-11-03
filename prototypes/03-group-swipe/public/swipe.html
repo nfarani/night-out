@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Group Swipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14120f;
+    --paper:#f7f3ec;
+    --accent:#e2543f;
+    --accent-soft:#fbe7e2;
+    --line: rgba(20,18,15,0.12);
+    --dim: rgba(20,18,15,0.55);
+    --yes:#2f7d4f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .app{ width:100%; max-width:470px; min-height:100vh; padding-bottom:40px; position:relative; overflow-x:hidden; }
+  .screen{ display:none; }
+  .screen.on{ display:block; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; padding:18px 20px 12px; }
+  .brand{ display:flex; align-items:center; gap:9px; }
+  .brand .mark{
+    width:30px; height:30px; border-radius:9px; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;
+  }
+  .brand .wordmark{ font-weight:800; font-size:15px; letter-spacing:-0.01em; }
+  .demo-note{
+    margin:0 20px 14px; background:var(--accent-soft); border-radius:10px;
+    padding:10px 13px; font-size:11.5px; line-height:1.6; color:#8c3628;
+  }
+
+  h1.display{ font-family:'Fraunces',serif; font-weight:700; font-size:34px; line-height:1.08; margin:8px 0 10px; letter-spacing:-0.01em; }
+  h2.display{ font-family:'Fraunces',serif; font-weight:700; font-size:25px; line-height:1.15; margin:0 0 6px; }
+  .pad{ padding:0 20px; }
+  .lede{ font-size:14px; color:var(--dim); line-height:1.65; margin:0 0 22px; }
+
+  .btn{
+    display:block; width:100%; border:none; border-radius:14px; padding:16px;
+    font-family:'Inter',sans-serif; font-size:15px; font-weight:700; cursor:pointer;
+    background:var(--ink); color:#fff; text-align:center; text-decoration:none;
+  }
+  .btn.accent{ background:var(--accent); }
+  .btn.ghost{ background:#fff; color:var(--ink); border:1.5px solid var(--line); }
+  .btn + .btn{ margin-top:10px; }
+  .btn:disabled{ opacity:0.4; cursor:default; }
+
+  .steps{ list-style:none; margin:28px 0 0; padding:0; counter-reset:s; }
+  .steps li{ counter-increment:s; display:flex; gap:14px; padding:14px 0; border-top:1px solid var(--line); font-size:13.5px; line-height:1.55; }
+  .steps li::before{
+    content:counter(s); flex:0 0 26px; height:26px; border-radius:50%;
+    background:var(--ink); color:#fff; font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .steps b{ display:block; font-size:14px; }
+
+  .people{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 18px; }
+  .person{ background:#fff; border:1px solid var(--line); border-radius:999px; padding:6px 12px 6px 6px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:7px; }
+  .avatar{ width:22px; height:22px; border-radius:50%; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+
+  /* ---------- swipe ---------- */
+  .swipe-head{ display:flex; justify-content:space-between; align-items:center; padding:4px 20px 12px; font-size:12.5px; font-weight:700; color:var(--dim); }
+  .swipe-head button{ background:none; border:none; font:inherit; color:var(--dim); cursor:pointer; padding:4px 0; }
+  .swipe-head button:disabled{ opacity:0.3; }
+  .progress{ height:3px; background:var(--line); margin:0 20px 16px; border-radius:2px; overflow:hidden; }
+  .progress i{ display:block; height:100%; background:var(--accent); transition:width .25s ease; }
+
+  .deck{ position:relative; height:440px; margin:0 20px; }
+  .card{
+    position:absolute; inset:0; border-radius:24px; padding:26px 24px;
+    color:#fff; display:flex; flex-direction:column; justify-content:space-between;
+    box-shadow:0 14px 34px rgba(20,18,15,0.18);
+    touch-action:none; user-select:none; cursor:grab;
+    transition:transform .3s ease;
+    overflow:hidden;
+  }
+  .card.under{ transform:scale(.95) translateY(14px); filter:brightness(.9); cursor:default; }
+  .card .when{ font-size:12px; font-weight:700; opacity:.85; }
+  .card h3{ font-family:'Fraunces',serif; font-size:40px; line-height:1.02; margin:0 0 12px; font-weight:700; letter-spacing:-0.01em; }
+  .card p{ margin:0; font-size:15px; line-height:1.55; opacity:.92; max-width:30ch; }
+  .card .big{
+    position:absolute; right:-18px; top:-30px; font-family:'Fraunces',serif; font-weight:700;
+    font-size:210px; line-height:1; opacity:.12; pointer-events:none;
+  }
+  .stamp{
+    position:absolute; top:26px; padding:6px 12px; border:3px solid #fff; border-radius:10px;
+    font-weight:800; font-size:20px; letter-spacing:.04em; opacity:0; pointer-events:none;
+    background:rgba(20,18,15,.25);
+  }
+  .stamp.in{ left:22px; transform:rotate(-10deg); }
+  .stamp.no{ right:22px; transform:rotate(10deg); }
+  .stamp.must{ left:50%; top:auto; bottom:110px; transform:translateX(-50%); }
+
+  .actions{ display:flex; justify-content:center; gap:18px; padding:22px 20px 8px; }
+  .act{
+    width:64px; height:64px; border-radius:50%; border:1.5px solid var(--line); background:#fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow:0 4px 12px rgba(20,18,15,.08);
+  }
+  .act.small{ width:52px; height:52px; margin-top:6px; }
+  .act svg{ width:26px; height:26px; }
+  .act-labels{ display:flex; justify-content:center; gap:18px; font-size:11px; font-weight:700; color:var(--dim); }
+  .act-labels span{ width:64px; text-align:center; }
+  .act-labels span.small{ width:52px; }
+  .hint{ text-align:center; font-size:11.5px; color:var(--dim); margin-top:14px; }
+
+  input.name{
+    width:100%; border:1.5px solid var(--line); border-radius:14px; background:#fff;
+    padding:15px 16px; font-family:'Inter',sans-serif; font-size:16px; margin:0 0 12px; color:var(--ink);
+  }
+  input.name:focus{ outline:none; border-color:var(--ink); }
+
+  /* ---------- group overlap ---------- */
+  .overlap{ margin:6px 0 22px; }
+  .row{ display:flex; align-items:center; gap:10px; padding:11px 0; border-top:1px solid var(--line); }
+  .row .swatch{ width:10px; height:34px; border-radius:4px; flex:0 0 10px; }
+  .row .label{ flex:1; min-width:0; }
+  .row .label b{ display:block; font-size:14px; }
+  .row .label small{ font-size:11.5px; color:var(--dim); }
+  .row .dots{ display:flex; gap:4px; }
+  .dot{ width:20px; height:20px; border-radius:50%; border:1.5px solid var(--line); font-size:10px; font-weight:800; color:#fff; display:flex; align-items:center; justify-content:center; }
+  .dot.must{ box-shadow:0 0 0 2px var(--paper), 0 0 0 3.5px var(--accent); }
+  .row.dead{ opacity:.4; }
+
+  /* ---------- plan ---------- */
+  .plan-meta{ font-size:12px; font-weight:700; color:var(--dim); margin:0 0 6px; }
+  .stops{ margin:18px 0 8px; }
+  .stop{ display:flex; gap:14px; }
+  .stop .rail{ display:flex; flex-direction:column; align-items:center; flex:0 0 30px; }
+  .stop .num{ width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; }
+  .stop .line{ flex:1; width:2px; background:var(--line); margin:4px 0; }
+  .stop:last-child .line{ display:none; }
+  .stop-body{ flex:1; padding-bottom:22px; min-width:0; }
+  .kicker{ display:inline-block; font-size:11px; font-weight:800; color:#fff; padding:3px 8px; border-radius:5px; margin-bottom:6px; }
+  .stop-body h4{ font-family:'Fraunces',serif; font-size:20px; margin:0 0 4px; }
+  .stop-body .note{ font-size:13px; line-height:1.6; color:var(--ink); margin:0 0 8px; }
+  .stop-body .why{ font-size:12px; color:var(--dim); margin:0 0 10px; }
+  .stop-body .why b{ color:var(--accent); }
+  .mini{ display:inline-flex; align-items:center; gap:5px; background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 11px; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; cursor:pointer; color:var(--ink); }
+  .walk{ font-size:11.5px; font-weight:600; color:var(--dim); margin:-12px 0 10px 44px; }
+  .empty{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px; font-size:14px; line-height:1.6; }
+
+  /* ---------- area + options ---------- */
+  .field-label{ font-size:12px; font-weight:800; color:var(--dim); margin:0 0 8px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin:0 0 22px; }
+  .chip{ border:1.5px solid var(--line); background:#fff; border-radius:999px; padding:9px 13px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink); }
+  .chip.on{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .stop-body h4 a{ color:inherit; text-decoration:none; border-bottom:1.5px solid var(--line); }
+  .attrib{ font-size:11px; color:var(--dim); margin:0 0 16px; }
+  .attrib a{ color:inherit; }
+  .skipped{ font-size:12.5px; color:var(--dim); margin:0 0 14px; }
+  #s-plan.busy .btn:not(#back-group), #s-plan.failed #route, #s-plan.failed #share-plan, #s-plan.failed #reshuffle{ display:none; }
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(80px);
+    background:var(--ink); color:#fff; padding:11px 16px; border-radius:12px; font-size:13px; font-weight:600;
+    transition:transform .25s ease; z-index:10; max-width:90vw;
+  }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand"><div class="mark">N</div><div class="wordmark">Night Out</div></div>
+  </div>
+  <div class="demo-note">Prototype. Venues are an OpenStreetMap snapshot with chains filtered out and no curation yet. The thing being tested is the group mechanic.</div>
+
+  <!-- HOME -->
+  <section class="screen pad" id="s-home">
+    <div id="home-body"></div>
+  </section>
+
+  <!-- SWIPE -->
+  <section class="screen" id="s-swipe">
+    <div class="swipe-head">
+      <button id="undo" type="button">Undo</button>
+      <span id="count">1 / 12</span>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="deck" id="deck"></div>
+    <div class="actions">
+      <button class="act" type="button" aria-label="Not tonight" data-v="0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#14120f" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <button class="act small" type="button" aria-label="Must do" data-v="2">
+        <svg viewBox="0 0 24 24" fill="#e2543f"><path d="M12 2.8l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.6l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>
+      </button>
+      <button class="act" type="button" aria-label="I'm in" data-v="1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2f7d4f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 7"/></svg>
+      </button>
+    </div>
+    <div class="act-labels"><span>Not tonight</span><span class="small">Must</span><span>I'm in</span></div>
+    <p class="hint">Swipe right if you're in, left if not, up if it's a must.</p>
+  </section>
+
+  <!-- NAME -->
+  <section class="screen pad" id="s-name">
+    <h2 class="display" style="margin-top:20px">Done. Who are you?</h2>
+    <p class="lede">So the group knows whose vote is whose.</p>
+    <input class="name" id="name" maxlength="14" placeholder="Your first name" autocomplete="given-name">
+    <button class="btn" id="save-name" type="button">Add me to the group</button>
+  </section>
+
+  <!-- GROUP -->
+  <section class="screen pad" id="s-group">
+    <h2 class="display" style="margin-top:8px" id="group-title">The group so far</h2>
+    <p class="lede" id="group-lede"></p>
+    <div class="people" id="group-people"></div>
+    <div class="overlap" id="overlap"></div>
+    <p class="field-label">Where?</p>
+    <div id="group-area"></div>
+    <button class="btn accent" id="pick" type="button">Pick the night</button>
+    <button class="btn ghost" id="share-group" type="button">Send to the group</button>
+  </section>
+
+  <!-- PLAN -->
+  <section class="screen pad" id="s-plan">
+    <p class="plan-meta" id="plan-meta"></p>
+    <h2 class="display" id="plan-title">Tonight</h2>
+    <div class="stops" id="stops"></div>
+    <p class="attrib">Venue data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></p>
+    <a class="btn" id="route" target="_blank" rel="noopener">Open the walking route</a>
+    <button class="btn accent" id="share-plan" type="button">Send the plan</button>
+    <button class="btn ghost" id="reshuffle" type="button">Reshuffle</button>
+    <button class="btn ghost" id="back-group" type="button">Back to the votes</button>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+
+  // slot: 0 = early, 1 = main event, 2 = late. Which OSM tags count as each id: scripts/fetch-osm.mjs.
+  const VIBES = [
+    { id:'pub',     name:'A proper pub',        line:'Carpet, a fire, a pint that isn’t nine pounds. Somewhere you can hear each other.', slot:0, when:'Early · from 6pm',  color:'#7a4a2b' },
+    { id:'wine',    name:'Wine bar',            line:'Small plates, a short list on a chalkboard, someone who’ll tell you what’s funky.', slot:0, when:'Early · from 6pm', color:'#8c2f45' },
+    { id:'cheap',   name:'Cheap eats',          line:'Street food, a counter, under fifteen quid. Fuel, not a reservation.', slot:0, when:'Early · from 7pm', color:'#c4612b' },
+    { id:'dinner',  name:'Sit-down dinner',     line:'Tablecloth optional, booking required. The meal is the night.', slot:0, when:'Early · from 7pm', color:'#3d5a40' },
+    { id:'rooftop', name:'Outside, up high',    line:'A terrace or a roof while it’s still light. Weather permitting, which it won’t.', slot:0, when:'Early · golden hour', color:'#2d6f8e' },
+    { id:'cocktail',name:'Dark cocktail bar',   line:'Low light, good music, a drink with a name you’ll forget.', slot:1, when:'Main event · from 9pm', color:'#2b2440' },
+    { id:'live',    name:'Live music',          line:'A small room, a band you’ve never heard of, sticky floor.', slot:1, when:'Main event · from 9pm', color:'#4b2b6b' },
+    { id:'games',   name:'Bar games',           line:'Darts, pool, shuffleboard. Something to do with your hands.', slot:1, when:'Main event · from 8pm', color:'#1f6b5c' },
+    { id:'comedy',  name:'Comedy night',        line:'Open mic or a headliner. Front row at your own risk.', slot:1, when:'Main event · from 8pm', color:'#a2542a' },
+    { id:'karaoke', name:'Karaoke',             line:'Private booth. Somebody will do Bohemian Rhapsody. It might be you.', slot:2, when:'Late · from 11pm', color:'#b23a6b' },
+    { id:'dance',   name:'Dancing',             line:'A proper dancefloor until the lights come up.', slot:2, when:'Late · till 3am', color:'#1d2a55' },
+    { id:'latefood',name:'2am food',            line:'Bagels, kebab, a chip shop with the shutters half down.', slot:2, when:'Late · after midnight', color:'#8a6a1c' },
+  ];
+
+  // Areas and their venue snapshots: data/areas.json + data/areas/<id>.json (npm run data).
+  let AREAS = [];
+
+  const AVATAR = ['#e2543f','#2f7d4f','#2d6f8e','#8c2f45','#b8862b','#4b2b6b','#1f6b5c','#7a4a2b'];
+  const SLOT_NAMES = ['Start', 'Main event', 'Late'];
+
+  let group = [];          // [{ name, a: '0120...' }]  a[i] in {0 out, 1 in, 2 must}
+  let mine = [];           // my answers in progress
+  let area = null;         // { id, name, lat, lng }
+  let planIds = [];        // [{ vibe, id }] from a shared plan link
+  let plan = [];           // [{ row, place, seen }]
+  let areaData = {};       // area id -> promise of its venue list
+  let order = {};          // vibe|area -> venues in this session's shuffled order
+  let myName = '';
+  try { myName = localStorage.getItem('no_name') || ''; } catch (e) {}
+
+  // ---------- URL state ----------
+  // #a=dalston&g=Nick~0121…_Ana~1100…&p=wine:n123,dance:w456   (OSM ids)
+  function readHash(){
+    const q = new URLSearchParams(location.hash.slice(1));
+    group = (q.get('g') || '').split('_').filter(Boolean).map(p => {
+      const [name, a = ''] = p.split('~');
+      return { name, a };
+    }).filter(p => p.name && /^[012]+$/.test(p.a) && p.a.length === VIBES.length);
+    area = parseArea(q.get('a'));
+    planIds = (q.get('p') || '').split(',').filter(Boolean).map(s => {
+      const [vibe, id] = s.split(':');
+      return { vibe, id };
+    }).filter(x => VIBES.some(v => v.id === x.vibe) && /^[nwr]\d{1,12}$/.test(x.id || ''));
+  }
+  function parseArea(s){
+    return AREAS.find(a => a.id === s) || null;
+  }
+  function stateUrl(withPlan){
+    const q = new URLSearchParams();
+    if (area) q.set('a', area.id);
+    if (group.length) q.set('g', group.map(p => p.name + '~' + p.a).join('_'));
+    if (withPlan && plan.length) q.set('p', plan.map(s => s.row.v.id + ':' + s.place.id).join(','));
+    return location.href.split('#')[0] + '#' + q.toString();
+  }
+  function writeHash(withPlan){ history.replaceState(null, '', stateUrl(withPlan)); }
+
+  // ---------- helpers ----------
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+    window.scrollTo(0, 0);
+  }
+  function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function avatar(name, i){ return '<span class="avatar" style="background:'+AVATAR[i % AVATAR.length]+'">'+esc(name[0].toUpperCase())+'</span>'; }
+  function listNames(arr){
+    if (arr.length <= 1) return arr.join('');
+    return arr.slice(0, -1).join(', ') + ' & ' + arr[arr.length - 1];
+  }
+  let toastT;
+  function toast(msg){
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+  async function share(text, url){
+    if (navigator.share) {
+      try { await navigator.share({ text, url }); return; } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(text + '\n' + url); toast('Copied. Paste it in the group chat.'); }
+    catch (e) { prompt('Copy this link:', url); }
+  }
+  function distM(a, b){
+    const toR = x => x * Math.PI / 180;
+    const dLat = toR(b.lat - a.lat), dLng = toR(b.lng - a.lng);
+    const h = Math.sin(dLat/2)**2 + Math.cos(toR(a.lat)) * Math.cos(toR(b.lat)) * Math.sin(dLng/2)**2;
+    return 2 * 6371000 * Math.asin(Math.sqrt(h));
+  }
+  function walkMins(a, b){ return Math.max(1, Math.round(distM(a, b) * 1.3 / 80)); }   // 4.8km/h, street-grid fudge
+  function mapsLink(p){
+    const q = [p.name, p.street, p.postcode || 'London'].filter(Boolean).join(', ');
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+  }
+
+  // ---------- data ----------
+  function fetchJson(path){
+    if (location.protocol === 'file:') return Promise.reject(new Error('Open this through a local server: run “npm run dev” in prototypes/03-group-swipe.'));
+    return fetch(path).then(r => { if (!r.ok) throw new Error('Couldn’t load ' + path + ' (' + r.status + ')'); return r.json(); });
+  }
+  function loadArea(id){
+    if (!areaData[id]) areaData[id] = fetchJson('data/areas/' + id + '.json').then(d => d.venues)
+      .catch(e => { delete areaData[id]; throw e; });
+    return areaData[id];
+  }
+  // Venues for a vibe near the area centre, shuffled once per session so Swap walks a stable list.
+  // Venues with hours or a website listed go first: a rough sign the entry is alive and kept up.
+  async function venuesFor(vibeId){
+    const key = vibeId + '|' + area.id;
+    if (!order[key]) {
+      const all = (await loadArea(area.id)).filter(v => v.vibes.includes(vibeId) && distM(area, v) <= 1100);
+      const rank = v => (v.hours ? 1 : 0) + (v.website ? 1 : 0) + Math.random() * 1.5;
+      order[key] = all.map(v => [rank(v), v]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
+    }
+    return order[key];
+  }
+
+  // ---------- tally ----------
+  function tally(){
+    return VIBES.map((v, i) => {
+      const ins = [], musts = [];
+      group.forEach(p => { if (p.a[i] !== '0') ins.push(p.name); if (p.a[i] === '2') musts.push(p.name); });
+      return { v, i, ins, musts, score: ins.length + musts.length * 1.5 };
+    });
+  }
+
+  // ---------- area picker ----------
+  function renderAreaPicker(el){
+    el.innerHTML = '<div class="chips">' +
+      AREAS.map(a => '<button type="button" class="chip'+(area && area.id === a.id ? ' on' : '')+'" data-area="'+a.id+'">'+esc(a.name)+'</button>').join('') +
+      '<button type="button" class="chip" data-area="@here">Near me</button></div>';
+    el.querySelectorAll('[data-area]').forEach(b => b.onclick = () => chooseArea(b.dataset.area, el));
+  }
+  function chooseArea(id, el){
+    const done = () => { order = {}; writeHash(false); renderAreaPicker(el); updatePickLabel(); };
+    if (id !== '@here') { area = AREAS.find(a => a.id === id); done(); return; }
+    if (!navigator.geolocation) { toast('Location isn’t available in this browser.'); return; }
+    toast('Finding you…');
+    navigator.geolocation.getCurrentPosition(pos => {
+      const me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const near = AREAS.map(a => [distM(me, a), a]).sort((x, y) => x[0] - y[0])[0];
+      if (!near || near[0] > 3000) { toast('None of our areas are near you yet.'); return; }
+      area = near[1];
+      done();
+      toast('Closest area we cover: ' + area.name);
+    }, () => toast('Couldn’t get your location.'), { timeout:10000, maximumAge:300000 });
+  }
+  function areaLabel(){ return area ? 'in ' + area.name : ''; }
+  function updatePickLabel(){ $('pick').textContent = area ? 'Pick the night ' + areaLabel() : 'Pick the night'; }
+
+  // ---------- HOME ----------
+  function renderHome(){
+    let html;
+    if (group.length) {
+      const names = group.map(p => p.name);
+      html =
+        '<h1 class="display">'+esc(listNames(names))+(names.length === 1 ? ' has' : ' have')+' voted.</h1>' +
+        '<p class="lede">'+(area ? 'Tonight, ' + esc(areaLabel()) + '. ' : '')+'Twelve cards, about thirty seconds. Swipe on what you’d be up for and the app picks a plan everyone can live with.</p>' +
+        '<div class="people">'+group.map((p, i) => '<span class="person">'+avatar(p.name, i)+esc(p.name)+'</span>').join('')+'</div>' +
+        '<button class="btn accent" id="go" type="button">Add my vote</button>' +
+        '<button class="btn ghost" id="peek" type="button">Just show me the votes</button>';
+    } else {
+      html =
+        '<h1 class="display">Where are we going tonight?</h1>' +
+        '<p class="lede">Nobody wants to be the one who picks. Everyone swipes, the app finds the overlap, and the app takes the blame.</p>' +
+        '<p class="field-label">Roughly where?</p><div id="home-area"></div>' +
+        '<button class="btn accent" id="go" type="button">Start swiping</button>' +
+        '<ol class="steps">' +
+          '<li><div><b>You swipe</b>Twelve kinds of night, from a proper pub to 2am food. In, out, or must.</div></li>' +
+          '<li><div><b>Send it to the group</b>One link. Each friend adds their swipes to it. No accounts.</div></li>' +
+          '<li><div><b>The app picks</b>A start, a main event and a late one, walkable from each other.</div></li>' +
+        '</ol>';
+    }
+    $('home-body').innerHTML = html;
+    if ($('home-area')) renderAreaPicker($('home-area'));
+    $('go').onclick = startSwipe;
+    if ($('peek')) $('peek').onclick = renderGroup;
+    show('s-home');
+  }
+
+  // ---------- SWIPE ----------
+  function startSwipe(){ mine = []; renderDeck(); show('s-swipe'); }
+
+  function renderDeck(){
+    const i = mine.length;
+    $('count').textContent = Math.min(i + 1, VIBES.length) + ' / ' + VIBES.length;
+    $('bar').style.width = (i / VIBES.length * 100) + '%';
+    $('undo').disabled = i === 0;
+    if (i >= VIBES.length) { finishSwipe(); return; }
+    const deck = $('deck');
+    deck.innerHTML = '';
+    [i + 1, i].forEach(k => {
+      const v = VIBES[k];
+      if (!v) return;
+      const c = document.createElement('div');
+      c.className = 'card' + (k === i ? '' : ' under');
+      c.style.background = v.color;
+      c.innerHTML =
+        '<span class="big">'+(k + 1)+'</span>' +
+        '<div class="when">'+esc(v.when)+'</div>' +
+        '<div><h3>'+esc(v.name)+'</h3><p>'+esc(v.line)+'</p></div>' +
+        '<span class="stamp in">I’M IN</span><span class="stamp no">NAH</span><span class="stamp must">MUST</span>';
+      deck.appendChild(c);
+      if (k === i) attachDrag(c);
+    });
+  }
+
+  let busy = false;
+  function decide(val){
+    if (busy || mine.length >= VIBES.length) return;
+    busy = true;
+    const card = $('deck').lastElementChild;
+    const out = val === 1 ? 'translate(520px, 40px) rotate(24deg)'
+              : val === 0 ? 'translate(-520px, 40px) rotate(-24deg)'
+              : 'translate(0, -640px)';
+    card.style.transition = 'transform .28s ease';
+    card.style.transform = out;
+    setTimeout(() => { mine.push(String(val)); busy = false; renderDeck(); }, 230);
+  }
+
+  function attachDrag(card){
+    let sx = 0, sy = 0, dx = 0, dy = 0, dragging = false;
+    const stamp = cls => card.querySelector('.stamp.' + cls);
+    const clamp = x => Math.max(0, Math.min(1, x));
+    card.addEventListener('pointerdown', e => {
+      if (busy) return;
+      dragging = true; sx = e.clientX; sy = e.clientY; dx = dy = 0;
+      card.setPointerCapture(e.pointerId);
+      card.style.transition = 'none';
+    });
+    card.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      dx = e.clientX - sx; dy = e.clientY - sy;
+      card.style.transform = 'translate('+dx+'px,'+dy+'px) rotate('+(dx / 18)+'deg)';
+      const up = -dy > Math.abs(dx);
+      stamp('in').style.opacity = up ? 0 : clamp(dx / 100);
+      stamp('no').style.opacity = up ? 0 : clamp(-dx / 100);
+      stamp('must').style.opacity = up ? clamp(-dy / 110) : 0;
+    });
+    const end = () => {
+      if (!dragging) return;
+      dragging = false;
+      if (-dy > 110 && Math.abs(dx) < 90) return decide(2);
+      if (dx > 100) return decide(1);
+      if (dx < -100) return decide(0);
+      card.style.transition = 'transform .25s ease';
+      card.style.transform = '';
+      card.querySelectorAll('.stamp').forEach(s => s.style.opacity = 0);
+    };
+    card.addEventListener('pointerup', end);
+    card.addEventListener('pointercancel', end);
+  }
+
+  document.querySelectorAll('.act').forEach(b => b.onclick = () => decide(+b.dataset.v));
+  $('undo').onclick = () => { if (!busy && mine.length) { mine.pop(); renderDeck(); } };
+  document.addEventListener('keydown', e => {
+    if (!$('s-swipe').classList.contains('on')) return;
+    if (e.key === 'ArrowRight') decide(1);
+    if (e.key === 'ArrowLeft') decide(0);
+    if (e.key === 'ArrowUp') { e.preventDefault(); decide(2); }
+  });
+
+  function finishSwipe(){
+    $('name').value = myName;
+    show('s-name');
+    setTimeout(() => $('name').focus(), 50);
+  }
+
+  $('save-name').onclick = () => {
+    const n = $('name').value.replace(/[^\p{L}\p{N} '\-]/gu, '').trim();
+    if (!n) { $('name').focus(); return; }
+    myName = n;
+    try { localStorage.setItem('no_name', n); } catch (e) {}
+    const entry = { name: n, a: mine.join('') };
+    const idx = group.findIndex(p => p.name.toLowerCase() === n.toLowerCase());
+    if (idx >= 0) group[idx] = entry; else group.push(entry);
+    writeHash(false);
+    renderGroup();
+  };
+  $('name').addEventListener('keydown', e => { if (e.key === 'Enter') $('save-name').click(); });
+
+  // ---------- GROUP ----------
+  function renderGroup(){
+    const t = tally().sort((a, b) => b.score - a.score);
+    const n = group.length;
+    $('group-title').textContent = n === 1 ? 'Just you so far' : n + ' people have voted';
+    $('group-lede').textContent = n === 1
+      ? 'Send the link to the group. Each person adds their swipes and the overlap sharpens.'
+      : 'Here’s where everyone overlaps. A ringed dot means that person marked it a must.';
+    $('group-people').innerHTML = group.map((p, i) => '<span class="person">'+avatar(p.name, i)+esc(p.name)+'</span>').join('');
+    $('overlap').innerHTML = t.map(r => {
+      const dots = group.map((p, gi) => {
+        const a = p.a[r.i];
+        if (a === '0') return '<span class="dot"></span>';
+        return '<span class="dot'+(a === '2' ? ' must' : '')+'" style="background:'+AVATAR[gi % AVATAR.length]+';border-color:transparent">'+esc(p.name[0].toUpperCase())+'</span>';
+      }).join('');
+      return '<div class="row'+(r.ins.length ? '' : ' dead')+'">' +
+        '<span class="swatch" style="background:'+r.v.color+'"></span>' +
+        '<div class="label"><b>'+esc(r.v.name)+'</b><small>'+r.ins.length+' of '+n+' in · '+SLOT_NAMES[r.v.slot]+'</small></div>' +
+        '<div class="dots">'+dots+'</div></div>';
+    }).join('');
+    renderAreaPicker($('group-area'));
+    $('pick').disabled = !t.some(r => r.ins.length);
+    updatePickLabel();
+    show('s-group');
+  }
+  $('share-group').onclick = () => {
+    const names = group.map(p => p.name);
+    share('Where are we going tonight' + (area ? ' (' + areaLabel() + ')' : '') + '? ' + listNames(names) + (names.length === 1 ? ' has' : ' have') + ' voted. Add yours, 30 seconds:', stateUrl(false));
+  };
+  $('pick').onclick = () => {
+    if (!area) {
+      toast('Pick an area first.');
+      $('group-area').scrollIntoView({ behavior:'smooth', block:'center' });
+      return;
+    }
+    buildPlan(false);
+  };
+
+  // ---------- PLAN ----------
+  // One vibe per slot (start, main, late). Highest group score wins; reshuffle
+  // picks weighted-randomly among vibes people want. If the map data has nothing for
+  // a vibe nearby, fall through to the next-best vibe in that slot.
+  function pickVibe(cands, random){
+    if (!random) return cands[0];
+    const w = cands.map(c => c.score * c.score);
+    let r = Math.random() * w.reduce((a, b) => a + b, 0);
+    for (let k = 0; k < cands.length; k++) { r -= w[k]; if (r <= 0) return cands[k]; }
+    return cands[0];
+  }
+  function choosePlace(opts, prev){
+    const pool = prev
+      ? opts.slice(0, 8).sort((a, b) => walkMins(prev, a) - walkMins(prev, b)).slice(0, 3)
+      : opts.slice(0, 5);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function planBusy(msg){
+    $('s-plan').className = 'screen on pad busy';
+    $('plan-meta').textContent = '';
+    $('plan-title').textContent = 'Picking…';
+    $('stops').innerHTML = '<div class="empty">'+esc(msg)+'</div>';
+    show('s-plan');
+  }
+  function planFailed(msg){
+    $('s-plan').className = 'screen on pad failed';
+    $('plan-title').textContent = 'Couldn’t pick.';
+    $('stops').innerHTML = '<div class="empty">'+esc(msg)+'</div>';
+  }
+
+  async function buildPlan(random){
+    const t = tally();
+    const slots = [0, 1, 2].map(slot => {
+      const cands = t.filter(r => r.v.slot === slot && r.ins.length).sort((a, b) => b.score - a.score);
+      if (!cands.length) return null;
+      const first = pickVibe(cands, random);
+      return [first, ...cands.filter(c => c !== first)];
+    }).filter(Boolean);
+    planBusy('Looking ' + areaLabel() + '…');
+
+    const skipped = [];
+    const next = [];
+    try {
+      for (const cands of slots) {
+        for (const r of cands) {
+          const used = new Set(next.map(s => s.place.id));
+          const opts = (await venuesFor(r.v.id)).filter(p => !used.has(p.id));
+          if (opts.length) {
+            next.push({ row: r, place: choosePlace(opts, next.length ? next[next.length - 1].place : null) });
+            break;
+          }
+          skipped.push(r.v.name);
+        }
+      }
+    } catch (e) { planFailed(e.message); return; }
+    plan = next;
+    writeHash(true);
+    renderPlan(skipped);
+  }
+
+  async function loadPlanFromLink(){
+    planBusy('Loading the plan…');
+    try {
+      const t = tally();
+      if (!area) throw new Error('This plan link is missing its area.');
+      const venues = await loadArea(area.id);
+      plan = planIds.map(x => ({ row: t.find(r => r.v.id === x.vibe), place: venues.find(v => v.id === x.id) }))
+        .filter(s => s.place);
+      if (!plan.length) throw new Error('These venues aren’t in the current map data any more. Pick again.');
+      renderPlan([]);
+    } catch (e) { planFailed(e.message); }
+  }
+
+  async function swapStop(k){
+    const s = plan[k];
+    if (!area) { toast('No area set for this plan.'); return; }
+    try {
+      const places = await venuesFor(s.row.v.id);
+      const used = new Set(plan.map(x => x.place.id));
+      s.seen = s.seen || new Set([s.place.id]);
+      let alt = places.find(p => !s.seen.has(p.id) && !used.has(p.id));
+      if (!alt) {                       // been through them all: go round again
+        s.seen = new Set([s.place.id]);
+        alt = places.find(p => !used.has(p.id));
+      }
+      if (!alt) { toast('Nothing else nearby for ' + s.row.v.name.toLowerCase() + '.'); return; }
+      s.seen.add(alt.id);
+      s.place = alt;
+      writeHash(true);
+      renderPlan([]);
+    } catch (e) { toast(e.message); }
+  }
+
+  function renderPlan(skipped){
+    $('s-plan').className = 'screen on pad';
+    const n = group.length;
+    $('plan-meta').textContent = (n ? 'Picked for ' + listNames(group.map(p => p.name)) + ' · ' : '') + (area ? areaLabel() : '');
+    if (!plan.length) {
+      $('plan-title').textContent = 'Tough crowd.';
+      $('stops').innerHTML = '<div class="empty">'+(n && tally().some(r => r.ins.length)
+        ? 'Nothing in the map data matches ' + esc(areaLabel()) + '. Try another area.'
+        : 'Nobody said yes to anything. Get one more person to vote, or go home.')+'</div>';
+      $('s-plan').classList.add('failed');
+      show('s-plan'); return;
+    }
+    $('plan-title').textContent = plan.length === 1 ? 'One stop, no arguments.' : 'Tonight, in ' + plan.length + ' stops.';
+    let html = skipped.length ? '<p class="skipped">No ' + esc(listNames(skipped.map(s => s.toLowerCase()))) + ' in the map data here, so the next-best pick stepped in.</p>' : '';
+    plan.forEach((s, k) => {
+      const r = s.row, p = s.place;
+      const unanimous = r.ins.length === n && n > 1;
+      const why = !r.ins.length ? ''
+        : (unanimous ? 'Everyone’s in' : esc(listNames(r.ins)) + (r.ins.length === 1 ? ' is' : ' are') + ' in') +
+          (r.musts.length ? ' · <b>a must for ' + esc(listNames(r.musts)) + '</b>' : '');
+      if (k > 0) html += '<div class="walk">' + walkMins(plan[k - 1].place, p) + ' min walk</div>';
+      html +=
+        '<div class="stop"><div class="rail"><span class="num">'+(k + 1)+'</span><span class="line"></span></div>' +
+        '<div class="stop-body">' +
+          '<span class="kicker" style="background:'+r.v.color+'">'+esc(SLOT_NAMES[r.v.slot]+' · '+r.v.name)+'</span>' +
+          '<h4><a href="'+esc(mapsLink(p))+'" target="_blank" rel="noopener">'+esc(p.name)+'</a></h4>' +
+          '<p class="note">'+esc([p.street, p.hours].filter(Boolean).join(' · ') || 'No address or hours listed')+'</p>' +
+          (why ? '<p class="why">'+why+'</p>' : '') +
+          '<button class="mini" type="button" data-swap="'+k+'">Swap this one</button>' +
+        '</div></div>';
+    });
+    $('stops').innerHTML = html;
+    document.querySelectorAll('[data-swap]').forEach(b => b.onclick = () => swapStop(+b.dataset.swap));
+    $('route').href = routeUrl();
+    show('s-plan');
+  }
+
+  function routeUrl(){
+    const ps = plan.map(s => s.place), ll = p => p.lat + ',' + p.lng;
+    if (ps.length === 1) return mapsLink(ps[0]);
+    let url = 'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=' + ll(ps[0]) + '&destination=' + ll(ps[ps.length - 1]);
+    if (ps.length > 2) url += '&waypoints=' + encodeURIComponent(ps.slice(1, -1).map(ll).join('|'));
+    return url;
+  }
+
+  $('reshuffle').onclick = () => buildPlan(true);
+  $('back-group').onclick = renderGroup;
+  $('share-plan').onclick = () => {
+    const lines = plan.map((s, k) => (k + 1) + '. ' + s.place.name + ' (' + s.row.v.name.toLowerCase() + ')');
+    share('The app has spoken. Tonight ' + areaLabel() + ':\n' + lines.join('\n') + '\n\nNo appeals.', stateUrl(true));
+  };
+
+  // ---------- boot ----------
+  function boot(){
+    readHash();
+    if (planIds.length) loadPlanFromLink(); else renderHome();
+  }
+  fetchJson('data/areas.json')
+    .then(list => { AREAS = list; boot(); })
+    .catch(e => { $('home-body').innerHTML = '<div class="empty">'+esc(e.message)+'</div>'; show('s-home'); });
+  window.addEventListener('hashchange', boot);
+})();
+</script>
+</body>
+</html>

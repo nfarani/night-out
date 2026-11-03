@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roll the Day — London</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141210;
+    --ink-2:#1d1a17;
+    --paper:#faf6ee;
+    --amber:#e8952f;
+    --amber-deep:#c96f18;
+    --cream:#f3ecdd;
+    --dim: rgba(243,236,221,0.62);
+    --card-radius: 24px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  .app{
+    width:100%;
+    max-width: 460px;
+    min-height:100vh;
+    background: var(--paper);
+    padding-bottom: 110px;
+    position:relative;
+  }
+
+  .hero{
+    position:relative;
+    height: 300px;
+    border-radius: 0 0 32px 32px;
+    overflow:hidden;
+    background: linear-gradient(160deg, #3a2a1a 0%, #201812 60%, var(--ink) 100%);
+  }
+  .hero::before{
+    content:'';
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(232,149,47,0.35), transparent 45%),
+      radial-gradient(circle at 85% 75%, rgba(232,149,47,0.18), transparent 50%);
+  }
+  .hero-top{
+    position:relative;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding: 22px 22px 0;
+  }
+  .locality{
+    display:flex; align-items:center; gap:6px;
+    color: var(--cream);
+    font-size:13px;
+    font-weight:500;
+    opacity:0.85;
+  }
+  .avatar{
+    width:38px; height:38px;
+    border-radius:50%;
+    background: var(--amber);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--ink);
+    font-weight:700;
+    font-size:14px;
+  }
+  .greeting{
+    position:relative;
+    padding: 20px 22px 0;
+    color: var(--cream);
+  }
+  .greeting h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size: 28px;
+    line-height:1.15;
+    margin:0;
+  }
+  .greeting h1 span{ color: var(--amber); }
+
+  .search-wrap{
+    position:relative;
+    margin: -26px 18px 0;
+    z-index:5;
+  }
+  .search-pill{
+    background: var(--ink-2);
+    border-radius: 18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 6px 8px 6px 16px;
+    box-shadow: 0 10px 30px rgba(20,18,16,0.25);
+  }
+  .search-pill svg{ flex-shrink:0; color: var(--dim); }
+  .search-pill input{
+    flex:1;
+    background:none;
+    border:none;
+    outline:none;
+    color: var(--cream);
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    font-weight:500;
+    padding: 12px 0;
+  }
+  .search-pill input::placeholder{ color: rgba(243,236,221,0.4); }
+  .filter-btn{
+    width:40px; height:40px;
+    border-radius:12px;
+    background: var(--amber);
+    border:none;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--ink);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+
+  .radius-drawer{
+    max-height:0;
+    overflow:hidden;
+    transition: max-height 0.25s ease, padding 0.25s ease;
+    margin: 0 18px;
+    background: var(--ink-2);
+    border-radius: 0 0 16px 16px;
+    margin-top:-10px;
+    padding: 0 16px;
+    position:relative;
+    z-index:4;
+  }
+  .radius-drawer.open{ max-height:120px; padding: 22px 16px 16px; }
+  .radius-drawer-head{
+    display:flex; justify-content:space-between;
+    color: var(--cream);
+    font-size:13px; font-weight:500;
+    margin-bottom:10px;
+  }
+  .radius-drawer-head b{ color: var(--amber); }
+  input[type="range"]{
+    width:100%;
+    -webkit-appearance:none; appearance:none;
+    height:4px;
+    border-radius:2px;
+    background: rgba(243,236,221,0.2);
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:18px; height:18px;
+    border-radius:50%;
+    background: var(--amber);
+    border: 3px solid var(--ink-2);
+    cursor:pointer;
+    margin-top:-2px;
+  }
+
+  .chips{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding: 18px 18px 4px;
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex-shrink:0;
+    padding: 9px 16px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(20,18,16,0.12);
+    background: #fff;
+    font-size:13px;
+    font-weight:600;
+    color: var(--ink);
+    cursor:pointer;
+    white-space:nowrap;
+    transition: all 0.15s ease;
+  }
+  .chip.active{
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--amber);
+  }
+
+  .stage-label{
+    padding: 16px 18px 8px;
+    font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+    color: rgba(20,18,16,0.4); font-weight:700;
+  }
+  .stop-input-row{ display:flex; gap:8px; padding: 0 18px; }
+  .stop-input{
+    flex:1;
+    background:#fff;
+    border: 1.5px solid rgba(20,18,16,0.14);
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-family:'Inter', sans-serif;
+    font-size: 14px;
+    outline:none;
+  }
+  .stop-input:focus{ border-color: var(--amber); }
+  .stop-add-btn{
+    background: var(--ink);
+    color: var(--amber);
+    border:none;
+    border-radius:14px;
+    padding: 0 20px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .stop-list{
+    display:flex; flex-wrap:wrap; gap:8px;
+    padding: 12px 18px 0;
+  }
+  .stop-chip{
+    display:flex; align-items:center; gap:8px;
+    background: var(--ink);
+    color: var(--amber);
+    padding: 6px 8px 6px 14px;
+    border-radius: 20px;
+    font-size:13px;
+    font-weight:600;
+  }
+  .stop-chip .qty-btn{
+    background: rgba(255,255,255,0.14);
+    border:none; color: var(--cream);
+    width:22px; height:22px; border-radius:50%;
+    cursor:pointer; font-size:14px; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .stop-chip .qty-btn:hover{ background: rgba(255,255,255,0.26); }
+
+  .roll-cta{
+    margin: 14px 18px 0;
+    background: var(--amber);
+    color: var(--ink);
+    border:none;
+    border-radius: 18px;
+    padding: 17px;
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:19px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    cursor:pointer;
+    width: calc(100% - 36px);
+    box-shadow: 0 8px 20px rgba(232,149,47,0.3);
+    transition: transform 0.1s ease;
+  }
+  .roll-cta:active{ transform: scale(0.98); }
+  .roll-cta:disabled{ opacity:0.55; cursor:default; }
+  .roll-cta .die{ transition: transform 0.5s ease; }
+  .roll-cta.rolling .die{ animation: spin 0.5s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .status-line{
+    text-align:center;
+    font-size:12.5px;
+    color: rgba(20,18,16,0.5);
+    margin: 10px 18px 0;
+    min-height:16px;
+  }
+  .status-line.err{ color:#c94a2c; font-weight:600; }
+
+  .result{
+    margin: 18px 18px 0;
+    display:none;
+  }
+  .result.show{ display:block; }
+  .photo-card{
+    position:relative;
+    height: 340px;
+    border-radius: var(--card-radius);
+    overflow:hidden;
+    background-size: cover;
+    background-position:center;
+    background-color: #2a2018;
+  }
+  .photo-card::after{
+    content:'';
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(20,18,16,0) 35%, rgba(20,18,16,0.88) 100%);
+  }
+  .save-btn{
+    position:absolute; top:14px; right:14px; z-index:2;
+    width:38px; height:38px;
+    border-radius:50%;
+    background: rgba(20,18,16,0.4);
+    backdrop-filter: blur(4px);
+    border:none;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+    cursor:pointer;
+  }
+  .dist-badge{
+    position:absolute; top:14px; left:14px; z-index:2;
+    background: rgba(20,18,16,0.4);
+    backdrop-filter: blur(4px);
+    color:#fff;
+    font-size:12px;
+    font-weight:600;
+    padding:6px 12px;
+    border-radius:20px;
+  }
+  .card-info{
+    position:absolute; left:0; right:0; bottom:0; z-index:2;
+    padding: 18px;
+    color:#fff;
+  }
+  .card-info .name{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:24px;
+    line-height:1.15;
+    margin:0 0 4px;
+  }
+  .card-info .addr{
+    font-size:12.5px;
+    color: rgba(255,255,255,0.75);
+    font-weight:500;
+    margin:0;
+  }
+  .card-info .tags{
+    display:flex; gap:6px; margin-top:10px;
+  }
+  .card-info .tag{
+    font-size:10.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    background: rgba(255,255,255,0.16);
+    padding:4px 9px;
+    border-radius:6px;
+  }
+
+  .action-row{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+  }
+  .action-row a, .action-row button{
+    flex:1;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    padding: 13px;
+    border-radius: 14px;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    cursor:pointer;
+    text-decoration:none;
+    border: none;
+  }
+  .action-row .reroll{
+    background: #fff;
+    border: 1.5px solid rgba(20,18,16,0.14);
+    color: var(--ink);
+  }
+  .action-row .directions{
+    background: var(--ink);
+    color: var(--amber);
+  }
+
+  .empty-hint{
+    text-align:center;
+    padding: 40px 30px 0;
+    color: rgba(20,18,16,0.4);
+    font-size:13.5px;
+    line-height:1.7;
+  }
+
+  .itinerary{ margin: 18px 18px 0; }
+  .stop-card-wrap{ margin-bottom:16px; }
+  .stop-card-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 0 2px 8px;
+  }
+  .stop-card-head .stopmeta{ display:flex; align-items:baseline; gap:8px; }
+  .stop-card-head .num{
+    font-family:'Fraunces', serif; font-weight:700; color: var(--amber-deep); font-size:14px;
+  }
+  .stop-card-head .cat{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color: rgba(20,18,16,0.45); font-weight:700;
+  }
+  .stop-reroll-btn{
+    background:#fff; border:1.5px solid rgba(20,18,16,0.14); border-radius:10px;
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    color: var(--ink);
+  }
+  .head-actions{ display:flex; gap:6px; }
+  .stop-mini-btn{
+    background:#fff; border:1.5px solid rgba(20,18,16,0.14); border-radius:9px;
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    color: var(--ink);
+  }
+  .stop-mini-btn:disabled{ opacity:0.3; cursor:default; }
+  .photo-card.clickable{ cursor:pointer; }
+  .mini-link{
+    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+    background: rgba(255,255,255,0.16); padding:4px 9px; border-radius:6px;
+    color:#fff; text-decoration:none;
+  }
+  .photo-card.small{ height:210px; }
+  .itinerary-actions{ margin: 4px 0 0; display:flex; gap:10px; }
+  .itinerary-actions .route-btn{ flex:1; }
+  .route-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background: var(--ink); color: var(--amber);
+    border-radius:14px; padding:14px; font-weight:600; font-size:14px;
+    text-decoration:none; border:none; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .route-btn.share-btn{ background:#fff; color:var(--ink); border:1.5px solid rgba(20,18,16,0.14); }
+
+  .bottom-nav{
+    position:fixed;
+    bottom:18px; left:50%;
+    transform: translateX(-50%);
+    width: calc(100% - 56px);
+    max-width: 404px;
+    background: var(--ink);
+    border-radius: 20px;
+    display:flex;
+    padding: 8px;
+    box-shadow: 0 14px 34px rgba(20,18,16,0.35);
+    z-index: 20;
+  }
+  .nav-btn{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    padding: 9px 4px;
+    border-radius:14px;
+    background:none;
+    border:none;
+    color: rgba(243,236,221,0.5);
+    font-size:10.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .nav-btn.active{ color: var(--amber); background: rgba(232,149,47,0.12); }
+
+  .sheet{
+    display:none;
+    margin: 18px 18px 0;
+  }
+  .sheet.show{ display:block; }
+  .sheet h2{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    margin: 4px 0 14px;
+  }
+  .history-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 13px 16px;
+    background:#fff;
+    border-radius:14px;
+    margin-bottom:8px;
+    border: 1px solid rgba(20,18,16,0.08);
+  }
+  .history-item .hname{ font-weight:600; font-size:14px; }
+  .history-item .hdist{ font-size:12px; color: rgba(20,18,16,0.45); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hero">
+    <div class="hero-top">
+      <div class="locality">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        London
+      </div>
+      <div class="avatar">N</div>
+    </div>
+    <div class="greeting">
+      <h1>Hey Nick,<br>what's the <span>plan today?</span></h1>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <div class="search-pill">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <input type="text" id="loc" placeholder="Postcode or area, e.g. Dalston" autocomplete="off">
+      <button class="filter-btn" id="filterToggle" aria-label="Search radius">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M8 12h12M4 18h16"/><circle cx="6" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="14" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="8" cy="18" r="1.6" fill="currentColor" stroke="none"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="radius-drawer" id="radiusDrawer">
+    <div class="radius-drawer-head"><span>Walking radius</span><b id="radiusVal">800 m</b></div>
+    <input type="range" id="radius" min="200" max="3000" step="100" value="800">
+  </div>
+
+  <div class="stage-label">Build the day</div>
+  <div class="stop-input-row">
+    <input type="text" id="stopInput" placeholder="Add a stop — perfume shop, ramen, pub…" class="stop-input" autocomplete="off">
+    <button class="stop-add-btn" id="addStopBtn">Add</button>
+  </div>
+  <div class="chips" id="presetChips">
+    <div class="chip" data-preset="Coffee shop">Coffee</div>
+    <div class="chip" data-preset="Vintage clothing shop">Vintage</div>
+    <div class="chip" data-preset="Bookshop">Books</div>
+    <div class="chip" data-preset="Restaurant">Food</div>
+    <div class="chip" data-preset="Dessert shop">Dessert</div>
+    <div class="chip" data-preset="Pub">Pub</div>
+  </div>
+  <div class="stop-list" id="stopList"></div>
+
+  <div id="rollView">
+    <button class="roll-cta" id="rollBtn">
+      <svg class="die" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>
+      Roll the day
+    </button>
+    <p class="status-line" id="status"></p>
+
+    <div class="itinerary" id="itinerary"></div>
+    <div class="itinerary-actions" id="itineraryActions" style="display:none;">
+      <a class="route-btn" id="routeBtn" href="#" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>
+        Route
+      </a>
+      <button class="route-btn share-btn" id="shareBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.4 10.7l7.2-4.1M8.4 13.3l7.2 4.1"/></svg>
+        Share
+      </button>
+    </div>
+
+    <div class="empty-hint" id="emptyHint">Add a couple of stops above, set a location, and roll.<br>We'll build a walkable route across all of them.</div>
+  </div>
+
+  <div class="sheet" id="historyView">
+    <h2>Tonight's rolls</h2>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="sheet" id="settingsView">
+    <h2>Google API key</h2>
+    <p style="font-size:13px; color:rgba(20,18,16,0.55); line-height:1.6; margin:-8px 0 16px;">Used for geocoding and pulling real venue data, ratings, and photos for each stop. Stored only in this browser.</p>
+    <div style="background:#fff; border-radius:14px; border:1px solid rgba(20,18,16,0.1); padding:14px 16px;">
+      <label style="display:block; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:rgba(20,18,16,0.45); margin-bottom:8px;">API key</label>
+      <input type="text" id="apiKeyInput" placeholder="AIza..." style="width:100%; border:1px solid rgba(20,18,16,0.15); border-radius:8px; padding:10px 12px; font-family:'Inter',sans-serif; font-size:14px; outline:none;">
+    </div>
+    <button id="saveKeyBtn" style="width:100%; margin-top:12px; background:var(--ink); color:var(--amber); border:none; border-radius:14px; padding:13px; font-weight:600; font-size:14px; cursor:pointer;">Save key</button>
+    <p id="keyStatus" style="text-align:center; font-size:12.5px; color:rgba(20,18,16,0.5); margin-top:10px;"></p>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-view="roll">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>
+      Roll
+    </button>
+    <button class="nav-btn" data-view="history">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+      History
+    </button>
+    <button class="nav-btn" data-view="settings">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const locInput = document.getElementById('loc');
+  const radiusInput = document.getElementById('radius');
+  const radiusVal = document.getElementById('radiusVal');
+  const filterToggle = document.getElementById('filterToggle');
+  const radiusDrawer = document.getElementById('radiusDrawer');
+  const rollBtn = document.getElementById('rollBtn');
+  const statusEl = document.getElementById('status');
+  const emptyHint = document.getElementById('emptyHint');
+  const itineraryEl = document.getElementById('itinerary');
+  const itineraryActions = document.getElementById('itineraryActions');
+  const routeBtn = document.getElementById('routeBtn');
+  const stopInput = document.getElementById('stopInput');
+  const addStopBtn = document.getElementById('addStopBtn');
+  const stopListEl = document.getElementById('stopList');
+  const presetChips = document.querySelectorAll('#presetChips .chip');
+  const navBtns = document.querySelectorAll('.nav-btn');
+  const rollView = document.getElementById('rollView');
+  const historyView = document.getElementById('historyView');
+  const settingsView = document.getElementById('settingsView');
+  const historyList = document.getElementById('historyList');
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const saveKeyBtn = document.getElementById('saveKeyBtn');
+  const keyStatus = document.getElementById('keyStatus');
+
+  const PHOTOS = [
+    'photo-1546622891-02c72c1537b6','photo-1572116469696-31de0f17cc34',
+    'photo-1436076863939-06870fe779c2','photo-1517457373958-b7bdd4587205',
+    'photo-1470337458703-46ad1756a187','photo-1559526642-c5c25f8b3b4b',
+    'photo-1584225064785-c62a8b43d148','photo-1584735175315-9d5df23860e6'
+  ];
+
+  let stops = [];
+  let categoryPools = {};
+  let lastItinerary = [];
+  let lastLoc = null;
+  let history = JSON.parse(sessionStorage.getItem('pr_history') || '[]');
+  renderHistory();
+
+  function getApiKey(){ return localStorage.getItem('pr_gmaps_key') || ''; }
+  apiKeyInput.value = getApiKey();
+  saveKeyBtn.addEventListener('click', () => {
+    const val = apiKeyInput.value.trim();
+    if (!val) { keyStatus.textContent = 'Enter a key first'; return; }
+    localStorage.setItem('pr_gmaps_key', val);
+    keyStatus.textContent = 'Saved — head to Roll and try it.';
+  });
+
+  function fallbackPhotoFor(name){
+    let h = 0;
+    for (let i=0;i<name.length;i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    const id = PHOTOS[h % PHOTOS.length];
+    return 'https://images.unsplash.com/' + id + '?auto=format&fit=crop&w=700&q=70';
+  }
+
+  function escapeHtml(s){
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  filterToggle.addEventListener('click', () => radiusDrawer.classList.toggle('open'));
+  radiusInput.addEventListener('input', () => radiusVal.textContent = radiusInput.value + ' m');
+
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      navBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const view = btn.dataset.view;
+      rollView.style.display = view === 'roll' ? 'block' : 'none';
+      historyView.classList.toggle('show', view === 'history');
+      settingsView.classList.toggle('show', view === 'settings');
+    });
+  });
+
+  function setStatus(msg, isErr){
+    statusEl.textContent = msg || '';
+    statusEl.classList.toggle('err', !!isErr);
+  }
+
+  function renderStopChips(){
+    stopListEl.innerHTML = stops.map((s,i) =>
+      '<div class="stop-chip">' +
+        '<button class="qty-btn" data-i="' + i + '" data-act="dec" aria-label="Decrease">−</button>' +
+        '<span>' + escapeHtml(s.category) + (s.count > 1 ? ' ×' + s.count : '') + '</span>' +
+        '<button class="qty-btn" data-i="' + i + '" data-act="inc" aria-label="Increase">+</button>' +
+      '</div>'
+    ).join('');
+    stopListEl.querySelectorAll('.qty-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        const i = Number(b.dataset.i);
+        const entry = stops[i];
+        if (!entry) return;
+        if (b.dataset.act === 'inc') {
+          const total = stops.reduce((s,e) => s + e.count, 0);
+          if (entry.count >= 8) { setStatus('Max 8 of the same stop', true); return; }
+          if (total >= 10) { setStatus('Ten stops is plenty for one day', true); return; }
+          entry.count++;
+        } else {
+          entry.count--;
+          if (entry.count <= 0) stops.splice(i, 1);
+        }
+        renderStopChips();
+      });
+    });
+  }
+
+  function addStop(name){
+    const v = (name || '').trim();
+    if (!v) return;
+    const total = stops.reduce((s,e) => s + e.count, 0);
+    const existing = stops.find(e => e.category.toLowerCase() === v.toLowerCase());
+    if (existing) {
+      if (existing.count >= 8) { setStatus('Max 8 of the same stop', true); return; }
+      if (total >= 10) { setStatus('Ten stops is plenty for one day', true); return; }
+      existing.count++;
+    } else {
+      if (total >= 10) { setStatus('Ten stops is plenty for one day', true); return; }
+      stops.push({ category: v, count: 1 });
+    }
+    renderStopChips();
+  }
+
+  addStopBtn.addEventListener('click', () => { addStop(stopInput.value); stopInput.value = ''; });
+  stopInput.addEventListener('keydown', e => { if (e.key === 'Enter') { addStop(stopInput.value); stopInput.value = ''; } });
+  presetChips.forEach(c => c.addEventListener('click', () => addStop(c.dataset.preset)));
+
+  function haversine(lat1, lon1, lat2, lon2){
+    const R = 6371000;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  async function geocode(query){
+    const key = getApiKey();
+    if (!key) throw new Error('Add a Google API key in Settings first');
+    const q = query.trim() + ', London, UK';
+    const res = await fetch('https://maps.googleapis.com/maps/api/geocode/json?address=' + encodeURIComponent(q) + '&key=' + key);
+    const data = await res.json();
+    if (data.status !== 'OK' || !data.results.length) {
+      throw new Error(data.status === 'REQUEST_DENIED' ? 'API key rejected — check restrictions in Cloud Console' : 'Could not find that place');
+    }
+    const r = data.results[0];
+    return { lat: r.geometry.location.lat, lon: r.geometry.location.lng, label: r.formatted_address.split(',')[0] };
+  }
+
+  async function searchCategory(lat, lon, radius, category){
+    const key = getApiKey();
+    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': key,
+        'X-Goog-FieldMask': 'places.displayName,places.location,places.formattedAddress,places.rating,places.photos,places.id,places.websiteUri,places.googleMapsUri,places.priceLevel,places.currentOpeningHours.openNow,places.internationalPhoneNumber'
+      },
+      body: JSON.stringify({
+        textQuery: category,
+        locationBias: { circle: { center: { latitude: lat, longitude: lon }, radius: Math.min(Number(radius), 50000) } },
+        maxResultCount: 15
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error && err.error.message ? err.error.message : ('Could not search for "' + category + '"'));
+    }
+    const data = await res.json();
+    return (data.places || [])
+      .filter(p => p.location && p.displayName)
+      .map(p => ({
+        id: p.id,
+        name: p.displayName.text,
+        lat: p.location.latitude,
+        lon: p.location.longitude,
+        addr: p.formattedAddress || '',
+        rating: p.rating || null,
+        photoName: p.photos && p.photos.length ? p.photos[0].name : null,
+        websiteUri: p.websiteUri || null,
+        mapsUri: p.googleMapsUri || null,
+        priceLevel: p.priceLevel || null,
+        openNow: p.currentOpeningHours ? p.currentOpeningHours.openNow : null,
+        phone: p.internationalPhoneNumber || null
+      }));
+  }
+
+  function orderRoute(origin, picks){
+    const remaining = picks.slice();
+    const ordered = [];
+    let current = origin;
+    while (remaining.length) {
+      let bestIdx = 0, bestDist = Infinity;
+      remaining.forEach((p, i) => {
+        const d = haversine(current.lat, current.lon, p.place.lat, p.place.lon);
+        if (d < bestDist) { bestDist = d; bestIdx = i; }
+      });
+      const next = remaining.splice(bestIdx, 1)[0];
+      ordered.push(next);
+      current = next.place;
+    }
+    return ordered;
+  }
+
+  function priceLabel(pl){
+    const map = { PRICE_LEVEL_FREE:'Free', PRICE_LEVEL_INEXPENSIVE:'£', PRICE_LEVEL_MODERATE:'££', PRICE_LEVEL_EXPENSIVE:'£££', PRICE_LEVEL_VERY_EXPENSIVE:'££££' };
+    return map[pl] || '';
+  }
+
+  function stopCardHtml(item, idx, total){
+    const p = item.place;
+    const hasKey = !!getApiKey();
+    const photoUrl = (p.photoName && hasKey)
+      ? 'https://places.googleapis.com/v1/' + p.photoName + '/media?maxWidthPx=700&key=' + getApiKey()
+      : fallbackPhotoFor(p.name);
+    const badge = p.rating ? ('★ ' + p.rating) : 'Nearby';
+    const price = priceLabel(p.priceLevel);
+    const openTxt = p.openNow === true ? 'Open now' : (p.openNow === false ? 'Closed now' : '');
+    const metaBits = [price, openTxt].filter(Boolean).join(' · ');
+    const websiteLink = p.websiteUri
+      ? '<a class="mini-link" href="' + p.websiteUri + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">Website ↗</a>' : '';
+    return '<div class="stop-card-wrap">' +
+      '<div class="stop-card-head">' +
+        '<div class="stopmeta"><span class="num">Stop ' + (idx + 1) + '</span><span class="cat">' + escapeHtml(item.label || item.category) + '</span></div>' +
+        '<div class="head-actions">' +
+          '<button class="stop-mini-btn" data-move="' + idx + '" data-dir="-1" ' + (idx === 0 ? 'disabled' : '') + ' aria-label="Move up">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg></button>' +
+          '<button class="stop-mini-btn" data-move="' + idx + '" data-dir="1" ' + (idx === total - 1 ? 'disabled' : '') + ' aria-label="Move down">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>' +
+          '<button class="stop-mini-btn" data-index="' + idx + '" aria-label="Reroll this stop">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v6h-6"/></svg></button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="photo-card small clickable" style="background-image:url(\'' + photoUrl + '\')" data-maps="' + (p.mapsUri || '') + '">' +
+        '<div class="dist-badge">' + badge + '</div>' +
+        '<div class="card-info">' +
+          '<p class="name">' + escapeHtml(p.name) + '</p>' +
+          '<p class="addr">' + escapeHtml(p.addr || 'Address not listed') + '</p>' +
+          (metaBits ? '<p class="addr" style="margin-top:4px;">' + escapeHtml(metaBits) + '</p>' : '') +
+          '<div class="tags">' + websiteLink + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderItinerary(ordered){
+    itineraryEl.innerHTML = ordered.map((item, idx) => stopCardHtml(item, idx, ordered.length)).join('');
+    itineraryEl.querySelectorAll('[data-move]').forEach(btn => {
+      btn.addEventListener('click', () => moveStop(Number(btn.dataset.move), Number(btn.dataset.dir)));
+    });
+    itineraryEl.querySelectorAll('[data-index]').forEach(btn => {
+      btn.addEventListener('click', () => rerollStop(Number(btn.dataset.index)));
+    });
+    itineraryEl.querySelectorAll('.photo-card.clickable').forEach(card => {
+      card.addEventListener('click', () => {
+        const url = card.dataset.maps;
+        if (url) window.open(url, '_blank', 'noopener');
+      });
+    });
+    emptyHint.style.display = 'none';
+
+    if (ordered.length && lastLoc) {
+      const origin = lastLoc.lat + ',' + lastLoc.lon;
+      const dest = ordered[ordered.length - 1].place;
+      const destStr = dest.lat + ',' + dest.lon;
+      const waypoints = ordered.slice(0, -1).map(o => o.place.lat + ',' + o.place.lon).join('|');
+      let url = 'https://www.google.com/maps/dir/?api=1&origin=' + origin + '&destination=' + destStr + '&travelmode=walking';
+      if (waypoints) url += '&waypoints=' + encodeURIComponent(waypoints);
+      routeBtn.href = url;
+      itineraryActions.style.display = 'flex';
+    } else {
+      itineraryActions.style.display = 'none';
+    }
+  }
+
+  function moveStop(idx, dir){
+    const j = idx + dir;
+    if (j < 0 || j >= lastItinerary.length) return;
+    [lastItinerary[idx], lastItinerary[j]] = [lastItinerary[j], lastItinerary[idx]];
+    renderItinerary(lastItinerary);
+  }
+
+  function encodeItinerary(){
+    const payload = {
+      loc: lastLoc,
+      items: lastItinerary.map(i => ({ category: i.category, label: i.label || null, place: i.place }))
+    };
+    return btoa(encodeURIComponent(JSON.stringify(payload)));
+  }
+
+  function decodeItinerary(str){
+    return JSON.parse(decodeURIComponent(atob(str)));
+  }
+
+  async function shareItinerary(){
+    if (!lastItinerary.length) return;
+    const code = encodeItinerary();
+    const url = location.origin + location.pathname + '#i=' + code;
+    try {
+      await navigator.clipboard.writeText(url);
+      setStatus('Link copied — paste it in the group chat');
+    } catch(e) {
+      setStatus('Copy this link: ' + url);
+    }
+  }
+
+  function loadFromHash(){
+    const m = location.hash.match(/#i=(.+)/);
+    if (!m) return;
+    try {
+      const payload = decodeItinerary(m[1]);
+      lastLoc = payload.loc;
+      lastItinerary = payload.items;
+      const grouped = {};
+      payload.items.forEach(i => { grouped[i.category] = (grouped[i.category] || 0) + 1; });
+      stops = Object.keys(grouped).map(c => ({ category: c, count: grouped[c] }));
+      payload.items.forEach(i => {
+        if (!categoryPools[i.category]) categoryPools[i.category] = [];
+        categoryPools[i.category].push(i.place);
+      });
+      renderStopChips();
+      locInput.value = payload.loc.label || '';
+      renderItinerary(lastItinerary);
+      setStatus('Loaded a shared day near ' + (payload.loc.label || 'you'));
+    } catch(e) { /* bad or old link, ignore */ }
+  }
+
+  function rerollStop(idx){
+    const item = lastItinerary[idx];
+    if (!item) return;
+    const pool = categoryPools[item.category] || [];
+    if (pool.length < 2) return;
+    const usedIds = new Set(lastItinerary.map(i => i.place.id));
+    const avail = pool.filter(p => !usedIds.has(p.id));
+    const candidates = avail.length ? avail : pool;
+    const next = candidates[Math.floor(Math.random() * candidates.length)];
+    lastItinerary[idx] = { category: item.category, place: next };
+    renderItinerary(lastItinerary);
+  }
+
+  function logHistory(ordered){
+    history.unshift({ stops: ordered.map(o => o.place.name) });
+    history = history.slice(0, 15);
+    sessionStorage.setItem('pr_history', JSON.stringify(history));
+    renderHistory();
+  }
+
+  function renderHistory(){
+    historyList.innerHTML = history.length
+      ? history.map(h => '<div class="history-item" style="display:block;"><div class="hname">' + h.stops.map(escapeHtml).join(' → ') + '</div></div>').join('')
+      : '<p style="color:rgba(20,18,16,0.4); font-size:13.5px;">No days rolled yet.</p>';
+  }
+
+  async function roll(){
+    if (!stops.length) {
+      setStatus('Add at least one stop above first', true);
+      return;
+    }
+    const query = locInput.value.trim();
+    if (!query) {
+      setStatus('Enter a postcode or area first', true);
+      locInput.focus();
+      return;
+    }
+    rollBtn.disabled = true;
+    rollBtn.classList.add('rolling');
+    setStatus('Finding ' + query + '…');
+    try {
+      const loc = await geocode(query);
+      lastLoc = loc;
+      setStatus('Rolling the day…');
+      const picks = [];
+      const usedIds = new Set();
+      let anyShort = false;
+      for (const entry of stops) {
+        const results = await searchCategory(loc.lat, loc.lon, radiusInput.value, entry.category);
+        categoryPools[entry.category] = results;
+        if (!results.length) throw new Error('No "' + entry.category + '" found nearby — try widening the radius');
+        if (results.length < entry.count) anyShort = true;
+        for (let k = 0; k < entry.count; k++) {
+          const avail = results.filter(r => !usedIds.has(r.id));
+          const candidates = avail.length ? avail : results;
+          const pick = candidates[Math.floor(Math.random() * candidates.length)];
+          usedIds.add(pick.id);
+          const label = entry.count > 1 ? (entry.category + ' (' + (k + 1) + '/' + entry.count + ')') : entry.category;
+          picks.push({ category: entry.category, label: label, place: pick });
+        }
+      }
+      const ordered = orderRoute(loc, picks);
+      lastItinerary = ordered;
+      renderItinerary(ordered);
+      setStatus(anyShort ? ('Day rolled near ' + loc.label + ' — a couple of categories had fewer unique spots than requested') : ('Day rolled near ' + loc.label));
+      logHistory(ordered);
+    } catch(e) {
+      setStatus(e.message || 'Something went wrong', true);
+    } finally {
+      rollBtn.disabled = false;
+      rollBtn.classList.remove('rolling');
+    }
+  }
+
+  rollBtn.addEventListener('click', roll);
+  locInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') roll(); });
+  document.getElementById('shareBtn').addEventListener('click', shareItinerary);
+  loadFromHash();
+})();
+</script>
+</body>
+</html>

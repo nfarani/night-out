@@ -1,0 +1,16 @@
+{
+  "name": "night-out-group-swipe",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "data": "node scripts/fetch-osm.mjs",
+    "research": "node scripts/research-area.mjs",
+    "db:migrate": "wrangler d1 migrations apply night-out --remote"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "wrangler": "^4.86.0"
+  }
+}

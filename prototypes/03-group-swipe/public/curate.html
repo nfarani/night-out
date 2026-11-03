@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#161513">
+<title>Night Out · Curate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep:#12110f; --bg:#161513; --card:#1c1a18; --raised:#262421;
+    --text:#efe9de; --text-2:#aaa398; --muted:#8a847a;
+    --line:rgba(239,233,222,.08); --line-2:rgba(239,233,222,.14);
+    --red:#ff4d3d; --route:#f5c84b; --ok:#4cc38a; --bad:#e5484d;
+    --display:'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --ease:cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{ background:var(--bg); color:var(--text); font:400 15px/1.45 Inter,sans-serif; -webkit-font-smoothing:antialiased; }
+  button, input, select{ font:inherit; color:inherit; }
+  button, a, select{ touch-action:manipulation; }
+  a{ color:inherit; }
+  :focus-visible{ outline:2px solid var(--route); outline-offset:2px; }
+
+  .wrap{ max-width:960px; margin:0 auto; padding:0 20px 80px; }
+  .top{ display:flex; align-items:center; justify-content:space-between; height:64px; border-bottom:1px solid var(--line); margin:0 -20px 32px; padding:0 20px; }
+  .logo{ font:600 20px/1 var(--display); text-decoration:none; }
+  .logo span{ color:var(--red); }
+  h1{ font:600 48px/1 var(--display); margin:0 0 8px; }
+  .lede{ color:var(--text-2); margin:0 0 24px; max-width:38rem; }
+
+  .panel{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px; }
+  .controls{ display:grid; gap:12px; }
+  .row-ctl{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  input[type=password], input[type=search], select, .note{ height:40px; padding:0 12px; background:var(--bg); border:1px solid var(--line-2); border-radius:8px; font-size:16px; }
+  input[type=search]{ flex:1; min-width:180px; }
+  .btn{ height:40px; padding:0 14px; border:1px solid var(--line-2); background:var(--raised); border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; transition:background-color .15s var(--ease), border-color .15s var(--ease); }
+  .btn.primary{ background:var(--text); color:var(--bg); border-color:var(--text); }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{ height:32px; padding:0 10px; border:1px solid var(--line-2); background:var(--bg); border-radius:8px; font-size:13px; color:var(--text-2); cursor:pointer; }
+  .chip.on{ background:var(--text); color:var(--bg); border-color:var(--text); }
+  .status{ font-size:13px; color:var(--muted); margin:0; }
+  .status.err{ color:var(--bad); }
+  .summary{ font-size:14px; color:var(--text-2); margin:24px 0 12px; font-variant-numeric:tabular-nums; }
+
+  .list{ display:grid; gap:8px; }
+  .v{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 16px; }
+  .v.pick{ border-color:rgba(76,195,138,.45); }
+  .v.avoid{ border-color:rgba(229,72,77,.45); }
+  .v.suggest{ border-color:rgba(245,200,75,.45); }
+  .v h3{ margin:0; font:600 22px/1.1 var(--display); }
+  .v h3 a{ text-decoration:none; border-bottom:1px solid var(--line-2); }
+  .v .meta{ font-size:13px; color:var(--text-2); margin:4px 0 0; }
+  .v .meta.dim{ color:var(--muted); font-variant-numeric:tabular-nums; }
+  .acts{ display:flex; gap:6px; align-items:start; }
+  .acts .btn{ height:36px; padding:0 12px; }
+  .acts .btn.on-pick{ background:var(--ok); border-color:var(--ok); color:#0f1a14; }
+  .acts .btn.on-avoid{ background:var(--bad); border-color:var(--bad); color:#fff; }
+  .sugg{ grid-column:1 / -1; font-size:13px; line-height:19px; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+  .sugg b{ color:var(--route); font-weight:600; }
+  .sugg a{ color:var(--text-2); margin-right:8px; word-break:break-all; }
+  .sugg .row-ctl{ margin-top:8px; }
+  .note{ grid-column:1 / -1; width:100%; }
+  .more{ margin:16px auto 0; display:block; }
+  @media (max-width:560px){ .v{ grid-template-columns:1fr; } h1{ font-size:40px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><a class="logo" href="/">Night<span>/</span>Out</a><span class="status">Curator</span></header>
+  <h1>Curate an area</h1>
+  <p class="lede">Picks get favoured in every plan and show your note. Avoids never appear. Research suggestions wait here until you accept or dismiss them</p>
+
+  <div class="panel controls">
+    <div class="row-ctl">
+      <input type="password" id="token" placeholder="Curator password" autocomplete="current-password" style="flex:1;min-width:180px">
+      <button class="btn primary" id="save-token" type="button">Unlock</button>
+    </div>
+    <p class="status" id="status" aria-live="polite">Locked</p>
+  </div>
+
+  <div class="panel controls">
+    <div class="row-ctl">
+      <select id="area" aria-label="Area"></select>
+      <input type="search" id="q" placeholder="Search venues" aria-label="Search venues">
+    </div>
+    <div class="chips" id="show"></div>
+    <div class="chips" id="types"></div>
+  </div>
+
+  <p class="summary" id="summary"></p>
+  <div class="list" id="list"></div>
+  <button class="btn more" id="more" type="button" hidden>Show more</button>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const TYPE_NAMES = { pub:'Pub', wine:'Wine bar', rooftop:'Drinks outside', cheap:'Cheap eats', dinner:'Dinner', cocktail:'Cocktail bar',
+    games:'Bar games', live:'Live music', comedy:'Comedy', karaoke:'Karaoke', dance:'Club', latefood:'Late-night food' };
+  const SHOW = [['all', 'All'], ['todo', 'Suggestions'], ['decided', 'Picks and avoids'], ['swapped', 'Often swapped']];
+  const RADIUS_M = 1100, PAGE = 150;
+
+  let token = '';
+  try { token = localStorage.getItem('no_curator') || ''; } catch (e) {}
+  let areas = [], area = null, venues = [], rows = {}, stats = {};
+  let show = 'all', type = null, limit = PAGE;
+
+  function distM(a, b){
+    const r = x => x * Math.PI / 180, dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+    const h = Math.sin(dLat/2)**2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng/2)**2;
+    return 2 * 6371000 * Math.asin(Math.sqrt(h));
+  }
+  function status(msg, err){ $('status').textContent = msg; $('status').classList.toggle('err', !!err); }
+
+  async function api(path, body){
+    const res = await fetch(path, {
+      method: body ? 'POST' : 'GET',
+      headers: { 'Authorization':'Bearer ' + token, ...(body ? { 'Content-Type':'application/json' } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) { status('Wrong password', true); throw new Error('locked'); }
+    if (!res.ok) throw new Error(data.error || 'Server error ' + res.status);
+    return data;
+  }
+
+  async function loadArea(){
+    limit = PAGE;
+    $('list').innerHTML = '';
+    $('summary').textContent = 'Loading…';
+    const [file, cur] = await Promise.all([
+      fetch('data/areas/' + area.id + '.json').then(r => r.json()),
+      token ? api('/api/curation?area=' + area.id).catch(() => null) : null,
+    ]);
+    venues = file.venues.filter(v => distM(area, v) <= RADIUS_M).sort((a, b) => a.name.localeCompare(b.name));
+    rows = {}; stats = {};
+    if (cur) {
+      cur.curation.forEach(r => rows[r.venue_id] = r);
+      stats = cur.stats;
+      status('Unlocked');
+    } else if (!token) status('Locked. Enter the curator password to make changes');
+    render();
+  }
+
+  const verdictOf = id => (rows[id] || {}).verdict || null;
+  function rank(v){
+    const vd = verdictOf(v.id);
+    return vd && vd.startsWith('suggest') ? 0 : vd === 'pick' ? 1 : vd === 'avoid' ? 2 : 3;
+  }
+  function visible(){
+    const q = $('q').value.trim().toLowerCase();
+    return venues.filter(v => {
+      const vd = verdictOf(v.id), [shown, swapped] = stats[v.id] || [0, 0];
+      if (type && !v.vibes.includes(type)) return false;
+      if (q && !(v.name.toLowerCase().includes(q) || (v.street || '').toLowerCase().includes(q))) return false;
+      if (show === 'todo') return vd && vd.startsWith('suggest');
+      if (show === 'decided') return vd === 'pick' || vd === 'avoid';
+      if (show === 'swapped') return shown >= 3 && swapped / shown >= .3;
+      return true;
+    }).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  }
+
+  function rowHtml(v){
+    const r = rows[v.id] || {}, vd = r.verdict || null, [shown, swapped] = stats[v.id] || [0, 0];
+    const cls = vd === 'pick' ? ' pick' : vd === 'avoid' ? ' avoid' : vd && vd.startsWith('suggest') ? ' suggest' : '';
+    const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([v.name, v.street, v.postcode || 'London'].filter(Boolean).join(', '));
+    const sugg = vd && vd.startsWith('suggest')
+      ? '<div class="sugg"><b>Research suggests: ' + (vd === 'suggest-pick' ? 'pick' : 'avoid') + '</b> ' + esc(r.note || '') +
+        (r.sources && r.sources.length ? '<div>' + r.sources.map(u => '<a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(new URL(u).hostname)+'</a>').join('') + '</div>' : '') +
+        '<div class="row-ctl"><button class="btn" type="button" data-act="accept">Accept</button><button class="btn" type="button" data-act="dismiss">Dismiss</button></div></div>'
+      : '';
+    const note = vd === 'pick' || vd === 'avoid'
+      ? '<input class="note" data-act="note" value="'+esc(r.note || '')+'" placeholder="'+(vd === 'pick' ? 'Your note, shown on the plan' : 'Why (only you see this)')+'" maxlength="280">'
+      : '';
+    return '<div class="v'+cls+'" data-id="'+v.id+'">' +
+      '<div><h3><a href="'+maps+'" target="_blank" rel="noopener">'+esc(v.name)+'</a></h3>' +
+        '<p class="meta">'+esc(v.vibes.map(t => TYPE_NAMES[t]).join(', '))+(v.street ? ' · '+esc(v.street) : '')+'</p>' +
+        '<p class="meta dim">'+(v.hours ? esc(v.hours) : 'No hours listed')+(shown ? ' · in '+shown+' plans, swapped '+swapped : '')+'</p></div>' +
+      '<div class="acts"><button class="btn'+(vd === 'pick' ? ' on-pick' : '')+'" type="button" data-act="pick" aria-pressed="'+(vd === 'pick')+'">Pick</button>' +
+        '<button class="btn'+(vd === 'avoid' ? ' on-avoid' : '')+'" type="button" data-act="avoid" aria-pressed="'+(vd === 'avoid')+'">Avoid</button></div>' +
+      sugg + note + '</div>';
+  }
+
+  function render(){
+    const list = visible();
+    const count = vd => Object.values(rows).filter(r => vd(r.verdict)).length;
+    $('summary').textContent = venues.length + ' venues within walking range · ' + count(v => v === 'pick') + ' picks · ' +
+      count(v => v === 'avoid') + ' avoids · ' + count(v => v.startsWith('suggest')) + ' suggestions waiting';
+    $('list').innerHTML = list.slice(0, limit).map(rowHtml).join('') || '<p class="status">Nothing matches</p>';
+    $('more').hidden = list.length <= limit;
+  }
+  // Re-render one row in place, so the page never jumps while you work down the list.
+  function refreshRow(id){
+    const el = $('list').querySelector('[data-id="'+id+'"]');
+    const v = venues.find(x => x.id === id);
+    if (el && v) { el.outerHTML = rowHtml(v); }
+    const count = vd => Object.values(rows).filter(r => vd(r.verdict)).length;
+    $('summary').textContent = venues.length + ' venues within walking range · ' + count(v => v === 'pick') + ' picks · ' +
+      count(v => v === 'avoid') + ' avoids · ' + count(v => v.startsWith('suggest')) + ' suggestions waiting';
+  }
+
+  async function setVerdict(id, verdict, note){
+    if (!token) { status('Enter the curator password first', true); return; }
+    const prev = rows[id];
+    if (verdict === 'none') delete rows[id];
+    else rows[id] = { ...(prev || {}), venue_id:id, verdict, note:note || null };
+    refreshRow(id);
+    try { await api('/api/curation', { area:area.id, id, verdict, note }); status('Saved'); }
+    catch (e) {
+      if (prev) rows[id] = prev; else delete rows[id];
+      refreshRow(id);
+      if (e.message !== 'locked') status(e.message, true);
+    }
+  }
+
+  $('list').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b || b.tagName === 'INPUT') return;
+    const id = b.closest('[data-id]').dataset.id, r = rows[id] || {}, act = b.dataset.act;
+    if (act === 'pick' || act === 'avoid') setVerdict(id, r.verdict === act ? 'none' : act, r.verdict === act ? null : r.note);
+    if (act === 'accept') setVerdict(id, r.verdict === 'suggest-pick' ? 'pick' : 'avoid', r.note);
+    if (act === 'dismiss') setVerdict(id, 'dismissed', r.note);
+  });
+  $('list').addEventListener('change', e => {
+    if (e.target.dataset.act !== 'note') return;
+    const id = e.target.closest('[data-id]').dataset.id;
+    setVerdict(id, rows[id].verdict, e.target.value);
+  });
+
+  function chips(el, items, current, onPick){
+    el.innerHTML = items.map(([v, label]) => '<button type="button" class="chip'+(v === current ? ' on' : '')+'" data-v="'+(v || '')+'">'+esc(label)+'</button>').join('');
+    el.querySelectorAll('.chip').forEach(b => b.onclick = () => onPick(b.dataset.v || null));
+  }
+  function renderFilters(){
+    chips($('show'), SHOW, show, v => { show = v; limit = PAGE; renderFilters(); render(); });
+    chips($('types'), [[null, 'All types'], ...Object.entries(TYPE_NAMES)], type, v => { type = v; limit = PAGE; renderFilters(); render(); });
+  }
+
+  $('save-token').onclick = () => {
+    token = $('token').value.trim();
+    try { localStorage.setItem('no_curator', token); } catch (e) {}
+    loadArea().catch(e => status(e.message, true));
+  };
+  $('token').addEventListener('keydown', e => { if (e.key === 'Enter') $('save-token').click(); });
+  $('q').addEventListener('input', () => { limit = PAGE; render(); });
+  $('more').onclick = () => { limit += PAGE; render(); };
+  $('area').onchange = () => {
+    area = areas.find(a => a.id === $('area').value);
+    try { localStorage.setItem('no_curate_area', area.id); } catch (e) {}
+    loadArea().catch(e => status(e.message, true));
+  };
+
+  fetch('data/areas.json').then(r => r.json()).then(list => {
+    areas = list;
+    let last = null; try { last = localStorage.getItem('no_curate_area'); } catch (e) {}
+    area = areas.find(a => a.id === last) || areas[0];
+    $('area').innerHTML = ['Central', 'East', 'North', 'South', 'West'].map(g => '<optgroup label="'+g+'">' +
+      areas.filter(a => a.region === g).map(a => '<option value="'+a.id+'"'+(a.id === area.id ? ' selected' : '')+'>'+esc(a.name)+'</option>').join('') + '</optgroup>').join('');
+    $('token').value = token;
+    renderFilters();
+    return loadArea();
+  }).catch(e => status(e.message, true));
+})();
+</script>
+</body>
+</html>
