@@ -3,3 +3,4 @@ node_modules/
 .dev.vars
 .curator-token
 research/
+.anthropic-key

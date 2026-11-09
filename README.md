@@ -2,7 +2,7 @@
 
 A London night-out planner that turns a neighbourhood and a mood into a timed, walkable plan.
 
-**Live:** https://night-out-london.farani-niccolas96.workers.dev/ · **Case study:** [https://niccolas-farani.pages.dev/work/night-out](https://niccolas-farani.pages.dev/work/night-out/)
+**Live:** https://getowlabout.com · **Case study:** [https://niccolas-farani.pages.dev/work/night-out](https://niccolas-farani.pages.dev/work/night-out/)
 
 ![Night Out preview](docs/media/preview.webp)
 

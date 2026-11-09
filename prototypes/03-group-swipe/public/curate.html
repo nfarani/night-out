@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#161513">
-<title>Night Out · Curate</title>
+<title>Owlabout · Curate</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -167,7 +167,8 @@
   }
 
   function rowHtml(v){
-    const r = rows[v.id] || {}, vd = r.verdict || null, [shown, swapped] = stats[v.id] || [0, 0];
+    const r = rows[v.id] || {}, vd = r.verdict || null, [shown, swapped, kept = 0] = stats[v.id] || [0, 0, 0];
+    const auto = (vd === 'pick' || vd === 'avoid') && r.origin === 'research' ? ' · set by research' : '';
     const cls = vd === 'pick' ? ' pick' : vd === 'avoid' ? ' avoid' : vd && vd.startsWith('suggest') ? ' suggest' : '';
     const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([v.name, v.street, v.postcode || 'London'].filter(Boolean).join(', '));
     const sugg = vd && vd.startsWith('suggest')
@@ -181,7 +182,7 @@
     return '<div class="v'+cls+'" data-id="'+v.id+'">' +
       '<div><h3><a href="'+maps+'" target="_blank" rel="noopener">'+esc(v.name)+'</a></h3>' +
         '<p class="meta">'+esc(v.vibes.map(t => TYPE_NAMES[t]).join(', '))+(v.street ? ' · '+esc(v.street) : '')+'</p>' +
-        '<p class="meta dim">'+(v.hours ? esc(v.hours) : 'No hours listed')+(shown ? ' · in '+shown+' plans, swapped '+swapped : '')+'</p></div>' +
+        '<p class="meta dim">'+(v.hours ? esc(v.hours) : 'No hours listed')+(shown ? ' · in '+shown+' plans, swapped '+swapped+', kept '+kept : '')+auto+'</p></div>' +
       '<div class="acts"><button class="btn'+(vd === 'pick' ? ' on-pick' : '')+'" type="button" data-act="pick" aria-pressed="'+(vd === 'pick')+'">Pick</button>' +
         '<button class="btn'+(vd === 'avoid' ? ' on-avoid' : '')+'" type="button" data-act="avoid" aria-pressed="'+(vd === 'avoid')+'">Avoid</button></div>' +
       sugg + note + '</div>';

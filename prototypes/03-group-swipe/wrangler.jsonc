@@ -3,8 +3,15 @@
   "name": "night-out-london",
   "main": "src/worker.js",
   "compatibility_date": "2026-05-01",
+  // getowlabout.com is the real address; www works too. The workers.dev URL keeps working.
+  // Keep the old workers.dev URL alive: the README, case study and early shares link to it.
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "getowlabout.com", "custom_domain": true },
+    { "pattern": "www.getowlabout.com", "custom_domain": true }
+  ],
   // Static page + OSM venue snapshots; the Worker only answers /api/*.
-  "assets": { "directory": "./public/", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  "assets": { "directory": "./public/", "binding": "ASSETS", "run_worker_first": ["/api/*"], "not_found_handling": "404-page" },
   // Curation (your picks/avoids) and usage stats (shown/swapped). Free tier.
   "d1_databases": [
     { "binding": "DB", "database_name": "night-out", "database_id": "87f67cfa-04e3-4fe2-bead-6cdec465b6b9", "migrations_dir": "migrations" }

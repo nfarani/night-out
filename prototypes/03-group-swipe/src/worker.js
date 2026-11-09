@@ -1,10 +1,11 @@
 // API for Night Out. Everything else is static files in public/.
 //
-//   GET  /api/signals?area=soho        public: your picks + avoids, and swap stats, for ranking
-//   POST /api/event                     public: { area, shown:[ids], swapped:[ids] } usage counts
+//   GET  /api/signals?area=soho        public: picks + avoids (yours and research's), and usage stats, for ranking
+//   POST /api/event                     public: { area, shown:[ids], swapped:[ids], kept:[ids] } usage counts
 //   GET  /api/curation?area=soho        curator: every row incl. research suggestions
 //   POST /api/curation                  curator: { area, id, verdict: pick|avoid|dismissed|none, note }
 //   POST /api/curation/suggestions      curator: { area, items:[{ id, kind: pick|avoid, note, sources }] }
+//   POST /api/curation/auto             curator: same body; replaces the area's research picks/avoids, goes live
 //
 // Curator routes need "Authorization: Bearer <CURATOR_TOKEN>" (a Worker secret).
 
@@ -37,6 +38,7 @@ export default {
         if (route === 'GET /api/curation') return await listCuration(url, env);
         if (route === 'POST /api/curation') return await setVerdict(request, url, env);
         if (route === 'POST /api/curation/suggestions') return await addSuggestions(request, url, env);
+        if (route === 'POST /api/curation/auto') return await setAuto(request, url, env);
       }
     } catch (e) {
       return json({ error:'Server error', detail:String(e && e.message || e) }, 500);
@@ -49,15 +51,18 @@ async function signals(url, env){
   const area = url.searchParams.get('area') || '';
   if (!(await knownArea(env, url, area))) return json({ error:'Unknown area' }, 400);
   const [cur, st] = await env.DB.batch([
-    env.DB.prepare("SELECT venue_id, verdict, note FROM curation WHERE area = ?1 AND verdict IN ('pick', 'avoid')").bind(area),
-    env.DB.prepare('SELECT venue_id, shown, swapped FROM stats WHERE area = ?1').bind(area),
+    env.DB.prepare("SELECT venue_id, verdict, note, origin FROM curation WHERE area = ?1 AND verdict IN ('pick', 'avoid')").bind(area),
+    env.DB.prepare('SELECT venue_id, shown, swapped, kept FROM stats WHERE area = ?1').bind(area),
   ]);
-  const out = { picks:{}, avoid:[], stats:{} };
+  // guides: picks that came from research, not from you, so the card can say so.
+  const out = { picks:{}, guides:[], avoid:[], stats:{} };
   for (const r of cur.results) {
-    if (r.verdict === 'pick') out.picks[r.venue_id] = r.note || '';
-    else out.avoid.push(r.venue_id);
+    if (r.verdict === 'pick') {
+      out.picks[r.venue_id] = r.note || '';
+      if (r.origin === 'research') out.guides.push(r.venue_id);
+    } else out.avoid.push(r.venue_id);
   }
-  for (const r of st.results) out.stats[r.venue_id] = [r.shown, r.swapped];
+  for (const r of st.results) out.stats[r.venue_id] = [r.shown, r.swapped, r.kept];
   return json(out, 200, 'public, max-age=60');
 }
 
@@ -72,7 +77,8 @@ async function event(request, url, env){
   const up = (id, col) => env.DB.prepare(
     `INSERT INTO stats (area, venue_id, ${col}) VALUES (?1, ?2, 1)
      ON CONFLICT (area, venue_id) DO UPDATE SET ${col} = ${col} + 1`).bind(body.area, id);
-  const stmts = [...ids(body.shown).map(id => up(id, 'shown')), ...ids(body.swapped).map(id => up(id, 'swapped'))];
+  const stmts = [...ids(body.shown).map(id => up(id, 'shown')), ...ids(body.swapped).map(id => up(id, 'swapped')),
+    ...ids(body.kept).map(id => up(id, 'kept'))];
   if (stmts.length) await env.DB.batch(stmts);
   return json({ ok:true });
 }
@@ -81,12 +87,12 @@ async function listCuration(url, env){
   const area = url.searchParams.get('area') || '';
   if (!(await knownArea(env, url, area))) return json({ error:'Unknown area' }, 400);
   const [cur, st] = await env.DB.batch([
-    env.DB.prepare('SELECT venue_id, verdict, note, sources, updated_at FROM curation WHERE area = ?1').bind(area),
-    env.DB.prepare('SELECT venue_id, shown, swapped FROM stats WHERE area = ?1').bind(area),
+    env.DB.prepare('SELECT venue_id, verdict, note, sources, origin, updated_at FROM curation WHERE area = ?1').bind(area),
+    env.DB.prepare('SELECT venue_id, shown, swapped, kept FROM stats WHERE area = ?1').bind(area),
   ]);
   return json({
     curation: cur.results.map(r => ({ ...r, sources: r.sources ? JSON.parse(r.sources) : [] })),
-    stats: Object.fromEntries(st.results.map(r => [r.venue_id, [r.shown, r.swapped]])),
+    stats: Object.fromEntries(st.results.map(r => [r.venue_id, [r.shown, r.swapped, r.kept]])),
   });
 }
 
@@ -99,8 +105,8 @@ async function setVerdict(request, url, env){
   }
   if (!['pick', 'avoid', 'dismissed'].includes(b.verdict)) return json({ error:'Bad verdict' }, 400);
   await env.DB.prepare(
-    `INSERT INTO curation (area, venue_id, verdict, note, sources, updated_at) VALUES (?1, ?2, ?3, ?4, NULL, ?5)
-     ON CONFLICT (area, venue_id) DO UPDATE SET verdict = ?3, note = ?4, updated_at = ?5`)
+    `INSERT INTO curation (area, venue_id, verdict, note, sources, origin, updated_at) VALUES (?1, ?2, ?3, ?4, NULL, 'editor', ?5)
+     ON CONFLICT (area, venue_id) DO UPDATE SET verdict = ?3, note = ?4, origin = 'editor', updated_at = ?5`)
     .bind(b.area, b.id, b.verdict, clean(b.note), Date.now()).run();
   return json({ ok:true });
 }
@@ -112,12 +118,33 @@ async function addSuggestions(request, url, env){
   const stmts = b.items.filter(i => VENUE_ID.test(i.id || '') && ['pick', 'avoid'].includes(i.kind)).slice(0, 60).map(i => {
     const sources = (Array.isArray(i.sources) ? i.sources : []).filter(s => /^https?:\/\//.test(s)).slice(0, 5);
     return env.DB.prepare(
-      `INSERT INTO curation (area, venue_id, verdict, note, sources, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+      `INSERT INTO curation (area, venue_id, verdict, note, sources, origin, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, 'research', ?6)
        ON CONFLICT (area, venue_id) DO NOTHING`)
       .bind(b.area, i.id, 'suggest-' + i.kind, clean(i.note), JSON.stringify(sources), Date.now());
   });
   const results = stmts.length ? await env.DB.batch(stmts) : [];
   return json({ ok:true, added:results.reduce((n, r) => n + (r.meta && r.meta.changes || 0), 0) });
+}
+
+// Automated research goes live directly. Each run replaces the area's previous research
+// picks/avoids (so closures and stale picks drop out), but never touches a row you decided
+// or dismissed in /curate: those are origin 'editor' and win the conflict.
+async function setAuto(request, url, env){
+  const b = await request.json().catch(() => null);
+  if (!b || !Array.isArray(b.items) || !(await knownArea(env, url, b.area))) return json({ error:'Bad request' }, 400);
+  const now = Date.now();
+  const inserts = b.items.filter(i => VENUE_ID.test(i.id || '') && ['pick', 'avoid'].includes(i.kind)).slice(0, 60).map(i => {
+    const sources = (Array.isArray(i.sources) ? i.sources : []).filter(s => /^https?:\/\//.test(s)).slice(0, 5);
+    return env.DB.prepare(
+      `INSERT INTO curation (area, venue_id, verdict, note, sources, origin, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, 'research', ?6)
+       ON CONFLICT (area, venue_id) DO NOTHING`)
+      .bind(b.area, i.id, i.kind, clean(i.note), JSON.stringify(sources), now);
+  });
+  const results = await env.DB.batch([
+    env.DB.prepare("DELETE FROM curation WHERE area = ?1 AND origin = 'research'").bind(b.area),
+    ...inserts,
+  ]);
+  return json({ ok:true, live:results.slice(1).reduce((n, r) => n + (r.meta && r.meta.changes || 0), 0) });
 }
 
 async function authed(request, env){

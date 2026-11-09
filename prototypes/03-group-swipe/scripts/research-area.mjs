@@ -4,10 +4,13 @@
 //   npm run research -- peckham              research, save research/peckham.json, upload suggestions
 //   npm run research -- peckham --no-upload  research and save only
 //   npm run research -- peckham --dry-run    no API call: shows what would be sent (free)
+//   npm run research -- peckham --auto       skip /curate: items backed by 2+ independent sites go
+//                                            live, replacing this area's previous research picks
+//   npm run research:all -- --auto           every area, one after another
 //
-// Needs Anthropic credentials (ANTHROPIC_API_KEY, or an `ant auth login` profile).
+// Needs Anthropic credentials: ANTHROPIC_API_KEY, the .anthropic-key file, or an `ant auth login` profile.
 // Uploading needs the curator password: CURATOR_TOKEN, or the .curator-token file.
-// Roughly $0.20–0.50 per area: one Claude Opus 5.5 run with up to 10 web searches.
+// Roughly $0.60–1.20 per area: one Claude Opus 5.5 run with up to 20 web searches.
 //
 // Claude only chooses from venues already in our map data (by id), and only source
 // URLs that appeared in its own web search results are kept.
@@ -15,14 +18,14 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
-const SITE = process.env.SITE || 'https://night-out-london.farani-niccolas96.workers.dev';
+const SITE = process.env.SITE || 'https://getowlabout.com';
 const RADIUS_M = 1100;
 const TYPE_NAMES = { pub:'pub', wine:'wine bar', rooftop:'drinks outside', cheap:'cheap eats', dinner:'dinner', cocktail:'cocktail bar',
   games:'bar games', live:'live music', comedy:'comedy', karaoke:'karaoke', dance:'club', latefood:'late-night food' };
 
 const args = process.argv.slice(2);
 const areaId = args.find(a => !a.startsWith('--'));
-const dryRun = args.includes('--dry-run'), noUpload = args.includes('--no-upload');
+const dryRun = args.includes('--dry-run'), noUpload = args.includes('--no-upload'), auto = args.includes('--auto');
 const root = new URL('../', import.meta.url);
 
 const areas = JSON.parse(await readFile(new URL('public/data/areas.json', root), 'utf8'));
@@ -40,6 +43,9 @@ function distM(a, b){
 const venues = JSON.parse(await readFile(new URL(`public/data/areas/${area.id}.json`, root), 'utf8')).venues
   .filter(v => distM(area, v) <= RADIUS_M);
 const byId = new Map(venues.map(v => [v.id, v]));
+// Picks per type, so plans can rotate instead of repeating the same two or three places.
+const PER_TYPE = 8;
+const typesHere = Object.keys(TYPE_NAMES).filter(t => venues.some(v => v.vibes.includes(t)));
 const lines = venues.map(v => [v.id, v.name, v.vibes.map(t => TYPE_NAMES[t]).join('/'), v.street || ''].join(' | ')).join('\n');
 
 const system = `You research nightlife for a London night-out planner. Locals use it to plan an evening in one neighbourhood, so a bad recommendation costs them their night.
@@ -59,7 +65,7 @@ These are the venues our map has within walking distance of the centre of ${area
 ${lines}
 </venues>
 
-Research which of these are worth recommending for a night out and which to avoid. Aim for up to 20 picks across different types (pubs, bars, dinner, late food, music, clubs) and any avoids you find real evidence for.
+Research which of these are worth recommending for a night out and which to avoid. The planner builds many different nights from your picks, so depth per type matters: aim for up to ${PER_TYPE} picks for each of these types (${typesHere.map(t => TYPE_NAMES[t]).join(', ')}), fewer where good options are genuinely scarce. Search per type rather than only for general area guides. Add any avoids you find real evidence for, especially closures.
 
 Reply with only a JSON object in this shape, nothing before or after it:
 {"picks":[{"id":"n123","why":"...","sources":["https://..."]}],
@@ -73,6 +79,10 @@ if (dryRun) {
   process.exit(0);
 }
 
+// Key from the environment, or from the git-ignored .anthropic-key file next to package.json.
+if (!process.env.ANTHROPIC_API_KEY) {
+  try { process.env.ANTHROPIC_API_KEY = (await readFile(new URL('.anthropic-key', root), 'utf8')).trim(); } catch (e) {}
+}
 const client = new Anthropic();
 const messages = [{ role:'user', content:prompt }];
 const seenUrls = new Set();
@@ -88,7 +98,7 @@ try {
       output_config: { effort:'high' },
       system,
       tools: [{
-        type: 'web_search_20260209', name: 'web_search', max_uses: 10,
+        type: 'web_search_20260209', name: 'web_search', max_uses: 20,
         user_location: { type:'approximate', city:'London', country:'GB', timezone:'Europe/London' },
       }],
       messages,
@@ -135,16 +145,23 @@ for (const i of items) console.log(`  ${i.kind === 'pick' ? '+' : '-'} ${i.name}
 if ((raw.not_in_list || []).length) console.log('\nRecommended but missing from the map data:\n' + raw.not_in_list.map(n => '  ? ' + n.name + ': ' + n.why).join('\n'));
 console.log('\nSaved ' + outFile.pathname);
 
-if (noUpload || !items.length) process.exit(0);
+// Auto mode publishes without a human look, so it needs corroboration: at least two
+// different websites (www. ignored) behind every pick or avoid.
+const host = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return null; } };
+const corroborated = items.filter(i => new Set(i.sources.map(host).filter(Boolean)).size >= 2);
+if (auto) console.log(`\nAuto: ${corroborated.length} of ${items.length} have 2+ independent sources and will go live`);
+
+if (noUpload || !(auto ? corroborated : items).length) process.exit(0);
 let token = process.env.CURATOR_TOKEN;
 if (!token) { try { token = (await readFile(new URL('.curator-token', root), 'utf8')).trim(); } catch (e) {} }
 if (!token) { console.log('No CURATOR_TOKEN or .curator-token file, so nothing was uploaded.'); process.exit(0); }
 
-const res = await fetch(SITE + '/api/curation/suggestions', {
+const res = await fetch(SITE + (auto ? '/api/curation/auto' : '/api/curation/suggestions'), {
   method: 'POST',
   headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
-  body: JSON.stringify({ area:area.id, items }),
+  body: JSON.stringify({ area:area.id, items:auto ? corroborated : items }),
 });
 const out = await res.json().catch(() => ({}));
 if (!res.ok) { console.error('Upload failed: ' + (out.error || res.status)); process.exit(1); }
-console.log(`Uploaded ${out.added} suggestions. Review them at ${SITE}/curate`);
+console.log(auto ? `${out.live} now live on plans (your own /curate decisions were left alone)`
+  : `Uploaded ${out.added} suggestions. Review them at ${SITE}/curate`);

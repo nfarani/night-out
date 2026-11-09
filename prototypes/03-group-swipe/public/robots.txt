@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /curate
+Disallow: /api/
+
+Sitemap: https://getowlabout.com/sitemap.xml

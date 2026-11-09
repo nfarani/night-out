@@ -4,11 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#161513">
-<title>Night Out</title>
-<meta name="description" content="A timed, walkable night out in a London neighbourhood. Pick an area and a mood, get a plan, send it to the group">
-<meta property="og:title" content="Night Out · London">
-<meta property="og:description" content="A timed, walkable night out in a London neighbourhood. Pick an area and a mood, send the plan to the group">
+<title>Owlabout · Shall we go?</title>
+<meta name="description" content="Pick an area and a mood. Get a timed, walkable plan for a London neighbourhood to send to the group.">
+<link rel="canonical" href="https://getowlabout.com/">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:site_name" content="Owlabout">
+<meta property="og:title" content="Owlabout · Shall we go?">
+<meta property="og:description" content="Pick an area and a mood. Get a timed, walkable plan for a London neighbourhood to send to the group.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://getowlabout.com/">
+<meta property="og:image" content="https://getowlabout.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Owlabout: Shall we go? A three-stop route on a dark map">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -51,8 +63,9 @@
 
   /* ---------- top ---------- */
   .top{ display:flex; align-items:center; justify-content:space-between; gap:16px; height:64px; padding:0 20px; border-bottom:1px solid var(--line); }
-  .logo{ font:600 20px/1 var(--display); letter-spacing:.01em; background:none; border:none; padding:0; cursor:pointer; color:var(--text); }
-  .logo span{ color:var(--red); }
+  .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); letter-spacing:.01em; background:none; border:none; padding:0; cursor:pointer; color:var(--text); }
+  .logo img{ width:28px; height:28px; }
+
   .top-right{ display:flex; align-items:center; gap:16px; }
   .note{ display:none; font-size:12px; color:var(--muted); }
   .nav-link{ background:none; border:none; padding:0; font-size:14px; color:var(--text-2); cursor:pointer; transition:color .15s var(--ease); }
@@ -234,9 +247,8 @@
 <body>
 <div class="app">
   <header class="top">
-    <button class="logo" id="logo" type="button">Night<span>/</span>Out</button>
+    <button class="logo" id="logo" type="button"><img src="/icon.svg" alt="">Owlabout</button>
     <div class="top-right">
-      <span class="note">Prototype · OpenStreetMap venues, uncurated</span>
       <button class="nav-link" id="about-link" type="button">About</button>
       <div class="view" id="view" role="group" aria-label="Preview">
         <button type="button" data-view="desktop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Desktop</button>
@@ -287,7 +299,7 @@
       </div>
       <div class="stops">
         <div id="plan"></div>
-        <p class="credit">Venue data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></p>
+        <p class="credit">Venue data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · <a href="/privacy">Privacy</a> · <a href="mailto:hello@getowlabout.com">Contact</a></p>
       </div>
       <div class="bar">
         <a class="btn" id="route" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></svg>Route</a>
@@ -302,7 +314,7 @@
     <div class="about">
       <div class="about-hero"><div>
       <h1>London is huge. Picking where to go shouldn’t be the hard part</h1>
-      <p class="lede">Night Out turns a neighbourhood and a mood into a timed plan: where to start, where to go next and where to end up, each stop a short walk from the last. Made for the parts of London you don’t know yet, and the nights nobody wants to organise</p>
+      <p class="lede">Owlabout turns a neighbourhood and a mood into a timed plan: where to start, where to go next and where to end up, each stop a short walk from the last. Made for the parts of London you don’t know yet, and the nights nobody wants to organise</p>
       </div><div class="about-map" id="about-map"></div></div>
 
       <h2>Who it’s for</h2>
@@ -322,11 +334,12 @@
 
       <h2>Good to know</h2>
       <div class="fine">
-        <p>Venues come from OpenStreetMap, the free map anyone can edit, with chains filtered out. No venue pays to be here</p>
+        <p>Venues come from OpenStreetMap, the free map anyone can edit, with chains filtered out. Places marked “Recommended by local guides” are ones several independent guides and reviews agree on. No venue pays to be here</p>
         <p>About a quarter of venues list opening hours. When one doesn’t, the plan says so, so check before you go</p>
       </div>
 
       <button class="cta" id="about-go" type="button">Plan a night</button>
+      <p class="credit"><a href="/privacy">Privacy</a> · <a href="mailto:hello@getowlabout.com">hello@getowlabout.com</a></p>
     </div>
   </section>
 </div>
@@ -415,13 +428,13 @@
   }
   // Your curation and usage stats for an area. If the API is unreachable the planner
   // still works on OSM alone, so failures resolve to empty signals.
-  const NO_SIGNALS = { picks:{}, avoid:new Set(), stats:{} };
+  const NO_SIGNALS = { picks:{}, guides:new Set(), avoid:new Set(), stats:{} };
   const signalData = {};
   let sig = NO_SIGNALS;
   function loadSignals(id){
     if (!signalData[id]) signalData[id] = fetch('/api/signals?area=' + encodeURIComponent(id))
       .then(r => r.ok ? r.json() : {})
-      .then(d => ({ picks:d.picks || {}, avoid:new Set(d.avoid || []), stats:d.stats || {} }))
+      .then(d => ({ picks:d.picks || {}, guides:new Set(d.guides || []), avoid:new Set(d.avoid || []), stats:d.stats || {} }))
       .catch(() => NO_SIGNALS);
     return signalData[id];
   }
@@ -509,9 +522,20 @@
     return ts;
   }
 
-  // Score: your picks win and your avoids never appear; known-open beats unknown; a venue
-  // people keep swapping away sinks; staying within ~10 minutes' walk of the last stop
-  // matters most; plus noise so the same inputs don't give the same night.
+  // Venues this browser was shown recently, newest last, so reshuffles and repeat visits
+  // move on to somewhere new instead of circling the same few picks.
+  const RECENT_MAX = 60;
+  let recent = [];
+  try { recent = JSON.parse(recall('no_recent') || '[]'); } catch (e) {}
+  function markSeen(ids){
+    recent = recent.filter(id => !ids.includes(id)).concat(ids).slice(-RECENT_MAX);
+    remember('no_recent', JSON.stringify(recent));
+  }
+
+  // Score: picks get a nudge (not a guaranteed win) and avoids never appear; known-open
+  // beats unknown; a venue people keep swapping away sinks and one they keep (still in the
+  // plan when it's shared or routed) rises; somewhere you saw recently sinks; staying within
+  // ~10 minutes' walk of the last stop matters most; plus noise so nights differ.
   function bestVenue(venues, type, from, to, prev, exclude){
     let best = null, bestScore = -Infinity;
     for (const v of venues) {
@@ -519,9 +543,10 @@
       const st = status(v, form.day, from, Math.max(from, to - 30));
       if (st === 'closed') continue;
       const d = prev ? distM(prev, v) : 0;
-      const [shown, swapped] = sig.stats[v.id] || [0, 0];
+      const [shown, swapped, kept = 0] = sig.stats[v.id] || [0, 0, 0];
       const swapRate = shown >= 5 ? swapped / shown : 0;
-      const score = (v.id in sig.picks ? 3 : 0) + (st === 'open' ? 2 : 0) + (v.website ? 0.5 : 0) - swapRate * 4 +
+      const keepRate = shown >= 5 ? Math.min(1, kept / shown) : 0;
+      const score = (v.id in sig.picks ? 2 : 0) - (recent.includes(v.id) ? 2.5 : 0) + (st === 'open' ? 2 : 0) + (v.website ? 0.5 : 0) - swapRate * 4 + keepRate * 2 +
         Math.random() * 1.5 - d / 300 - (d > 700 ? 3 : 0);
       if (score > bestScore) { best = v; bestScore = score; }
     }
@@ -546,6 +571,7 @@
     writeHash(true, push);
     renderPlan();
     sendEvent({ shown:plan.filter(x => x.venue).map(x => x.venue.id) });
+    markSeen(plan.filter(x => x.venue).map(x => x.venue.id));
   }
 
   async function swapStop(k){
@@ -560,6 +586,7 @@
     }
     if (!alt) { toast('Nothing else for ' + s.type.name.toLowerCase() + ' around then'); return; }
     if (s.venue) sendEvent({ swapped:[s.venue.id], shown:[alt.id] });
+    markSeen([alt.id]);
     s.venue = alt;
     s.seen.add(alt.id);
     writeHash(true);
@@ -828,7 +855,8 @@
         const hoursLine = st === 'open'
           ? '<p class="hours open">' + (hoursOf(v) === 'always' ? 'Open 24 hours' : close ? 'Open till ' + fmt(close) : 'Open') + '</p>'
           : '<p class="hours unknown">Hours not listed, check before you go</p>';
-        const note = v.id in sig.picks ? '<p class="our-pick"><span>Our pick</span>' + (sig.picks[v.id] ? esc(sig.picks[v.id]) : '') + '</p>' : '';
+        const note = v.id in sig.picks ? '<p class="our-pick"><span>' + (sig.guides.has(v.id) ? 'Recommended by local guides' : 'Our pick') + '</span>' +
+          (sig.picks[v.id] ? esc(sig.picks[v.id]) : '') + '</p>' : '';
         body = '<p class="type">'+esc(s.type.name)+'</p><h3>'+esc(v.name)+'</h3>' +
           (v.street ? '<p class="addr">'+esc(v.street)+'</p>' : '') + note + hoursLine +
           '<div class="actions"><a class="btn" href="'+esc(mapsLink(v))+'" target="_blank" rel="noopener">'+ICON_PIN+'Maps</a>' +
@@ -875,7 +903,17 @@
 
   $('edit').onclick = () => { if (cameFromHome) history.back(); else goHome(); };
   $('reshuffle').onclick = () => go(null, false);
+  // A venue still in the plan when it's shared or routed counts as kept, once per plan.
+  let keptFor = '';
+  function markKept(){
+    const ids = plan.filter(s => s.venue).map(s => s.venue.id);
+    if (!ids.length || keptFor === ids.join()) return;
+    keptFor = ids.join();
+    sendEvent({ kept:ids });
+  }
+  $('route').addEventListener('click', markKept);
   $('share').onclick = async () => {
+    markKept();
     const lines = plan.filter(s => s.venue).map(s => clock(s.from) + '  ' + s.venue.name + ' (' + s.type.name.toLowerCase() + ')');
     const text = dayLabel() + ' in ' + form.area.name + ':\n' + lines.join('\n');
     const url = location.href;
