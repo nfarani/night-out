@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#161513">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<title>Owlabout · Stats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font:400 15px/22px Inter,system-ui,sans-serif; }
+  main{ max-width:72rem; margin:0 auto; padding:24px 16px 64px; }
+  h1{ font:600 40px/1 var(--display); margin:0 0 4px; }
+  h2{ font:600 24px/1.2 var(--display); margin:32px 0 12px; }
+  p.sub{ color:var(--text-2); margin:0 0 20px; }
+  .row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:20px; }
+  input, select, button{ font:inherit; color:var(--text); background:var(--card); border:1px solid var(--line); border-radius:10px; height:40px; padding:0 12px; }
+  button{ cursor:pointer; }
+  .kpis{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
+  .kpi{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; }
+  .kpi b{ display:block; font:600 34px/1 var(--display); }
+  .kpi span{ display:block; font-size:13px; color:var(--text-2); margin-top:6px; }
+  .kpi small{ display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+  .scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:14px; }
+  table{ border-collapse:collapse; width:100%; font-size:14px; font-variant-numeric:tabular-nums; }
+  th, td{ padding:10px 12px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th:first-child, td:first-child{ text-align:left; }
+  th{ font-weight:500; color:var(--text-2); background:var(--card); position:sticky; top:0; }
+  tr:last-child td{ border-bottom:none; }
+  .status{ color:var(--text-2); }
+  .err{ color:var(--red); }
+  .note{ color:var(--muted); font-size:13px; margin-top:12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Stats</h1>
+  <p class="sub">Is anyone using it? Counts only, nothing about who.</p>
+  <div class="row">
+    <input id="token" type="password" placeholder="Curator password" autocomplete="current-password">
+    <select id="days"><option value="1">Today</option><option value="7" selected>Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
+    <button id="load" type="button">Show</button>
+    <span class="status" id="status" aria-live="polite"></span>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <h2>By city</h2>
+  <div class="scroll"><table id="cities"></table></div>
+
+  <h2>Top areas</h2>
+  <div class="scroll"><table id="areas"></table></div>
+
+  <h2>By day</h2>
+  <div class="scroll"><table id="byday"></table></div>
+
+  <p class="note">Visits count page loads. New and returning are per browser (first visit, or back on a later day). Send rate and route rate are per plan made. Visitor numbers in Cloudflare Web Analytics will differ a little: it counts differently and ad blockers hide some visits from both.</p>
+</main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const STEPS = ['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route'];
+  const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '–';
+  const num = n => (n || 0).toLocaleString('en-GB');
+  let cityNames = {}, areaNames = {};
+  try { $('token').value = localStorage.getItem('no_curator') || ''; } catch (e) {}
+
+  function sum(rows){
+    const t = Object.fromEntries(STEPS.map(s => [s, 0]));
+    rows.forEach(r => { if (r.step in t) t[r.step] += r.n; });
+    return t;
+  }
+  function group(rows, key){
+    const g = {};
+    rows.forEach(r => (g[r[key]] = g[r[key]] || []).push(r));
+    return Object.entries(g).map(([k, rs]) => [k, sum(rs)]);
+  }
+  const HEAD = '<tr><th></th><th>Visits</th><th>New</th><th>Returning</th><th>Plans</th><th>Plans per visit</th><th>Sent to group</th><th>Send rate</th><th>Route opened</th><th>Route rate</th><th>Opened from a shared link</th><th>Swaps per plan</th><th>Edits per plan</th></tr>';
+  const line = (label, t) => '<tr><td>'+label+'</td><td>'+num(t.visit)+'</td><td>'+num(t.new)+'</td><td>'+num(t.return)+'</td><td>'+num(t.plan)+'</td>' +
+    '<td>'+(t.visit ? (t.plan / t.visit).toFixed(1) : '–')+'</td><td>'+num(t.share)+'</td><td>'+pct(t.share, t.plan)+'</td><td>'+num(t.route)+'</td><td>'+pct(t.route, t.plan)+'</td>' +
+    '<td>'+num(t.open_shared)+'</td><td>'+(t.plan ? (t.swap / t.plan).toFixed(1) : '–')+'</td><td>'+(t.plan ? (t.edit / t.plan).toFixed(1) : '–')+'</td></tr>';
+
+  async function load(){
+    const token = $('token').value.trim();
+    try { localStorage.setItem('no_curator', token); } catch (e) {}
+    $('status').textContent = 'Loading…'; $('status').className = 'status';
+    const res = await fetch('/api/stats?days=' + $('days').value, { headers:{ Authorization:'Bearer ' + token } });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) { $('status').textContent = res.status === 401 ? 'Wrong password' : (d.error || 'Server error'); $('status').className = 'status err'; return; }
+    $('status').textContent = 'Since ' + d.since;
+
+    const t = sum(d.byArea);
+    const kpi = (v, label, sub) => '<div class="kpi"><b>'+v+'</b><span>'+label+'</span>'+(sub ? '<small>'+sub+'</small>' : '')+'</div>';
+    $('kpis').innerHTML =
+      kpi(num(t.visit), 'Visits', num(t.new) + ' new, ' + num(t.return) + ' returning') +
+      kpi(num(t.plan), 'Plans made', t.visit ? (t.plan / t.visit).toFixed(1) + ' per visit' : '') +
+      kpi(pct(t.share, t.plan), 'Plans sent to a group', num(t.share) + (t.share === 1 ? ' send' : ' sends')) +
+      kpi(pct(t.route, t.plan), 'Plans with the route opened', num(t.route) + (t.route === 1 ? ' route' : ' routes')) +
+      kpi(num(t.open_shared), 'Opened from a shared link', 'people who got a plan from a friend');
+
+    $('cities').innerHTML = HEAD + group(d.byArea, 'city').sort((a, b) => b[1].visit - a[1].visit)
+      .map(([c, t]) => line(esc(cityNames[c] || c), t)).join('') || '<tr><td>No data yet</td></tr>';
+    $('areas').innerHTML = HEAD + group(d.byArea, 'area').sort((a, b) => b[1].plan - a[1].plan).slice(0, 25)
+      .map(([a, t]) => line(esc(areaNames[a] || a), t)).join('') || '<tr><td>No data yet</td></tr>';
+    $('byday').innerHTML = HEAD + group(d.byDay, 'day').sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([day, t]) => line(day, t)).join('') || '<tr><td>No data yet</td></tr>';
+  }
+
+  Promise.all([fetch('/data/cities.json').then(r => r.json()), fetch('/data/areas.json').then(r => r.json())]).then(([c, a]) => {
+    cityNames = Object.fromEntries(c.map(x => [x.id, x.name]));
+    areaNames = Object.fromEntries(a.map(x => [x.id, x.name + (x.city && x.city !== 'london' ? ' (' + (cityNames[x.city] || x.city) + ')' : '')]));
+  }).catch(() => {});
+  $('load').onclick = () => load().catch(e => { $('status').textContent = e.message; $('status').className = 'status err'; });
+  $('token').addEventListener('keydown', e => { if (e.key === 'Enter') $('load').click(); });
+  if ($('token').value) $('load').click();
+})();
+</script>
+</body>
+</html>

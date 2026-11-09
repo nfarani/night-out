@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#161513">
 <title>Owlabout · Shall we go?</title>
-<meta name="description" content="Pick an area and a mood. Get a timed, walkable plan for a London neighbourhood to send to the group.">
+<meta name="description" content="Pick an area and a mood. Get a timed, walkable plan for a city neighbourhood to send to the group. London, Paris, Madrid, Barcelona, Rome, Lisbon, Amsterdam and Berlin.">
 <link rel="canonical" href="https://getowlabout.com/">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -13,7 +13,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:site_name" content="Owlabout">
 <meta property="og:title" content="Owlabout · Shall we go?">
-<meta property="og:description" content="Pick an area and a mood. Get a timed, walkable plan for a London neighbourhood to send to the group.">
+<meta property="og:description" content="Pick an area and a mood. Get a timed, walkable plan for a city neighbourhood to send to the group. London, Paris, Madrid, Barcelona, Rome, Lisbon, Amsterdam and Berlin.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://getowlabout.com/">
 <meta property="og:image" content="https://getowlabout.com/og.png">
@@ -183,7 +183,33 @@
   .hours::before{ content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
   .hours.open{ color:var(--ok); }
   .hours.unknown{ color:var(--warn); }
-  .actions{ display:flex; gap:8px; }
+  .actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .edit-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .btn[disabled]{ opacity:.35; cursor:default; }
+  .btn.danger{ color:var(--red); }
+  .plan-tools{ display:flex; gap:8px; margin:8px 0 0 84px; }
+  .plan-tools .btn{ height:40px; }
+  .plan-tools .btn.on{ background:var(--text); color:var(--bg); border-color:var(--text); }
+  dialog.sheet{ width:min(28rem, calc(100vw - 32px)); background:var(--card); color:var(--text); border:1px solid var(--line-2); border-radius:16px; padding:20px; }
+  dialog.sheet::backdrop{ background:rgba(0,0,0,.6); }
+  dialog.sheet h2{ font:600 26px/1.1 var(--display); margin:0 0 4px; }
+  dialog.sheet p{ font-size:14px; color:var(--text-2); margin:0 0 16px; }
+  dialog.sheet .close{ margin-top:16px; width:100%; }
+  dialog.sheet .link{ font-size:14px; color:var(--route); word-break:break-all; margin:0 0 16px; }
+  dialog.sheet label{ display:block; font-size:13px; color:var(--text-2); margin:0 0 6px; }
+  .field-input{ width:100%; height:44px; padding:0 12px; border:1px solid var(--line-2); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; font-size:16px; }
+  .sheet-actions{ display:flex; gap:8px; margin-top:16px; }
+  .sheet-actions .btn{ flex:1; height:44px; font-size:14px; }
+  .btn.primary{ background:var(--text); color:var(--bg); border-color:var(--text); font-weight:600; }
+  .group{ background:var(--card); border:1px solid var(--line-2); border-radius:14px; padding:16px; margin:0 0 16px; }
+  .group-title{ font:600 22px/1.1 var(--display); margin:0 0 4px; }
+  .group .who{ font-size:14px; color:var(--text-2); margin:0; }
+  .group form{ display:flex; gap:8px; margin-top:12px; }
+  .group form .btn{ height:44px; flex:0 0 auto; }
+  .rate{ display:flex; align-items:center; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); font-size:14px; color:var(--text-2); }
+  .rate span{ margin-right:auto; }
+  .rate .btn.on{ background:var(--text); color:var(--bg); border-color:var(--text); }
+  .votes{ font-size:13px; color:var(--ok); margin:0 0 8px; }
   .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; height:36px; padding:0 12px; border:1px solid var(--line-2); background:var(--raised); border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; text-decoration:none; transition:background-color .15s var(--ease), border-color .15s var(--ease); }
   .btn:hover{ border-color:rgba(239,233,222,.24); }
   .btn .ico{ color:var(--text-2); }
@@ -235,7 +261,6 @@
   .toast.show{ transform:translate(-50%, 0); opacity:1; }
 
   .leaflet-container{ background:#191817; font-family:Inter,sans-serif; }
-  .leaflet-tile-pane{ filter:invert(1) hue-rotate(180deg) brightness(.8) contrast(.9) saturate(.3) sepia(.15); }   /* light OSM tiles, darkened */
   .leaflet-control-attribution{ background:rgba(22,21,19,.8)!important; color:var(--muted)!important; font-size:10px!important; }
   .leaflet-control-attribution a{ color:var(--text-2)!important; }
   .pin{ background:none; border:none; }
@@ -298,7 +323,12 @@
         <p class="map-note">Straight lines between stops. Route opens real walking directions</p>
       </div>
       <div class="stops">
+        <div class="group" id="group" hidden></div>
         <div id="plan"></div>
+        <div class="plan-tools" id="plan-tools">
+          <button class="btn" id="add-stop" type="button">+ Add a stop</button>
+          <button class="btn" id="edit-stops" type="button" aria-pressed="false">Edit stops</button>
+        </div>
         <p class="credit">Venue data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · <a href="/privacy">Privacy</a> · <a href="mailto:hello@getowlabout.com">Contact</a></p>
       </div>
       <div class="bar">
@@ -313,8 +343,8 @@
   <section class="screen" id="s-about">
     <div class="about">
       <div class="about-hero"><div>
-      <h1>London is huge. Picking where to go shouldn’t be the hard part</h1>
-      <p class="lede">Owlabout turns a neighbourhood and a mood into a timed plan: where to start, where to go next and where to end up, each stop a short walk from the last. Made for the parts of London you don’t know yet, and the nights nobody wants to organise</p>
+      <h1>Cities are huge. Picking where to go shouldn’t be the hard part</h1>
+      <p class="lede">Owlabout turns a neighbourhood and a mood into a timed plan: where to start, where to go next and where to end up, each stop a short walk from the last. Made for the parts of town you don’t know yet, and the nights nobody wants to organise</p>
       </div><div class="about-map" id="about-map"></div></div>
 
       <h2>Who it’s for</h2>
@@ -322,19 +352,19 @@
         <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg><h3>Friends</h3><p>One link in the group chat instead of forty messages about where</p></div>
         <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-7.5-10A4.5 4.5 0 0 1 12 7.5 4.5 4.5 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/></svg><h3>Dates</h3><p>A plan that looks like you thought about it. You can take the credit</p></div>
         <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg><h3>The indecisive</h3><p>Tap a ready-made night or Surprise me. The app decides, you blame the app</p></div>
-        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg><h3>Explorers</h3><p>35 neighbourhoods, Hackney Wick to Herne Hill. Pick Somewhere new and go where you’ve never been</p></div>
+        <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg><h3>Explorers</h3><p><span id="area-count">100</span> neighbourhoods in <span id="city-count">8</span> cities, from Hackney Wick to Trastevere. Pick Somewhere new and go where you’ve never been</p></div>
       </div>
 
       <h2>How it works</h2>
       <ol class="how">
-        <li><div class="step-n"><span>1</span></div><h3>Pick an area and a day</h3><p>Tonight in Soho, Saturday in Peckham, near wherever you are, or somewhere new</p></li>
+        <li><div class="step-n"><span>1</span></div><h3>Pick an area and a day</h3><p>Tonight in Soho, Saturday in Malasaña, near wherever you are, or somewhere new</p></li>
         <li><div class="step-n"><span>2</span></div><h3>Pick a night</h3><p>A ready-made one, your own mix of stops, or let it surprise you</p></li>
         <li><div class="step-n"><span>3</span></div><h3>Send the link</h3><p>Everyone opens the same plan, with the map, times and walking route</p></li>
       </ol>
 
       <h2>Good to know</h2>
       <div class="fine">
-        <p>Venues come from OpenStreetMap, the free map anyone can edit, with chains filtered out. Places marked “Recommended by local guides” are ones several independent guides and reviews agree on. No venue pays to be here</p>
+        <p>Venues come from OpenStreetMap, the free map anyone can edit, with chains filtered out. Well-known places, ones with their own Wikipedia entry or a listed building, come up a little more often. Places marked “Recommended by local guides” are ones several independent guides and reviews agree on. No venue pays to be here</p>
         <p>About a quarter of venues list opening hours. When one doesn’t, the plan says so, so check before you go</p>
       </div>
 
@@ -344,6 +374,24 @@
   </section>
 </div>
 <div class="toast" id="toast"></div>
+<dialog class="sheet" id="share-sheet">
+  <h2>Your group link</h2>
+  <p>Friends open it, add their name, and everyone sees the same plan. After the night they can say if they'd go back.</p>
+  <p class="link" id="share-link"></p>
+  <label for="share-name">Your name, so the group sees you're in</label>
+  <input class="field-input" id="share-name" maxlength="30" autocomplete="given-name" placeholder="First name">
+  <div class="sheet-actions">
+    <button class="btn" type="button" id="share-copy">Copy link</button>
+    <button class="btn primary" type="button" id="share-send">Send</button>
+  </div>
+  <button class="btn close" type="button" id="share-close">Close</button>
+</dialog>
+<dialog class="sheet" id="type-sheet">
+  <h2 id="type-sheet-title">Add a stop</h2>
+  <p id="type-sheet-sub">What kind of place?</p>
+  <div class="chips" id="type-sheet-chips"></div>
+  <button class="btn close" type="button" id="type-sheet-close">Cancel</button>
+</dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
@@ -385,13 +433,22 @@
   const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   const RADIUS_M = 1100;
 
-  let AREAS = [];
-  const form = { area:null, types:['pub', 'dinner', 'cocktail'], n:3, start:19 * 60, end:24 * 60, day:todayIdx(), preset:null };
+  let AREAS = [], CITIES = [];
+  const cityOf = a => CITIES.find(c => c.id === (a.city || 'london')) || CITIES[0];
+  // stops: null for a plan built from types + n; once edited, the exact type of each stop in order.
+  const form = { area:null, types:['pub', 'dinner', 'cocktail'], n:3, start:19 * 60, end:24 * 60, day:0, preset:null, stops:null };
   let plan = [];             // [{ type, from, to, venue, seen }]
   const areaData = {};
 
   // ---------- helpers ----------
-  function todayIdx(){ return (new Date().getDay() + 6) % 7; }   // Mo = 0
+  // Today in the area's own city (planning Madrid from London still means Madrid's tonight). Mo = 0
+  function todayIdx(){
+    const tz = form && form.area && CITIES.length ? cityOf(form.area).tz : undefined;
+    try {
+      const wd = new Intl.DateTimeFormat('en-GB', { weekday:'short', timeZone:tz }).format(new Date());
+      return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(wd);
+    } catch (e) { return (new Date().getDay() + 6) % 7; }
+  }
   function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function fmt(m){
     m = ((m % 1440) + 1440) % 1440;
@@ -422,22 +479,24 @@
     return fetch(path).then(r => { if (!r.ok) throw new Error('Couldn’t load ' + path + ' (' + r.status + ')'); return r.json(); });
   }
   function loadArea(id){
-    if (!areaData[id]) areaData[id] = fetchJson('data/areas/' + id + '.json').then(d => d.venues)
+    if (!areaData[id]) areaData[id] = fetchJson('/data/areas/' + id + '.json').then(d => d.venues)
       .catch(e => { delete areaData[id]; throw e; });
     return areaData[id];
   }
   // Your curation and usage stats for an area. If the API is unreachable the planner
   // still works on OSM alone, so failures resolve to empty signals.
-  const NO_SIGNALS = { picks:{}, guides:new Set(), avoid:new Set(), stats:{} };
+  const NO_SIGNALS = { picks:{}, guides:new Set(), avoid:new Set(), stats:{}, ratings:{} };
   const signalData = {};
   let sig = NO_SIGNALS;
   function loadSignals(id){
     if (!signalData[id]) signalData[id] = fetch('/api/signals?area=' + encodeURIComponent(id))
       .then(r => r.ok ? r.json() : {})
-      .then(d => ({ picks:d.picks || {}, guides:new Set(d.guides || []), avoid:new Set(d.avoid || []), stats:d.stats || {} }))
+      .then(d => ({ picks:d.picks || {}, guides:new Set(d.guides || []), avoid:new Set(d.avoid || []), stats:d.stats || {}, ratings:d.ratings || {} }))
       .catch(() => NO_SIGNALS);
     return signalData[id];
   }
+  // Funnel step for the stats page: counts per area and day, nothing about who.
+  function track(step){ sendEvent({ step }); }
   function sendEvent(body){
     try { fetch('/api/event', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ area:form.area.id, ...body }), keepalive:true }).catch(() => {}); } catch (e) {}
   }
@@ -509,6 +568,7 @@
   // Sort chosen types into the order of a night. Too many: keep an even spread.
   // Too few: repeat the latest drink-type stop (two dinners is nobody's plan).
   function stopTypes(types = form.types, n = form.n){
+    if (form.stops && types === form.types && n === form.n) return form.stops.map(id => T[id]);
     let ts = TYPES.filter(t => types.includes(t.id));
     if (ts.length > n) {
       ts = n === 1 ? [ts[0]] : Array.from({ length:n }, (_, k) => ts[Math.round(k * (ts.length - 1) / (n - 1))]);
@@ -532,7 +592,8 @@
     remember('no_recent', JSON.stringify(recent));
   }
 
-  // Score: picks get a nudge (not a guaranteed win) and avoids never appear; known-open
+  // Score: picks get a nudge (not a guaranteed win), well-known places (own Wikipedia entry or
+  // a listed building, from OpenStreetMap) a smaller one, and avoids never appear; known-open
   // beats unknown; a venue people keep swapping away sinks and one they keep (still in the
   // plan when it's shared or routed) rises; somewhere you saw recently sinks; staying within
   // ~10 minutes' walk of the last stop matters most; plus noise so nights differ.
@@ -546,7 +607,9 @@
       const [shown, swapped, kept = 0] = sig.stats[v.id] || [0, 0, 0];
       const swapRate = shown >= 5 ? swapped / shown : 0;
       const keepRate = shown >= 5 ? Math.min(1, kept / shown) : 0;
-      const score = (v.id in sig.picks ? 2 : 0) - (recent.includes(v.id) ? 2.5 : 0) + (st === 'open' ? 2 : 0) + (v.website ? 0.5 : 0) - swapRate * 4 + keepRate * 2 +
+      const [up, down] = sig.ratings[v.id] || [0, 0];       // group votes: "would go again?"
+      const voteScore = (up - down) / (up + down + 2);
+      const score = (v.id in sig.picks ? 2 : 0) + (v.known ? 1.5 : 0) - (recent.includes(v.id) ? 2.5 : 0) + (st === 'open' ? 2 : 0) + (v.website ? 0.5 : 0) - swapRate * 4 + keepRate * 2 + voteScore * 3 +
         Math.random() * 1.5 - d / 300 - (d > 700 ? 3 : 0);
       if (score > bestScore) { best = v; bestScore = score; }
     }
@@ -570,7 +633,7 @@
     }
     writeHash(true, push);
     renderPlan();
-    sendEvent({ shown:plan.filter(x => x.venue).map(x => x.venue.id) });
+    sendEvent({ step:'plan', shown:plan.filter(x => x.venue).map(x => x.venue.id) });
     markSeen(plan.filter(x => x.venue).map(x => x.venue.id));
   }
 
@@ -585,13 +648,219 @@
       alt = bestVenue(venues, s.type, s.from, s.to, prev && prev.venue, new Set([...used, ...s.seen]));
     }
     if (!alt) { toast('Nothing else for ' + s.type.name.toLowerCase() + ' around then'); return; }
-    if (s.venue) sendEvent({ swapped:[s.venue.id], shown:[alt.id] });
+    if (s.venue) sendEvent({ step:'swap', swapped:[s.venue.id], shown:[alt.id] });
     markSeen([alt.id]);
     s.venue = alt;
     s.seen.add(alt.id);
     writeHash(true);
     renderPlan(true);
   }
+
+  // ---------- editing a plan: remove, reorder, change a stop's type, add one ----------
+  // Times are spread evenly over the evening again after every edit; venues stay put
+  // unless the stop itself changed. The edited shape travels in the link (st=).
+  let editing = false;
+  function retime(){
+    const sl = slots(plan.map(x => x.type));
+    plan.forEach((x, i) => { x.from = sl[i].from; x.to = sl[i].to; });
+    form.stops = plan.map(x => x.type.id);
+    form.n = plan.length;
+    form.preset = null;
+  }
+  function edited(){ retime(); writeHash(true); renderPlan(true); track('edit'); }
+  async function fillStop(k){
+    const venues = await loadAreaWithSignals(form.area.id);
+    const x = plan[k];
+    const used = new Set(plan.filter((y, i) => i !== k && y.venue).map(y => y.venue.id));
+    const prev = plan.slice(0, k).reverse().find(y => y.venue);
+    x.venue = bestVenue(venues, x.type, x.from, x.to, prev && prev.venue, used);
+    x.seen = new Set(x.venue ? [x.venue.id] : []);
+    if (x.venue) markSeen([x.venue.id]);
+  }
+  function removeStop(k){
+    if (plan.length <= 1) return;
+    plan.splice(k, 1);
+    edited();
+  }
+  function moveStop(k, d){
+    const j = k + d;
+    if (j < 0 || j >= plan.length) return;
+    [plan[k], plan[j]] = [plan[j], plan[k]];
+    edited();
+  }
+  // One sheet for both "add a stop" (k = null) and "change this stop" (k = index).
+  function pickType(k){
+    const sheet = $('type-sheet');
+    $('type-sheet-title').textContent = k === null ? 'Add a stop' : 'Change stop ' + (k + 1);
+    $('type-sheet-sub').textContent = k === null ? 'What kind of place, at the end of the night?' : 'Swap ' + plan[k].type.name.toLowerCase() + ' for';
+    $('type-sheet-chips').innerHTML = TYPES.filter(t => k === null || t.id !== plan[k].type.id)
+      .map(t => '<button type="button" class="chip" data-t="'+t.id+'">'+esc(t.name)+'</button>').join('');
+    $('type-sheet-chips').querySelectorAll('.chip').forEach(b => b.onclick = async () => {
+      sheet.close();
+      const type = T[b.dataset.t];
+      if (k === null) {
+        if (plan.length >= 8) { toast('Eight stops is the most we plan'); return; }
+        plan.push({ type, venue:null, seen:new Set() });
+        k = plan.length - 1;
+      } else plan[k].type = type;
+      retime();
+      try { await fillStop(k); } catch (e) { toast(e.message); }
+      edited();
+      if (!plan[k].venue) toast('Nothing for ' + type.name.toLowerCase() + ' around then in ' + form.area.name);
+    });
+    if (sheet.showModal) sheet.showModal(); else sheet.setAttribute('open', '');
+  }
+  $('type-sheet-close').onclick = () => $('type-sheet').close();
+  $('add-stop').onclick = () => pickType(null);
+  $('edit-stops').onclick = () => {
+    editing = !editing;
+    $('edit-stops').classList.toggle('on', editing);
+    $('edit-stops').setAttribute('aria-pressed', editing);
+    $('edit-stops').textContent = editing ? 'Done' : 'Edit stops';
+    renderPlan(true);
+  };
+
+  // ---------- groups: a locked plan behind /p/<id>, who's in, "would you go again?" ----------
+  // No accounts: a person is a random id this browser keeps, plus the name they typed.
+  let group = null;                     // the /api/plans/<id> response while viewing a group plan
+  function device(){
+    let d = recall('no_device');
+    if (!d || !/^[a-z0-9]{16,40}$/.test(d)) {
+      d = Array.from(crypto.getRandomValues(new Uint8Array(14)), b => (b % 36).toString(36)).join('') + Date.now().toString(36);
+      remember('no_device', d);
+    }
+    return d;
+  }
+  // Date and minutes-after-midnight right now in a city's time zone.
+  function cityNow(tz){
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone:tz, year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', hourCycle:'h23' }).formatToParts(new Date()).map(x => [x.type, x.value]));
+    return { date:p.year + '-' + p.month + '-' + p.day, min:+p.hour * 60 + +p.minute };
+  }
+  function addDays(date, n){ const d = new Date(date + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+  function nightDate(){ return addDays(cityNow(cityOf(form.area).tz).date, (form.day - todayIdx() + 7) % 7); }
+  function nightStarted(g){
+    const now = cityNow(cityOf(form.area).tz);
+    return now.date > g.date || (now.date === g.date && now.min >= g.start);
+  }
+  const isMember = () => group && group.members.some(m => m.me);
+
+  async function api(path, body){
+    const res = await fetch(path, body ? { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body) } : {});
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Something went wrong (' + res.status + ')');
+    return data;
+  }
+  // After the organiser sends the link, they follow it too, so they see people join.
+  function goToGroup(id){
+    if (group && group.id === id) return;
+    history.pushState(null, '', '/p/' + id);
+    openGroup(id, true).catch(e => toast(e.message));
+  }
+  async function openGroup(id, organiser){
+    const g = await api('/api/plans/' + id + '?device=' + device());
+    const area = AREAS.find(a => a.id === g.area);
+    if (!area) throw new Error('That plan’s area isn’t available any more');
+    Object.assign(form, { area, start:g.start, end:g.end, stops:g.stops.map(x => x.type), n:g.stops.length, preset:g.title || null });
+    form.day = (new Date(g.date + 'T12:00:00Z').getUTCDay() + 6) % 7;
+    const venues = await loadAreaWithSignals(area.id);
+    plan = slots(stopTypes()).map((x, k) => ({ ...x, venue:venues.find(v => v.id === g.stops[k].venue) || null, seen:new Set() }));
+    const first = !group;
+    group = g;
+    renderPlan(!first);
+    if (first && !organiser) track('open_shared');
+  }
+  function renderGroup(){
+    const el = $('group');
+    if (!group) { el.hidden = true; return; }
+    el.hidden = false;
+    const names = group.members.map(m => esc(m.name) + (m.me ? ' (you)' : ''));
+    const started = nightStarted(group);
+    el.innerHTML = '<p class="group-title">' + (started ? (isMember() ? 'How was it? Rate each stop' : 'How was it?') : 'Group plan') + '</p>' +
+      '<p class="who">' + (names.length ? names.join(', ') + (names.length === 1 ? ' is in' : ' are in') : 'Nobody’s joined yet') + '</p>' +
+      (isMember() ? '' : '<form id="join-form"><input class="field-input" id="join-name" maxlength="30" autocomplete="given-name" placeholder="Your first name" value="' +
+        esc(recall('no_name') || '') + '" required aria-label="Your first name"><button class="btn primary" type="submit">' + (started ? 'Join to rate' : 'I’m in') + '</button></form>');
+    const f = $('join-form');
+    if (f) f.onsubmit = async e => {
+      e.preventDefault();
+      const name = $('join-name').value.trim();
+      if (!name) return;
+      remember('no_name', name);
+      try { await api('/api/plans/' + group.id + '/join', { device:device(), name }); track('join'); await openGroup(group.id); }
+      catch (err) { toast(err.message); }
+    };
+  }
+  function rateRow(v){
+    if (!group || !isMember() || !nightStarted(group)) return '';
+    const mine = group.votes[v.id] || 0, [up, down] = group.tallies[v.id] || [0, 0];
+    return '<div class="rate"><span>Go again?</span>' +
+      '<button class="btn'+(mine === 1 ? ' on' : '')+'" type="button" data-rate="'+v.id+'" data-vote="1" aria-pressed="'+(mine === 1)+'">👍 '+(up || '')+'</button>' +
+      '<button class="btn'+(mine === -1 ? ' on' : '')+'" type="button" data-rate="'+v.id+'" data-vote="-1" aria-pressed="'+(mine === -1)+'">👎 '+(down || '')+'</button></div>';
+  }
+  async function rate(venue, vote){
+    const next = (group.votes[venue] || 0) === vote ? 0 : vote;     // tap your vote again to take it back
+    await api('/api/plans/' + group.id + '/rate', { device:device(), venue, vote:next });
+    track('rate');
+    await openGroup(group.id);
+  }
+  // Leave the fixed group plan and keep a copy you can change.
+  function ownVersion(){
+    group = null;
+    history.pushState(null, '', '/');
+    writeHash(true, false);
+    renderPlan(true);
+    toast('Your own copy. Change anything, then send it');
+  }
+
+  // Lock the plan on screen into a group plan. Same plan twice reuses the same link.
+  let locked = { key:'', id:'' };
+  async function lockPlan(){
+    const stops = plan.map(x => ({ type:x.type.id, venue:x.venue ? x.venue.id : null }));
+    const key = JSON.stringify([form.area.id, nightDate(), form.start, form.end, stops]);
+    if (locked.key === key) return locked.id;
+    const { id } = await api('/api/plans', { area:form.area.id, date:nightDate(), start:form.start, end:form.end, stops,
+      title:form.preset || undefined, device:device(), name:recall('no_name') || undefined });
+    locked = { key, id };
+    track('lock');
+    return id;
+  }
+  function shareText(){
+    const lines = plan.filter(x => x.venue).map(x => clock(x.from) + '  ' + x.venue.name + ' (' + x.type.name.toLowerCase() + ')');
+    return dayLabel() + ' in ' + form.area.name + ':\n' + lines.join('\n');
+  }
+  let shareUrl = '';
+  function openShareSheet(url){
+    shareUrl = url;
+    $('share-link').textContent = url.replace(/^https?:\/\//, '');
+    $('share-name').value = recall('no_name') || '';
+    const sheet = $('share-sheet');
+    if (sheet.showModal) sheet.showModal(); else sheet.setAttribute('open', '');
+  }
+  // Saving a name here also joins you to the group you're sharing.
+  async function saveShareName(){
+    const name = $('share-name').value.trim();
+    if (!name || name === recall('no_name') && (!group || isMember())) return;
+    remember('no_name', name);
+    const id = shareUrl.split('/p/')[1];
+    try { await api('/api/plans/' + id + '/join', { device:device(), name }); if (group) await openGroup(group.id); } catch (e) {}
+  }
+  $('share-send').onclick = async () => {
+    saveShareName();
+    const text = shareText();
+    if (navigator.share) {
+      try { await navigator.share({ text, url:shareUrl }); $('share-sheet').close(); goToGroup(shareUrl.split('/p/')[1]); return; }
+      catch (e) { if (e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(text + '\n\n' + shareUrl); toast('Copied, paste it in the group chat'); $('share-sheet').close(); goToGroup(shareUrl.split('/p/')[1]); }
+    catch (e) { prompt('Copy this link:', shareUrl); }
+  };
+  $('share-copy').onclick = async () => {
+    saveShareName();
+    try { await navigator.clipboard.writeText(shareUrl); toast('Link copied'); } catch (e) { prompt('Copy this link:', shareUrl); }
+    $('share-sheet').close();
+    goToGroup(shareUrl.split('/p/')[1]);
+  };
+  $('share-close').onclick = () => { saveShareName(); $('share-sheet').close(); };
 
   // ---------- URL state ----------
   // #a=soho&t=pub,dinner,cocktail&n=3&s=1140&e=1440&d=4&p=n123,w456,-
@@ -601,6 +870,7 @@
     q.set('t', form.types.join(','));
     q.set('n', form.n); q.set('s', form.start); q.set('e', form.end); q.set('d', form.day);
     if (form.preset) q.set('x', form.preset);
+    if (form.stops) q.set('st', form.stops.join(','));
     if (withPlan && plan.length) q.set('p', plan.map(s => s.venue ? s.venue.id : '-').join(','));
     const url = location.href.split('#')[0] + '#' + q.toString();
     if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
@@ -616,6 +886,9 @@
     const e = +q.get('e'); if (ENDS.includes(e)) form.end = e;
     const d = q.get('d'); if (d !== null && +d >= 0 && +d <= 6) form.day = +d;
     form.preset = q.get('x') === 'Surprise me' || PRESETS.some(p => p.name === q.get('x')) ? q.get('x') : null;
+    const st = (q.get('st') || '').split(',').filter(Boolean);
+    form.stops = st.length >= 1 && st.length <= 8 && st.every(id => T[id]) ? st : null;
+    if (form.stops) form.n = form.stops.length;
     return (q.get('p') || '').split(',').filter(Boolean);
   }
   async function loadSharedPlan(ids){
@@ -625,6 +898,7 @@
       return { ...s, venue, seen: new Set(venue ? [venue.id] : []) };
     });
     renderPlan();
+    track('open_shared');
   }
 
   // ---------- HOME ----------
@@ -711,10 +985,15 @@
       const label = k === 0 ? 'Tonight' : k === 1 ? 'Tomorrow' : DAY_NAMES[d];
       return '<option value="'+d+'"'+(d === form.day ? ' selected' : '')+'>'+label+'</option>';
     }).join('');
-    $('area').innerHTML = REGIONS.map(r => '<optgroup label="'+r+'">' +
-      AREAS.filter(a => a.region === r).map(a => '<option value="'+a.id+'"'+(a.id === form.area.id ? ' selected' : '')+'>'+esc(a.name)+'</option>').join('') +
-      '</optgroup>').join('') + '<optgroup label="Other"><option value="@here">Near me</option><option value="@new">Somewhere new</option></optgroup>';
-    $('ready-title').textContent = 'Ready-made nights in ' + form.area.name;
+    const city = cityOf(form.area), here = AREAS.filter(a => (a.city || 'london') === city.id);
+    const opt = a => '<option value="'+a.id+'"'+(a.id === form.area.id ? ' selected' : '')+'>'+esc(a.name)+'</option>';
+    const groups = here.some(a => a.region)
+      ? REGIONS.map(r => [city.name + ' · ' + r, here.filter(a => a.region === r)]).filter(g => g[1].length)
+      : [[city.name, here]];
+    $('area').innerHTML = groups.map(([label, list]) => '<optgroup label="'+esc(label)+'">' + list.map(opt).join('') + '</optgroup>').join('') +
+      '<optgroup label="Other"><option value="@here">Near me</option><option value="@new">Somewhere new</option></optgroup>' +
+      '<optgroup label="Other cities">' + CITIES.filter(c => c.id !== city.id).map(c => '<option value="@city:'+c.id+'">'+esc(c.name)+'</option>').join('') + '</optgroup>';
+    $('ready-title').textContent = 'Ready-made nights in ' + form.area.name + (city.id === 'london' ? '' : ', ' + city.name);
 
     const card = (p, i) => '<button type="button" class="preset" data-i="'+i+'">' + miniMap(p.n, p.name, p.start, p.end) +
       '<div class="body"><span class="for">'+esc(p.for)+'</span><h3>'+esc(p.name)+'</h3><p class="desc">'+esc(p.desc)+'</p>' +
@@ -737,12 +1016,22 @@
   }
   function renderHome(){ renderHeader(); syncBuilder(); }
 
-  function setArea(a){ form.area = a; remember('no_area', a.id); renderHeader(); saveHome(); }
+  function setArea(a){
+    const cityChanged = form.area && (form.area.city || 'london') !== (a.city || 'london');
+    form.area = a; remember('no_area', a.id);
+    if (cityChanged) form.day = todayIdx();          // "tonight" follows the city's time zone
+    renderHeader(); saveHome();
+  }
   $('day').onchange = e => { form.day = +e.target.value; renderHeader(); saveHome(); };
   $('area').onchange = e => {
     const v = e.target.value;
-    if (v === '@new') {                                   // a random area that isn't the current one
-      const others = AREAS.filter(a => a.id !== form.area.id);
+    if (v.startsWith('@city:')) {                         // jump to another city's main area
+      const c = CITIES.find(x => x.id === v.slice(6));
+      setArea(AREAS.find(a => a.id === c.default) || AREAS.find(a => a.city === c.id));
+      return;
+    }
+    if (v === '@new') {                                   // a random area in this city that isn't the current one
+      const others = AREAS.filter(a => a.id !== form.area.id && (a.city || 'london') === (form.area.city || 'london'));
       setArea(others[Math.floor(Math.random() * others.length)]);
       toast('Trying ' + form.area.name);
       return;
@@ -764,7 +1053,7 @@
   let planning = false, cameFromHome = false;
   async function go(changes, push = true){
     if (planning) return;
-    if (changes) Object.assign(form, changes);
+    if (changes) Object.assign(form, { stops:null }, changes);
     if (!form.types.length) { toast('Pick at least one thing to do'); return; }
     planning = true;
     $('go').disabled = true;
@@ -802,12 +1091,15 @@
     if (push) history.pushState(null, '', location.href.split('#')[0] + '#about');
   }
   function goHome(push = true){
+    if (group) { location.href = '/'; return; }
     $('about-link').classList.remove('on');
     renderHome();
     show('s-home');
     writeHash(false, push);
   }
   function route(){
+    const gm = location.pathname.match(/^\/p\/([a-z2-9]{6,10})\/?$/);
+    if (gm) return openGroup(gm[1]).catch(e => { toast(e.message); setTimeout(() => { location.href = '/'; }, 2500); });
     const ids = readHash();
     if (location.hash === '#about') return showAbout(false);
     if (ids.length) return loadSharedPlan(ids).catch(e => toast(e.message));
@@ -820,7 +1112,7 @@
 
   // ---------- PLAN ----------
   function mapsLink(v){
-    const q = [v.name, v.street, v.postcode || 'London'].filter(Boolean).join(', ');
+    const q = [v.name, v.street, v.postcode || cityOf(form.area).name].filter(Boolean).join(', ');
     return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
   }
   function routeUrl(){
@@ -835,6 +1127,14 @@
   const ICON_PIN = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
   const ICON_SWAP = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4M21 7H8M7 21l-4-4 4-4M3 17h13"/></svg>';
 
+  function editRow(k){
+    if (!editing || group) return '';
+    return '<div class="edit-row">' +
+      '<button class="btn" type="button" data-up="'+k+'"'+(k === 0 ? ' disabled' : '')+' aria-label="Move earlier">↑</button>' +
+      '<button class="btn" type="button" data-down="'+k+'"'+(k === plan.length - 1 ? ' disabled' : '')+' aria-label="Move later">↓</button>' +
+      '<button class="btn" type="button" data-change="'+k+'">Change</button>' +
+      '<button class="btn danger" type="button" data-remove="'+k+'"'+(plan.length <= 1 ? ' disabled' : '')+'>Remove</button></div>';
+  }
   function renderPlan(keepScroll){
     const found = plan.filter(s => s.venue).length;
     $('plan-kicker').textContent = dayLabel() + ' · ' + fmt(form.start) + '–' + (form.end >= 27 * 60 ? 'late' : fmt(form.end));
@@ -848,7 +1148,7 @@
       if (v) { prev = v; num++; }
       let body;
       if (!v) {
-        body = '<p class="type">'+esc(s.type.name)+'</p><p class="empty">Nothing for '+esc(s.type.name.toLowerCase())+' open around '+fmt(s.from)+' in '+esc(form.area.name)+' in our data</p>';
+        body = '<p class="type">'+esc(s.type.name)+'</p><p class="empty">Nothing for '+esc(s.type.name.toLowerCase())+' open around '+fmt(s.from)+' in '+esc(form.area.name)+' in our data</p>' + editRow(k);
       } else {
         const st = status(v, form.day, s.from, Math.max(s.from, s.to - 30));
         const close = closesAt(v, form.day, s.from);
@@ -857,10 +1157,12 @@
           : '<p class="hours unknown">Hours not listed, check before you go</p>';
         const note = v.id in sig.picks ? '<p class="our-pick"><span>' + (sig.guides.has(v.id) ? 'Recommended by local guides' : 'Our pick') + '</span>' +
           (sig.picks[v.id] ? esc(sig.picks[v.id]) : '') + '</p>' : '';
+        const [up, down] = sig.ratings[v.id] || [0, 0];
+        const votes = up + down >= 3 && up > down ? '<p class="votes">'+up+' of '+(up + down)+' would go again</p>' : '';
         body = '<p class="type">'+esc(s.type.name)+'</p><h3>'+esc(v.name)+'</h3>' +
-          (v.street ? '<p class="addr">'+esc(v.street)+'</p>' : '') + note + hoursLine +
+          (v.street ? '<p class="addr">'+esc(v.street)+'</p>' : '') + note + votes + hoursLine +
           '<div class="actions"><a class="btn" href="'+esc(mapsLink(v))+'" target="_blank" rel="noopener">'+ICON_PIN+'Maps</a>' +
-          '<button class="btn" type="button" data-swap="'+k+'">'+ICON_SWAP+'Swap</button></div>';
+          (group ? '' : '<button class="btn" type="button" data-swap="'+k+'">'+ICON_SWAP+'Swap</button>') + '</div>' + editRow(k) + rateRow(v);
       }
       html += '<div class="stop"><div class="time">'+clock(s.from)+'</div>' +
         '<div class="rail"><span class="pin-n'+(v ? '' : ' none')+'">'+(v ? num : '–')+'</span></div>' +
@@ -868,6 +1170,16 @@
     });
     $('plan').innerHTML = html;
     $('plan').querySelectorAll('[data-swap]').forEach(b => b.onclick = () => swapStop(+b.dataset.swap).catch(e => toast(e.message)));
+    $('plan').querySelectorAll('[data-up]').forEach(b => b.onclick = () => moveStop(+b.dataset.up, -1));
+    $('plan').querySelectorAll('[data-down]').forEach(b => b.onclick = () => moveStop(+b.dataset.down, 1));
+    $('plan').querySelectorAll('[data-change]').forEach(b => b.onclick = () => pickType(+b.dataset.change));
+    $('plan').querySelectorAll('[data-remove]').forEach(b => b.onclick = () => removeStop(+b.dataset.remove));
+    $('plan').querySelectorAll('[data-rate]').forEach(b => b.onclick = () => rate(b.dataset.rate, +b.dataset.vote).catch(e => toast(e.message)));
+    renderGroup();
+    $('plan-tools').hidden = !!group;
+    $('reshuffle').style.display = group ? 'none' : '';
+    $('share').textContent = group ? 'Share the link' : 'Send to the group';
+    $('edit').lastChild.textContent = group ? 'Make your own version' : 'Change the plan';
     $('route').href = routeUrl();
     $('route').style.display = found ? '' : 'none';
     $('share').style.display = found ? '' : 'none';
@@ -875,7 +1187,27 @@
     renderMap();
   }
 
-  // Standard OSM tiles (darkened in CSS); numbered pins in stop order, dotted route between them.
+  // OpenFreeMap vector tiles (free, no key, no request limits; the OSM tile servers don't allow
+  // heavy public use). MapLibre is ~1MB, so it loads the first time a map is shown, not on the home
+  // screen. If it fails, the pins and route still draw on a plain background.
+  let basemap = null;
+  function loadScript(src){
+    return new Promise((ok, fail) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = fail; document.head.appendChild(s); });
+  }
+  function addBasemap(m){
+    if (!basemap) {
+      const css = document.createElement('link'); css.rel = 'stylesheet';
+      css.href = 'https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.24.0/maplibre-gl.css'; document.head.appendChild(css);
+      basemap = loadScript('https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.24.0/maplibre-gl.js')
+        .then(() => loadScript('https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js'));
+    }
+    basemap.then(() => L.maplibreGL({
+      style:'https://tiles.openfreemap.org/styles/dark',
+      attribution:'<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+    }).addTo(m)).catch(() => {});
+  }
+
+  // Numbered pins in stop order, dotted route between them.
   let map = null, layer = null;
   function renderMap(){
     const pts = plan.filter(s => s.venue).map(s => s.venue);
@@ -885,9 +1217,7 @@
     if (!map) {
       // On touch screens one finger scrolls the page; pinch zooms the map.
       map = L.map(el, { zoomControl:false, scrollWheelZoom:false, dragging:!L.Browser.mobile });
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom:19,
-      }).addTo(map);
+      addBasemap(map);
     }
     if (layer) layer.remove();
     layer = L.layerGroup().addTo(map);
@@ -901,8 +1231,8 @@
     map.fitBounds(L.latLngBounds(ll).pad(0.4), { maxZoom:16 });
   }
 
-  $('edit').onclick = () => { if (cameFromHome) history.back(); else goHome(); };
-  $('reshuffle').onclick = () => go(null, false);
+  $('edit').onclick = () => { if (group) return ownVersion(); if (cameFromHome) history.back(); else goHome(); };
+  $('reshuffle').onclick = () => { track('reshuffle'); go(null, false); };
   // A venue still in the plan when it's shared or routed counts as kept, once per plan.
   let keptFor = '';
   function markKept(){
@@ -911,17 +1241,15 @@
     keptFor = ids.join();
     sendEvent({ kept:ids });
   }
-  $('route').addEventListener('click', markKept);
+  $('route').addEventListener('click', () => { markKept(); track('route'); });
   $('share').onclick = async () => {
     markKept();
-    const lines = plan.filter(s => s.venue).map(s => clock(s.from) + '  ' + s.venue.name + ' (' + s.type.name.toLowerCase() + ')');
-    const text = dayLabel() + ' in ' + form.area.name + ':\n' + lines.join('\n');
-    const url = location.href;
-    if (navigator.share) {
-      try { await navigator.share({ text, url }); return; } catch (e) { if (e.name === 'AbortError') return; }
-    }
-    try { await navigator.clipboard.writeText(text + '\n\n' + url); toast('Copied, paste it in the group chat'); }
-    catch (e) { prompt('Copy this link:', url); }
+    track('share');
+    if (group) return openShareSheet(location.origin + '/p/' + group.id);
+    $('share').disabled = true;
+    try { openShareSheet(location.origin + '/p/' + await lockPlan()); }
+    catch (e) { toast(e.message); }
+    finally { $('share').disabled = false; }
   };
 
   // ---------- view toggle (desktop screens only) ----------
@@ -935,12 +1263,21 @@
   setView(recall('no_view') === 'phone' ? 'phone' : 'desktop');
 
   // ---------- boot ----------
-  fetchJson('data/areas.json').then(list => {
-    AREAS = list;
+  Promise.all([fetchJson('/data/areas.json'), fetchJson('/data/cities.json')]).then(([list, cities]) => {
+    AREAS = list; CITIES = cities;
     form.area = AREAS.find(a => a.id === recall('no_area')) || AREAS.find(a => a.id === 'soho') || AREAS[0];
+    form.day = todayIdx();
+    $('area-count').textContent = AREAS.length;
+    $('city-count').textContent = CITIES.length;
     buildBuilder();
     $('about-map').innerHTML = miniMap(5, 'london night', 19 * 60, 26 * 60, true);
     route();
+    // One visit per page load; first visit from this browser, or a return on a later day.
+    // Area is whatever the page opened on (a shared plan's area, or the last one used).
+    const today = new Date().toISOString().slice(0, 10), first = recall('no_first'), lastReturn = recall('no_return');
+    track('visit');
+    if (!first) { remember('no_first', today); track('new'); }
+    else if (first !== today && lastReturn !== today) { remember('no_return', today); track('return'); }
   }).catch(e => { $('s-home').innerHTML = '<p class="home empty">'+esc(e.message)+'</p>'; });
 })();
 </script>

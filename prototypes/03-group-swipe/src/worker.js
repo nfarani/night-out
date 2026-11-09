@@ -1,7 +1,12 @@
-// API for Night Out. Everything else is static files in public/.
+// API for Owlabout. Everything else is static files in public/; /p/<id> serves the app page.
 //
 //   GET  /api/signals?area=soho        public: picks + avoids (yours and research's), and usage stats, for ranking
-//   POST /api/event                     public: { area, shown:[ids], swapped:[ids], kept:[ids] } usage counts
+//   POST /api/event                     public: { area, step?, shown:[ids], swapped:[ids], kept:[ids] } usage counts
+//   GET  /api/stats?days=30             curator: funnel counts per city and area
+//   POST /api/plans                     public: lock a plan for a group { area, date, start, end, stops, title?, device, name? } -> { id }
+//   GET  /api/plans/<id>?device=…       public: the plan, who joined, vote tallies, your own votes
+//   POST /api/plans/<id>/join           public: { device, name }
+//   POST /api/plans/<id>/rate           public: { device, venue, vote: 1 | -1 | 0 } members only, from the day of the night
 //   GET  /api/curation?area=soho        curator: every row incl. research suggestions
 //   POST /api/curation                  curator: { area, id, verdict: pick|avoid|dismissed|none, note }
 //   POST /api/curation/suggestions      curator: { area, items:[{ id, kind: pick|avoid, note, sources }] }
@@ -12,18 +17,29 @@
 const VENUE_ID = /^[nwr]\d{1,12}$/;
 const MAX_IDS = 8;
 
-let areaIds = null;
-async function knownArea(env, url, id){
-  if (!areaIds) {
+const STEPS = new Set(['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route', 'lock', 'join', 'rate']);
+const TYPE_IDS = new Set(['pub', 'wine', 'rooftop', 'cheap', 'dinner', 'cocktail', 'games', 'live', 'comedy', 'karaoke', 'dance', 'latefood']);
+const DEVICE = /^[a-z0-9]{16,40}$/;
+const PLAN_ID = /^[a-z2-9]{6,10}$/;
+const MAX_MEMBERS = 40;
+// Group votes count toward rankings only from plans at least this many people joined.
+const MIN_MEMBERS_FOR_RANKING = 2;
+
+let areaCity = null;                       // area id -> city id
+async function loadAreas(env, url){
+  if (!areaCity) {
     const res = await env.ASSETS.fetch(new URL('/data/areas.json', url));
-    areaIds = new Set((await res.json()).map(a => a.id));
+    areaCity = new Map((await res.json()).map(a => [a.id, a.city || 'london']));
   }
-  return areaIds.has(id);
+  return areaCity;
 }
+async function knownArea(env, url, id){ return (await loadAreas(env, url)).has(id); }
 
 export default {
   async fetch(request, env){
     const url = new URL(request.url);
+    // A group plan link is the app page; the page reads the id from the path.
+    if (/^\/p\/[a-z2-9]{6,10}\/?$/.test(url.pathname)) return env.ASSETS.fetch(new Request(new URL('/', url), request));
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
 
     const origin = request.headers.get('Origin');
@@ -33,6 +49,21 @@ export default {
       const route = request.method + ' ' + url.pathname;
       if (route === 'GET /api/signals') return await signals(url, env);
       if (route === 'POST /api/event') return await event(request, url, env);
+      const pm = url.pathname.match(/^\/api\/plans(?:\/([a-z2-9]{6,10})(?:\/(join|rate))?)?$/);
+      if (pm) {
+        if (request.method === 'POST' && env.LIMITER) {
+          const { success } = await env.LIMITER.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
+          if (!success) return json({ error:'Too many requests' }, 429);
+        }
+        if (route === 'POST /api/plans') return await createPlan(request, url, env);
+        if (pm[1] && !pm[2] && request.method === 'GET') return await getPlan(pm[1], url, env);
+        if (pm[2] === 'join' && request.method === 'POST') return await joinPlan(pm[1], request, env);
+        if (pm[2] === 'rate' && request.method === 'POST') return await ratePlan(pm[1], request, env);
+      }
+      if (route === 'GET /api/stats') {
+        if (!(await authed(request, env))) return json({ error:'Wrong curator password' }, 401);
+        return await stats(url, env);
+      }
       if (url.pathname.startsWith('/api/curation')) {
         if (!(await authed(request, env))) return json({ error:'Wrong curator password' }, 401);
         if (route === 'GET /api/curation') return await listCuration(url, env);
@@ -50,9 +81,13 @@ export default {
 async function signals(url, env){
   const area = url.searchParams.get('area') || '';
   if (!(await knownArea(env, url, area))) return json({ error:'Unknown area' }, 400);
-  const [cur, st] = await env.DB.batch([
+  const [cur, st, rt] = await env.DB.batch([
     env.DB.prepare("SELECT venue_id, verdict, note, origin FROM curation WHERE area = ?1 AND verdict IN ('pick', 'avoid')").bind(area),
     env.DB.prepare('SELECT venue_id, shown, swapped, kept FROM stats WHERE area = ?1').bind(area),
+    env.DB.prepare(
+      `SELECT venue_id, SUM(vote = 1) AS up, SUM(vote = -1) AS down FROM ratings
+       WHERE area = ?1 AND plan_id IN (SELECT plan_id FROM members GROUP BY plan_id HAVING COUNT(*) >= ?2)
+       GROUP BY venue_id`).bind(area, MIN_MEMBERS_FOR_RANKING),
   ]);
   // guides: picks that came from research, not from you, so the card can say so.
   const out = { picks:{}, guides:[], avoid:[], stats:{} };
@@ -63,6 +98,8 @@ async function signals(url, env){
     } else out.avoid.push(r.venue_id);
   }
   for (const r of st.results) out.stats[r.venue_id] = [r.shown, r.swapped, r.kept];
+  out.ratings = {};                        // venue -> [would go again, wouldn't]
+  for (const r of rt.results) out.ratings[r.venue_id] = [r.up, r.down];
   return json(out, 200, 'public, max-age=60');
 }
 
@@ -79,8 +116,114 @@ async function event(request, url, env){
      ON CONFLICT (area, venue_id) DO UPDATE SET ${col} = ${col} + 1`).bind(body.area, id);
   const stmts = [...ids(body.shown).map(id => up(id, 'shown')), ...ids(body.swapped).map(id => up(id, 'swapped')),
     ...ids(body.kept).map(id => up(id, 'kept'))];
+  if (STEPS.has(body.step)) {
+    const city = (await loadAreas(env, url)).get(body.area);
+    stmts.push(env.DB.prepare(
+      `INSERT INTO funnel (day, city, area, step, n) VALUES (?1, ?2, ?3, ?4, 1)
+       ON CONFLICT (day, city, area, step) DO UPDATE SET n = n + 1`)
+      .bind(new Date().toISOString().slice(0, 10), city, body.area, body.step));
+  }
   if (stmts.length) await env.DB.batch(stmts);
   return json({ ok:true });
+}
+
+// ---------- group plans ----------
+const ID_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789';
+function newId(){
+  const b = crypto.getRandomValues(new Uint8Array(7));
+  return Array.from(b, x => ID_CHARS[x % ID_CHARS.length]).join('');
+}
+function cleanName(s){ return typeof s === 'string' ? s.replace(/\s+/g, ' ').trim().slice(0, 30) : ''; }
+
+async function createPlan(request, url, env){
+  const b = await request.json().catch(() => null);
+  const ok = b && await knownArea(env, url, b.area) && /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') && DEVICE.test(b.device || '') &&
+    Number.isInteger(b.start) && Number.isInteger(b.end) && b.start >= 0 && b.end > b.start && b.end <= 36 * 60 &&
+    Array.isArray(b.stops) && b.stops.length >= 1 && b.stops.length <= 8 &&
+    b.stops.every(x => x && TYPE_IDS.has(x.type) && (x.venue === null || VENUE_ID.test(x.venue || '')));
+  if (!ok) return json({ error:'Bad request' }, 400);
+  const city = (await loadAreas(env, url)).get(b.area);
+  const stops = JSON.stringify(b.stops.map(x => ({ type:x.type, venue:x.venue })));
+  const title = typeof b.title === 'string' ? b.title.slice(0, 40) : null;
+  const name = cleanName(b.name);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const id = newId();
+    const res = await env.DB.prepare(
+      `INSERT INTO plans (id, area, city, date, start_min, end_min, stops, title, created_by, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10) ON CONFLICT (id) DO NOTHING`)
+      .bind(id, b.area, city, b.date, b.start, b.end, stops, title, b.device, Date.now()).run();
+    if (!res.meta.changes) continue;
+    if (name) await env.DB.prepare('INSERT INTO members (plan_id, device, name, joined_at) VALUES (?1, ?2, ?3, ?4)')
+      .bind(id, b.device, name, Date.now()).run();
+    return json({ id });
+  }
+  return json({ error:'Try again' }, 503);
+}
+
+async function getPlan(id, url, env){
+  const device = url.searchParams.get('device') || '';
+  const [p, m, t, mine] = await env.DB.batch([
+    env.DB.prepare('SELECT * FROM plans WHERE id = ?1').bind(id),
+    env.DB.prepare('SELECT device, name FROM members WHERE plan_id = ?1 ORDER BY joined_at').bind(id),
+    env.DB.prepare('SELECT venue_id, SUM(vote = 1) AS up, SUM(vote = -1) AS down FROM ratings WHERE plan_id = ?1 GROUP BY venue_id').bind(id),
+    env.DB.prepare('SELECT venue_id, vote FROM ratings WHERE plan_id = ?1 AND device = ?2').bind(id, device),
+  ]);
+  const plan = p.results[0];
+  if (!plan) return json({ error:'Plan not found' }, 404);
+  return json({
+    id, area:plan.area, city:plan.city, date:plan.date, start:plan.start_min, end:plan.end_min,
+    stops:JSON.parse(plan.stops), title:plan.title, mine:plan.created_by === device,
+    members:m.results.map(r => ({ name:r.name, me:r.device === device })),
+    tallies:Object.fromEntries(t.results.map(r => [r.venue_id, [r.up, r.down]])),
+    votes:Object.fromEntries(mine.results.map(r => [r.venue_id, r.vote])),
+  });
+}
+
+async function joinPlan(id, request, env){
+  const b = await request.json().catch(() => null);
+  const name = b && cleanName(b.name);
+  if (!b || !DEVICE.test(b.device || '') || !name) return json({ error:'Bad request' }, 400);
+  const [p, n] = await env.DB.batch([
+    env.DB.prepare('SELECT id FROM plans WHERE id = ?1').bind(id),
+    env.DB.prepare('SELECT COUNT(*) AS n FROM members WHERE plan_id = ?1 AND device != ?2').bind(id, b.device),
+  ]);
+  if (!p.results[0]) return json({ error:'Plan not found' }, 404);
+  if (n.results[0].n >= MAX_MEMBERS) return json({ error:'This group is full' }, 409);
+  await env.DB.prepare(
+    `INSERT INTO members (plan_id, device, name, joined_at) VALUES (?1, ?2, ?3, ?4)
+     ON CONFLICT (plan_id, device) DO UPDATE SET name = ?3`).bind(id, b.device, name, Date.now()).run();
+  return json({ ok:true });
+}
+
+async function ratePlan(id, request, env){
+  const b = await request.json().catch(() => null);
+  if (!b || !DEVICE.test(b.device || '') || !VENUE_ID.test(b.venue || '') || ![1, -1, 0].includes(b.vote)) return json({ error:'Bad request' }, 400);
+  const [p, m] = await env.DB.batch([
+    env.DB.prepare('SELECT area, date, stops FROM plans WHERE id = ?1').bind(id),
+    env.DB.prepare('SELECT 1 FROM members WHERE plan_id = ?1 AND device = ?2').bind(id, b.device),
+  ]);
+  const plan = p.results[0];
+  if (!plan) return json({ error:'Plan not found' }, 404);
+  if (!m.results[0]) return json({ error:'Join the group first' }, 403);
+  if (!JSON.parse(plan.stops).some(x => x.venue === b.venue)) return json({ error:'Not a stop on this plan' }, 400);
+  // Votes open on the day of the night (a day's slack either side of UTC for time zones).
+  if (Date.now() < Date.parse(plan.date + 'T00:00:00Z') - 86400000) return json({ error:'You can rate once the night has happened' }, 403);
+  if (b.vote === 0) await env.DB.prepare('DELETE FROM ratings WHERE plan_id = ?1 AND venue_id = ?2 AND device = ?3').bind(id, b.venue, b.device).run();
+  else await env.DB.prepare(
+    `INSERT INTO ratings (plan_id, area, venue_id, device, vote, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+     ON CONFLICT (plan_id, venue_id, device) DO UPDATE SET vote = ?5, updated_at = ?6`)
+    .bind(id, plan.area, b.venue, b.device, b.vote, Date.now()).run();
+  return json({ ok:true });
+}
+
+async function stats(url, env){
+  const days = Math.min(Math.max(parseInt(url.searchParams.get('days'), 10) || 30, 1), 365);
+  const since = new Date(Date.now() - (days - 1) * 86400000).toISOString().slice(0, 10);
+  const [byArea, byDay] = await env.DB.batch([
+    env.DB.prepare('SELECT city, area, step, SUM(n) AS n FROM funnel WHERE day >= ?1 GROUP BY city, area, step').bind(since),
+    env.DB.prepare('SELECT day, step, SUM(n) AS n FROM funnel WHERE day >= ?1 GROUP BY day, step ORDER BY day').bind(since),
+  ]);
+  return json({ since, days, byArea:byArea.results, byDay:byDay.results });
 }
 
 async function listCuration(url, env){

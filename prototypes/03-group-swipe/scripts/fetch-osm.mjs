@@ -5,6 +5,7 @@
 // Usage: node scripts/fetch-osm.mjs            (all areas)
 //        node scripts/fetch-osm.mjs dalston    (one area, always refetched)
 //        node scripts/fetch-osm.mjs --missing  (only areas with no file yet)
+//        node scripts/fetch-osm.mjs --city paris   (one city's areas)
 
 import { readFile, writeFile, access } from 'node:fs/promises';
 
@@ -12,13 +13,15 @@ const ENDPOINTS = [                                // public mirrors, tried in t
   'https://overpass-api.de/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
 ];
-const UA = 'NightOut-prototype/0.1 (London night-out planner; occasional area snapshot)';
+const UA = 'Owlabout/0.2 (https://getowlabout.com; night-out planner; occasional area snapshot)';
 const RADIUS_M = 1200;
 const root = new URL('../public/data/', import.meta.url);
 
 const areas = JSON.parse(await readFile(new URL('areas.json', root), 'utf8'));
-const missingOnly = process.argv[2] === '--missing';
-const only = missingOnly ? null : process.argv[2];
+const args = process.argv.slice(2);
+const missingOnly = args.includes('--missing');
+const cityOnly = args.includes('--city') ? args[args.indexOf('--city') + 1] : null;
+const only = args.find(a => !a.startsWith('--') && a !== cityOnly) || null;
 const exists = f => access(f).then(() => true, () => false);
 
 function query(lat, lng) {
@@ -41,19 +44,20 @@ function classify(t) {
   const a = t.amenity || '', name = t.name || '', chain = !!(t.brand || t['brand:wikidata']);
   const sport = t.sport || '', hours = t.opening_hours || '';
   const v = [];
-  const wineName = /\bwine|\bvin(o|s)?\b|enoteca|\bcave\b|bottle/i.test(name);
+  // Names are matched in English, French, Spanish, Catalan, Italian, Portuguese, Dutch and German.
+  const wineName = /\bwine|\bvin(o|s|i|ho|hos)?\b|enoteca|vinoteca|\bcave\b|bottle|\bbodega|weinbar|\bwijn|garrafeira|vermut|vermouth/i.test(name);
   if (a === 'pub' && !chain) v.push('pub');
   if (['bar', 'restaurant', 'pub'].includes(a) && !chain && wineName) v.push('wine');
   if ((a === 'fast_food' && !chain) || a === 'food_court') v.push('cheap');
   if (a === 'restaurant' && !chain) v.push('dinner');
   if (DRINKS.includes(a) && !chain &&
-      (/roof|terrace|garden|\bsky/i.test(name) || t.rooftop === 'yes' || t.beer_garden === 'yes' ||
+      (/roof|terrace|garden|\bsky|terrasse|terraza|terrat|terrazza|terra[çc]o|dachterrasse|dakterras|biergarten|giardino|jard[ií]n|jardim/i.test(name) || t.rooftop === 'yes' || t.beer_garden === 'yes' ||
        (t.outdoor_seating === 'yes' && a !== 'restaurant'))) v.push('rooftop');
   if (a === 'bar' && !chain && !wineName) v.push('cocktail');
   if (a === 'music_venue' || t.live_music === 'yes' || (a === 'nightclub' && /jazz|live/i.test(name))) v.push('live');
   if (/billiards|darts|shuffleboard|10pin/.test(sport) || t.leisure === 'bowling_alley' ||
-      (['bar', 'pub'].includes(a) && /\bpool\b|darts|shuffle|bowl|ping ?pong|games/i.test(name))) v.push('games');
-  if ((a === 'theatre' && /comedy/i.test(t['theatre:genre'] || '')) || /comedy|\blaugh/i.test(name)) v.push('comedy');
+      (['bar', 'pub'].includes(a) && /\bpool\b|darts|shuffle|bowl|ping ?pong|games|billar|biliardo|billard|bolera|kicker|futbol[ií]n/i.test(name))) v.push('games');
+  if ((a === 'theatre' && /comedy/i.test(t['theatre:genre'] || '')) || /comedy|\blaugh|com[ée]die|stand.?up|cabaret|kabarett/i.test(name)) v.push('comedy');
   if (a === 'karaoke_box' || t.karaoke === 'yes' || /karaoke/i.test(name)) v.push('karaoke');
   if (a === 'nightclub' && !chain) v.push('dance');
   if (['fast_food', 'restaurant'].includes(a) && late(hours)) v.push('latefood');
@@ -64,6 +68,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 for (const area of areas) {
   if (only && area.id !== only) continue;
+  if (cityOnly && (area.city || 'london') !== cityOnly) continue;
   if (missingOnly && await exists(new URL(`areas/${area.id}.json`, root))) continue;
   process.stdout.write(`${area.name}… `);
   let res;
@@ -99,6 +104,9 @@ for (const area of areas) {
       postcode: t['addr:postcode'] || undefined,
       hours: t.opening_hours || undefined,
       website: t.website || t['contact:website'] || undefined,
+      // Free quality signal: the place has its own Wikipedia/Wikidata entry, or is a listed
+      // historic building. Chains are excluded, so this means "notable", not "big".
+      known: (!(t.brand || t['brand:wikidata']) && !!(t.wikidata || t.wikipedia || t.heritage || t.historic)) || undefined,
     });
   }
   const counts = {};
