@@ -1506,6 +1506,7 @@
     return { area, types, counts, end, n:types.length >= 2 ? types.length : 3 };
   }
   function renderVote(){
+    if ($('s-vote').classList.contains('on')) holdScroll(window.scrollY);
     const p = poll, areaName = id => (AREAS.find(a => a.id === id) || { name:id }).name;
     $('vote-kicker').textContent = t('vote.kicker', { day:dayLabel(), time:fmt(p.start) });
     $('vote-where').textContent = t('vote.in', { areas:p.areas.map(areaName).join(' ' + t('vote.or') + ' ') });
@@ -1873,7 +1874,20 @@
       '</div>') + '</div>' +
       (pinned && !group ? '<p class="pinned-note">'+ICON_PINNED+esc(t('plan.pinnedTag'))+'</p>' : '');
   }
+  // Safari (every iPhone browser) loses its place when a list it's showing is rebuilt and jumps
+  // up the page; Chrome compensates. So redraws that should stay put note the position first and
+  // put it back right after, again on the next frame and once more shortly after (map and weather
+  // finish later). Stops early if the person scrolls themselves.
+  function holdScroll(y){
+    let mine = true;
+    const stop = () => { mine = false; };
+    addEventListener('touchmove', stop, { once:true, passive:true });
+    addEventListener('wheel', stop, { once:true, passive:true });
+    const fix = () => { if (mine && Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); };
+    fix(); requestAnimationFrame(fix); setTimeout(fix, 80); setTimeout(() => { fix(); stop(); }, 350);
+  }
   function renderPlan(keepScroll){
+    const keepY = window.scrollY;
     const found = plan.filter(s => s.venue).length;
     $('plan-kicker').textContent = dayLabel() + ' · ' + fmt(plan.length ? plan[0].from : form.start) + '–' + (form.end >= 27 * 60 ? t('time.late') : fmt(form.end));
     $('plan-area').textContent = form.area.name;
@@ -1937,6 +1951,7 @@
     $('share').style.display = found ? '' : 'none';
     if (!keepScroll) { show('s-plan'); $('about-link').classList.remove('on'); }
     renderMap();
+    if (keepScroll) holdScroll(keepY);
   }
 
   // OpenFreeMap vector tiles (free, no key, no request limits; the OSM tile servers don't allow
