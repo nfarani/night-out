@@ -7,6 +7,7 @@ root.LANGS = [['en', 'EN', 'English', '🇬🇧'], ['fr', 'FR', 'Français', '�
 
 root.I18N = {
   en: {
+    'plan.editStop': "Edit",
     'plan.reportClosed': "Closed for good?", 'toast.reported': "Thanks. We won’t suggest it again", 'plan.reportedOne': "Someone reported it closed for good, check before you go",
     'plan.pinnedTag': "Pinned",
     'stop.title': "Stop {n} · {type}",
@@ -158,6 +159,7 @@ root.I18N = {
   },
 
   fr: {
+    'plan.editStop': "Modifier",
     'plan.reportClosed': "Fermé définitivement ?", 'toast.reported': "Merci. On ne le proposera plus", 'plan.reportedOne': "Quelqu’un l’a signalé fermé définitivement, vérifiez avant d’y aller",
     'plan.pinnedTag': "Épinglé",
     'stop.title': "Étape {n} · {type}",
@@ -309,6 +311,7 @@ root.I18N = {
   },
 
   es: {
+    'plan.editStop': "Editar",
     'plan.reportClosed': "¿Cerrado para siempre?", 'toast.reported': "Gracias. No lo volveremos a proponer", 'plan.reportedOne': "Alguien avisó de que ha cerrado, compruébalo antes de ir",
     'plan.pinnedTag': "Fijado",
     'stop.title': "Parada {n} · {type}",
@@ -460,6 +463,7 @@ root.I18N = {
   },
 
   it: {
+    'plan.editStop': "Modifica",
     'plan.reportClosed': "Chiuso per sempre?", 'toast.reported': "Grazie. Non lo proporremo più", 'plan.reportedOne': "Qualcuno l’ha segnalato come chiuso, controlla prima di andare",
     'plan.pinnedTag': "Fissato",
     'stop.title': "Tappa {n} · {type}",
@@ -611,6 +615,7 @@ root.I18N = {
   },
 
   pt: {
+    'plan.editStop': "Editar",
     'plan.reportClosed': "Fechou de vez?", 'toast.reported': "Valeu. Não vamos mais sugerir", 'plan.reportedOne': "Alguém avisou que fechou de vez, confira antes de ir",
     'plan.pinnedTag': "Fixado",
     'stop.title': "Parada {n} · {type}",

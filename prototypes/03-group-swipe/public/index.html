@@ -132,7 +132,11 @@
   @media (max-width:480px){
     .stop{ grid-template-columns:44px 22px 1fr; column-gap:8px; }
     .card{ padding:14px; }
-    .actions .btn{ flex:1 1 auto; padding:0 10px; white-space:nowrap; }
+    .actions .btn{ flex:1 1 calc(50% - 4px); padding:0 10px; white-space:nowrap; }   /* two per row, a tidy grid */
+  }
+  @media (max-width:400px){
+    .actions .btn{ padding:0 6px; font-size:13px; }
+    .actions .btn .ico{ display:none; }                 /* words only, so two fit per row */
     .stops .plan-tools{ margin-left:0; }
     .plan-tools .btn{ flex:1; padding:0 10px; white-space:nowrap; }
   }
@@ -1781,13 +1785,13 @@
 
   const ICON_BACK = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>';
   const ICON_PINNED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3H7l3-3z"/><path d="M12 13v7"/></svg>';
-  const ICON_MORE = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>';
+  const ICON_EDIT = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
   // Top of a stop card: the kind of place, then pin and options (not on a locked group plan).
   function cardTop(s, k){
     const pinned = !!s.pinned;
     return '<div class="card-top"><p class="type">'+esc(s.type.name)+'</p>' + (group ? '' : '<div class="card-icons">' +
       (s.venue ? '<button class="icon-btn" type="button" data-pin="'+k+'" aria-pressed="'+pinned+'" aria-label="'+esc(t(pinned ? 'plan.unpin' : 'plan.pin'))+'" title="'+esc(t(pinned ? 'plan.unpin' : 'plan.pin'))+'">'+ICON_PINNED+'</button>' : '') +
-      '<button class="icon-btn" type="button" data-menu="'+k+'" aria-label="'+esc(t('stop.options', { n:k + 1 }))+'" title="'+esc(t('stop.options', { n:k + 1 }))+'">'+ICON_MORE+'</button></div>') + '</div>' +
+      '</div>') + '</div>' +
       (pinned && !group ? '<p class="pinned-note">'+ICON_PINNED+esc(t('plan.pinnedTag'))+'</p>' : '');
   }
   function renderPlan(keepScroll){
@@ -1804,7 +1808,8 @@
       let body;
       if (!v) {
         body = cardTop(s, k) + '<p class="empty">'+esc(t('plan.nothingFor', { type:s.type.name.toLowerCase(), time:fmt(s.from), area:form.area.name }))+'</p>' +
-          (group ? '' : '<div class="actions"><button class="btn" type="button" data-choose="'+k+'">'+esc(t('stop.choose'))+'</button></div>');
+          (group ? '' : '<div class="actions"><button class="btn" type="button" data-choose="'+k+'">'+esc(t('stop.choose'))+'</button>' +
+            '<button class="btn" type="button" data-menu="'+k+'" aria-label="'+esc(t('stop.options', { n:k + 1 }))+'">'+ICON_EDIT+esc(t('plan.editStop'))+'</button></div>');
       } else {
         const st = status(v, form.day, s.from, Math.max(s.from, s.to - 30));
         const close = closesAt(v, form.day, s.from);
@@ -1823,6 +1828,7 @@
           (v.street ? '<p class="addr">'+esc(v.street)+'</p>' : '') + note + votes + hoursLine +
           '<div class="actions"><a class="btn" href="'+esc(mapsLink(v))+'" target="_blank" rel="noopener">'+ICON_PIN+esc(t('plan.maps'))+'</a>' +
           (group ? '' : '<button class="btn" type="button" data-swap="'+k+'"'+(s.pinned ? ' disabled' : '')+'>'+ICON_SWAP+esc(t('plan.swap'))+'</button>' +
+            '<button class="btn" type="button" data-menu="'+k+'" aria-label="'+esc(t('stop.options', { n:k + 1 }))+'">'+ICON_EDIT+esc(t('plan.editStop'))+'</button>' +
             (s.history && s.history.length ? '<button class="btn" type="button" data-back="'+k+'" title="'+esc(t('plan.backTitle'))+'">'+ICON_BACK+esc(t('plan.back'))+'</button>' : '')) +
           '</div>' + (reportedHere.has(v.id) ? '' : '<button class="report" type="button" data-report="'+k+'">'+esc(t('plan.reportClosed'))+'</button>') + rateRow(v);
       }
