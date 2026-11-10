@@ -161,6 +161,18 @@
   .pick svg{ width:.42em; height:.42em; flex:0 0 .42em; opacity:.75; margin-top:.06em; }
   .pick select{ position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
   .lede{ font-size:15px; line-height:22px; color:var(--text-2); max-width:34rem; margin:0; }
+  /* A real plan for the area, right under the headline: what the app makes, before any choices. */
+  .preview{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:0 0 20px; max-width:34rem; }
+  .preview-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 12px; }
+  .preview-head .kicker{ margin:0; min-width:0; }
+  .preview-head .btn{ flex:0 0 auto; height:40px; }
+  .preview-stops{ list-style:none; margin:0 0 16px; padding:0; min-height:120px; }
+  .preview-stops li{ display:grid; grid-template-columns:44px 24px minmax(0,1fr); column-gap:10px; align-items:center; }
+  .preview-stops li + li{ margin-top:12px; }
+  .preview-stops time{ font:500 17px/1 var(--display); font-variant-numeric:tabular-nums; color:var(--text-2); }
+  .preview-stops b{ display:block; font:600 21px/1.15 var(--display); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .preview-stops small{ display:block; font-size:13px; color:var(--muted); }
+  .preview.loading .preview-stops, .preview.loading .preview-head .kicker{ opacity:.35; }
 
   .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin:0 0 16px; }
   .section-head h2{ margin:0; font:600 24px/1 var(--display); }
@@ -412,6 +424,12 @@
           <span data-t="home.in">in</span> <label class="pick accent"><span id="area-label">Soho</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="area" aria-label="Change the area" title="Change the area"></select></label>
         </h1>
         <p class="area-link"><a id="area-page" href="/neighbourhoods"></a></p>
+        <div class="preview" id="preview" aria-live="polite">
+          <div class="preview-head"><p class="kicker" id="preview-kicker"></p>
+            <button class="btn" type="button" id="preview-another"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg><span data-t="home.previewAnother">Another</span></button></div>
+          <ol class="preview-stops" id="preview-stops"></ol>
+          <button class="cta" type="button" id="preview-open" data-t="home.previewOpen">Open this plan</button>
+        </div>
         <p class="lede" data-t="home.lede">A timed night out where every stop is a short walk from the last, checked against opening hours where we have them</p>
       </div>
 
@@ -762,6 +780,31 @@
   // Browsers that unlocked /stats are the owner's: they send nothing, so testing never inflates the numbers.
   const isOwner = (() => { try { return localStorage.getItem('no_me') === '1'; } catch (e) { return false; } })();
   function track(step){ sendEvent({ step }); }
+  // Where this visit came from: a ?ref= tag on links we post (getowlabout.com/?ref=tiktok) or the
+  // referring site. A fixed list, counted per page load along with whether that visit made a plan,
+  // so /stats shows which channels bring people who actually plan. Only the channel, nothing else.
+  const SOURCES = ['reddit', 'tiktok', 'instagram', 'facebook', 'x', 'linkedin', 'whatsapp', 'google', 'search', 'site', 'direct', 'other'];
+  const SOURCE = (() => {
+    const q = new URLSearchParams(location.search);
+    let tag = (q.get('ref') || q.get('utm_source') || '').toLowerCase();
+    if (tag === 'twitter') tag = 'x';
+    if ([...q.keys()].some(k => k === 'ref' || k.startsWith('utm_'))) {          // so links people copy and share don't carry our tag
+      [...q.keys()].filter(k => k === 'ref' || k.startsWith('utm_')).forEach(k => q.delete(k));
+      history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
+    }
+    if (SOURCES.includes(tag)) return tag;
+    let h = '';
+    try { h = new URL(document.referrer).hostname.replace(/^(www|m|l|lm|out|old|mobile)\./, ''); } catch (e) {}
+    if (!h) return tag ? 'other' : 'direct';
+    if (h === location.hostname || /(^|\.)getowlabout\.com$/.test(h)) return 'site';
+    const BY = [[/(^|\.)reddit\.com$/, 'reddit'], [/(^|\.)tiktok\.com$/, 'tiktok'], [/(^|\.)instagram\.com$/, 'instagram'],
+      [/(^|\.)(facebook\.com|fb\.com|fb\.me)$/, 'facebook'], [/^(t\.co|x\.com|twitter\.com)$/, 'x'], [/(^|\.)(linkedin\.com|lnkd\.in)$/, 'linkedin'],
+      [/(^|\.)(whatsapp\.com|wa\.me)$/, 'whatsapp'], [/(^|\.)google\.[a-z.]+$/, 'google'],
+      [/(^|\.)(bing\.com|duckduckgo\.com|yahoo\.com|ecosia\.org|brave\.com|yandex\.[a-z]+)$/, 'search']];
+    const hit = BY.find(([re]) => re.test(h));
+    return hit ? hit[1] : 'other';
+  })();
+  let plannedThisVisit = false;
   function sendEvent(body){
     if (isOwner) return;
     try { fetch('/api/event', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ area:form.area.id, ...body }), keepalive:true }).catch(() => {}); } catch (e) {}
@@ -922,8 +965,12 @@
     writeHash(true, push);
     renderPlan(keepScroll);
     if (rainSwap) toast(t('toast.rainSwap'));
+    planMade();
+  }
+  function planMade(){
     sendEvent({ step:'plan', shown:plan.filter(x => x.venue).map(x => x.venue.id) });
     markSeen(plan.filter(x => x.venue).map(x => x.venue.id));
+    if (!plannedThisVisit) { plannedThisVisit = true; track('plan_' + SOURCE); }
   }
 
   async function swapStop(k){
@@ -1746,6 +1793,7 @@
     });
     loadArea(form.area.id).catch(() => {});        // warm the caches so the first plan is instant
     loadSignals(form.area.id);
+    renderPreview();
   }
   function renderHome(){ renderHeader(); syncBuilder(); }
 
@@ -1816,6 +1864,55 @@
     const late = types.some(id => T[id].slot === 2);
     go({ types, n:types.length, start:19 * 60, end:late ? 25 * 60 : 24 * 60, preset:'Surprise me' });
   }
+
+  // ---------- home preview: a real plan for the area on the first screen ----------
+  // Same engine as any plan, cycling through the ready-made nights. Opening it keeps exactly
+  // these places, so what you saw is what you get.
+  let preview = null, previewIdx = 1, previewKey = '';
+  function draftPlan(p, venues){
+    const saved = { ...form };
+    Object.assign(form, { types:[...p.types], n:p.n, start:p.start, end:p.end, stops:null, times:null });
+    try {
+      const used = new Set(), out = [];
+      for (const s of slots(stopTypes())) {
+        const prev = [...out].reverse().find(x => x.venue);
+        const got = pickVenue(venues, s.type, s.from, s.to, prev && prev.venue, used);
+        if (got.venue) used.add(got.venue.id);
+        out.push({ ...s, type:got.type, wanted:got.type !== s.type ? s.type : null, venue:got.venue });
+      }
+      return out;
+    } finally { Object.assign(form, saved); }
+  }
+  async function renderPreview(fresh){
+    const el = $('preview'), key = form.area.id + '|' + form.day + '|' + previewIdx;
+    if (fresh || key !== previewKey || !preview) {
+      previewKey = key; el.classList.add('loading');
+      let venues;
+      try { venues = await loadAreaWithSignals(form.area.id); } catch (e) { el.hidden = true; return; }
+      if (previewKey !== key) return;                     // area, day or night changed while loading
+      preview = draftPlan(PRESETS[previewIdx], venues);
+      el.classList.remove('loading');
+    }
+    const p = PRESETS[previewIdx], stops = preview.filter(x => x.venue);
+    el.hidden = stops.length < 2;                          // too little open here for a plan worth showing
+    $('preview-kicker').textContent = presetLabel(p.name) + ' · ' + dayLabel() + ' · ' + fmt(p.start) + '–' + (p.end >= 27 * 60 ? t('time.late') : fmt(p.end));
+    $('preview-stops').innerHTML = stops.map((x, i) => '<li><time>' + clock(x.from) + '</time><span class="pin-n">' + (i + 1) + '</span><span><b>' + esc(x.venue.name) + '</b><small>' +
+      esc(x.type.name + (i ? ' · ' + t('plan.walk', { n:walkMins(stops[i - 1].venue, x.venue) }) : '')) + '</small></span></li>').join('');
+  }
+  $('preview-another').onclick = () => { previewIdx = (previewIdx + 1) % PRESETS.length; renderPreview(true); };
+  $('preview-open').onclick = () => {
+    if (!preview || planning || $('preview').classList.contains('loading')) return;
+    const p = PRESETS[previewIdx];
+    Object.assign(form, { types:[...p.types], n:p.n, start:p.start, end:p.end, preset:p.name, stops:null, times:null });
+    plan = preview.map(x => ({ ...x, seen:new Set(x.venue ? [x.venue.id] : []) }));
+    if (plan.some(x => x.wanted)) form.stops = plan.map(x => x.type.id);
+    preview = null;                                         // a fresh one when you're back home
+    track('preview');
+    writeHash(true, true);
+    cameFromHome = true;
+    renderPlan();
+    planMade();
+  };
 
   // ---------- navigation: real history entries, so the phone's back button works ----------
   function showAbout(push = true){
@@ -2065,6 +2162,7 @@
     // Area is whatever the page opened on (a shared plan's area, or the last one used).
     const today = new Date().toISOString().slice(0, 10), first = recall('no_first'), lastReturn = recall('no_return');
     track('visit');
+    track('in_' + SOURCE);
     if (!first) { remember('no_first', today); track('new'); }
     else if (first !== today && lastReturn !== today) { remember('no_return', today); track('return'); }
     // Offline support: plans you've opened keep working without signal (see sw.js).

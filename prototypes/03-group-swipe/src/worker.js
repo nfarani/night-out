@@ -27,7 +27,9 @@ const VENUE_ID = /^[nwr]\d{1,12}$/;
 const MAX_IDS = 8;
 
 const STEPS = new Set(['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route', 'lock', 'join', 'rate',
-  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report', 'sent', 'maps']);
+  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report', 'sent', 'maps', 'preview',
+  // where a visit came from (in_), and whether that visit went on to make a plan (plan_)
+  ...['reddit', 'tiktok', 'instagram', 'facebook', 'x', 'linkedin', 'whatsapp', 'google', 'search', 'site', 'direct', 'other'].flatMap(s => ['in_' + s, 'plan_' + s])]);
 const TYPE_IDS = new Set(['pub', 'wine', 'rooftop', 'cheap', 'dinner', 'cocktail', 'games', 'live', 'comedy', 'karaoke', 'dance', 'latefood']);
 const DEVICE = /^[a-z0-9]{16,40}$/;
 const PLAN_ID = /^[a-z2-9]{6,10}$/;

@@ -54,6 +54,10 @@
 
   <div class="kpis" id="kpis"></div>
 
+  <h2>Where visitors come from</h2>
+  <div class="scroll"><table id="sources"></table></div>
+  <p class="note">From the site that sent them, or the tag on links you post: use getowlabout.com/?ref=reddit, ?ref=tiktok, ?ref=instagram… (WhatsApp and most apps send no referrer, so they show as Direct unless tagged). Counted from 10 Nov 2026.</p>
+
   <h2>By city</h2>
   <div class="scroll"><table id="cities"></table></div>
 
@@ -72,7 +76,9 @@
 (() => {
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const STEPS = ['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'sent', 'join', 'route', 'maps'];
+  const STEPS = ['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'sent', 'join', 'route', 'maps', 'preview'];
+  const SOURCES = [['reddit', 'Reddit'], ['tiktok', 'TikTok'], ['instagram', 'Instagram'], ['facebook', 'Facebook'], ['x', 'X'], ['linkedin', 'LinkedIn'],
+    ['whatsapp', 'WhatsApp'], ['google', 'Google'], ['search', 'Other search'], ['site', 'Our own pages'], ['direct', 'Direct / apps'], ['other', 'Other sites']];
   const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '–';
   const num = n => (n || 0).toLocaleString('en-GB');
   let cityNames = {}, areaNames = {};
@@ -107,12 +113,18 @@
     const kpi = (v, label, sub) => '<div class="kpi"><b>'+v+'</b><span>'+label+'</span>'+(sub ? '<small>'+sub+'</small>' : '')+'</div>';
     $('kpis').innerHTML =
       kpi(num(t.visit), 'Visits', num(t.new) + ' new, ' + num(t.return) + ' returning') +
-      kpi(num(t.plan), 'Plans made', t.visit ? (t.plan / t.visit).toFixed(1) + ' per visit' : '') +
+      kpi(num(t.plan), 'Plans made', (t.visit ? (t.plan / t.visit).toFixed(1) + ' per visit · ' : '') + num(t.preview) + ' opened from the home preview') +
       kpi(pct(t.sent, t.plan), 'Plans actually sent', num(t.sent) + ' sent, from ' + num(t.share) + ' taps on Send') +
       kpi(num(t.join), 'Friends who joined a group', 'by adding their name') +
       kpi(pct(t.route, t.plan), 'Plans with the route opened', num(t.route) + (t.route === 1 ? ' route' : ' routes')) +
       kpi(num(t.open_shared), 'Opened from a shared link', 'people who got a plan from a friend') +
       kpi(t.plan ? (t.maps / t.plan).toFixed(1) : '–', 'Maps taps per plan', 'high means people want more before trusting a stop');
+
+    const by = {};
+    d.byArea.forEach(r => { by[r.step] = (by[r.step] || 0) + r.n; });
+    const srcRows = SOURCES.map(([id, label]) => [label, by['in_' + id] || 0, by['plan_' + id] || 0]).filter(r => r[1]).sort((a, b) => b[1] - a[1]);
+    $('sources').innerHTML = '<tr><th></th><th>Visits</th><th>Made a plan</th><th>Plan rate</th></tr>' +
+      (srcRows.map(([label, v, p]) => '<tr><td>' + label + '</td><td>' + num(v) + '</td><td>' + num(p) + '</td><td>' + pct(p, v) + '</td></tr>').join('') || '<tr><td>No data yet</td></tr>');
 
     $('cities').innerHTML = HEAD + group(d.byArea, 'city').sort((a, b) => b[1].visit - a[1].visit)
       .map(([c, t]) => line(esc(cityNames[c] || c), t)).join('') || '<tr><td>No data yet</td></tr>';

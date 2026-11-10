@@ -57,9 +57,24 @@ async function runDevice([name, engine, dev]) {
 
   try {
     // ---------- home ----------
-    await page.goto(BASE + '/');
+    await page.goto(BASE + '/?ref=reddit');
     await page.waitForSelector('#stops-n button', { timeout:15000 });
     ok(await page.locator('#s-home.on').count(), 'home shows on load');
+    ok(!/ref=/.test(page.url()), 'source tag is removed from the address', page.url());
+
+    // home preview: a real plan on the first screen
+    await page.waitForSelector('#preview-stops li', { timeout:15000 });
+    const pv = () => page.$$eval('#preview-stops b', bs => bs.map(b => b.textContent));
+    ok((await pv()).length >= 2, 'home preview shows a real plan', (await pv()).length);
+    const k0 = await page.textContent('#preview-kicker');
+    await tap('#preview-another'); await page.waitForFunction(k => document.getElementById('preview-kicker').textContent !== k && !document.getElementById('preview').classList.contains('loading'), k0, { timeout:8000 }).catch(() => {});
+    ok(await page.textContent('#preview-kicker') !== k0, '"Another" shows a different night', k0 + ' → ' + await page.textContent('#preview-kicker'));
+    const pvNames = await pv(), hp = await page.evaluate(() => history.length);
+    await tap('#preview-open'); await page.waitForSelector('#s-plan.on #plan h3', { timeout:8000 });
+    ok(JSON.stringify(await page.$$eval('#plan h3', hs => hs.map(h => h.textContent))) === JSON.stringify(pvNames), 'opening the preview keeps exactly those places');
+    ok(await page.evaluate(() => history.length) === hp + 1, 'preview opens with one history entry');
+    await page.goBack(); await page.waitForSelector('#s-home.on #preview-stops li', { timeout:8000 });
+    ok(await page.locator('#preview:not([hidden])').count(), 'preview is back after returning home');
     ok(await overflow() <= 0, 'home: no sideways scroll', await overflow() + 'px');
     ok((await textLeaks()).length === 0, 'home: no untranslated keys', (await textLeaks()).join(','));
 
@@ -94,7 +109,7 @@ async function runDevice([name, engine, dev]) {
     await wait(400);
     ok(await page.locator('#plan .stop').count() === 4, 'pub crawl plan has 4 stops', await page.locator('#plan .stop').count());
     ok(await page.evaluate(() => scrollY) < 5, 'plan opens at top');
-    ok(await page.evaluate(() => history.length) === h0 + 1, 'plan adds one history entry');
+    ok(await page.evaluate(() => history.length) <= h0 + 1, 'plan adds at most one history entry');
     ok(await overflow() <= 0, 'plan: no sideways scroll', await overflow() + 'px');
     ok(await page.locator('#plan .empty').count() === 0, 'plan: no empty stops in Soho');
     ok(await page.$eval('#route', a => a.href.startsWith('https://www.google.com/maps/')), 'route link is Google Maps');
