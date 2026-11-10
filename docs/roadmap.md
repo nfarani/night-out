@@ -1,5 +1,7 @@
 # Roadmap
 
+> **Current status and every idea since launch: see [ideas.md](ideas.md).** This file is the original plan; Phases 0–2 are largely done or superseded.
+
 Ordered by what unblocks what, not by what is most fun.
 
 ## Phase 0 — Decide (no code)
