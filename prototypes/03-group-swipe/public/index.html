@@ -210,6 +210,11 @@
   .rate span{ margin-right:auto; }
   .rate .btn.on{ background:var(--text); color:var(--bg); border-color:var(--text); }
   .votes{ font-size:13px; color:var(--ok); margin:0 0 8px; }
+  .tag-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .tag-row .chip{ height:32px; font-size:13px; }
+  .tag-sum{ font-size:13px; color:var(--text-2); margin:0 0 8px; }
+  .weather{ font-size:14px; color:var(--text-2); margin:0 0 12px; }
+  .weather a{ color:var(--muted); font-size:12px; margin-left:6px; }
   .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; height:36px; padding:0 12px; border:1px solid var(--line-2); background:var(--raised); border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; text-decoration:none; transition:background-color .15s var(--ease), border-color .15s var(--ease); }
   .btn:hover{ border-color:rgba(239,233,222,.24); }
   .btn .ico{ color:var(--text-2); }
@@ -315,6 +320,7 @@
       <div class="plan-head">
         <button class="back" id="edit" type="button"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Change the plan</button>
         <p class="kicker" id="plan-kicker"></p>
+        <p class="weather" id="plan-weather" hidden></p>
         <h1 id="plan-area"></h1>
         <span class="hl" id="plan-title"></span>
       </div>
@@ -420,9 +426,9 @@
   const PRESETS = [
     { name:'The pub crawl',      for:'For a group',              desc:'Four proper pubs, a few minutes apart. Nobody has to choose',   types:['pub'],                                        n:4, start:19*60, end:23*60 },
     { name:'Date night',         for:'For a date',               desc:'Wine to start, dinner, then somewhere low-lit',                 types:['wine','dinner','cocktail'],                   n:3, start:19*60, end:24*60 },
-    { name:'Big night out',      for:'For a birthday',           desc:'Dinner first, dancing later, chips at the end',                 types:['pub','dinner','cocktail','dance','latefood'], n:5, start:19*60, end:27*60 },
-    { name:'Cheap and cheerful', for:'For the end of the month', desc:'Street food and a couple of pubs, nothing fancy',               types:['cheap','pub'],                                n:3, start:18*60, end:23*60 },
-    { name:'Live and loud',      for:'For music people',         desc:'A pint, a band you haven\u2019t heard of, a nightcap',           types:['pub','live','cocktail'],                      n:3, start:20*60, end:25*60 },
+    { name:'Big night out',      for:'For a birthday',           desc:'Dinner first, dancing later, late-night food at the end',    types:['pub','dinner','cocktail','dance','latefood'], n:5, start:19*60, end:27*60 },
+    { name:'Cheap and cheerful', for:'For the end of the month', desc:'Street food and a couple of bars, nothing fancy',             types:['cheap','pub'],                                n:3, start:18*60, end:23*60 },
+    { name:'Live and loud',      for:'For music people',         desc:'A drink, a band you haven\u2019t heard of, a nightcap',       types:['pub','live','cocktail'],                      n:3, start:20*60, end:25*60 },
     { name:'Make it weird',      for:'For the bored',            desc:'Darts, karaoke, 2am food. Trust the process',                   types:['games','karaoke','latefood'],                 n:3, start:20*60, end:26*60 },
   ];
 
@@ -485,13 +491,13 @@
   }
   // Your curation and usage stats for an area. If the API is unreachable the planner
   // still works on OSM alone, so failures resolve to empty signals.
-  const NO_SIGNALS = { picks:{}, guides:new Set(), avoid:new Set(), stats:{}, ratings:{} };
+  const NO_SIGNALS = { picks:{}, guides:new Set(), avoid:new Set(), stats:{}, ratings:{}, tags:{} };
   const signalData = {};
   let sig = NO_SIGNALS;
   function loadSignals(id){
     if (!signalData[id]) signalData[id] = fetch('/api/signals?area=' + encodeURIComponent(id))
       .then(r => r.ok ? r.json() : {})
-      .then(d => ({ picks:d.picks || {}, guides:new Set(d.guides || []), avoid:new Set(d.avoid || []), stats:d.stats || {}, ratings:d.ratings || {} }))
+      .then(d => ({ picks:d.picks || {}, guides:new Set(d.guides || []), avoid:new Set(d.avoid || []), stats:d.stats || {}, ratings:d.ratings || {}, tags:d.tags || {} }))
       .catch(() => NO_SIGNALS);
     return signalData[id];
   }
@@ -623,10 +629,18 @@
   }
 
   async function buildPlan(push){
-    const venues = await loadAreaWithSignals(form.area.id);
+    const [venues, fc] = await Promise.all([loadAreaWithSignals(form.area.id), forecast(form.area)]);
     const used = new Set();
     plan = [];
-    for (const s of slots(stopTypes())) {
+    // Rain on the way: a "drinks outside" stop becomes a pub. Not for stops someone chose by
+    // editing (form.stops), and the swap is written into the link so friends see the same plan.
+    const sl = slots(stopTypes());
+    let rainSwap = false;
+    if (fc && !form.stops) for (const s of sl) {
+      if (s.type.id === 'rooftop' && weatherFor(fc, nightDate(), s.from, s.to).some(h => h.rain >= RAIN_MM)) { s.type = T.pub; rainSwap = true; }
+    }
+    if (rainSwap) form.stops = sl.map(s => s.type.id);
+    for (const s of sl) {
       const prev = [...plan].reverse().find(x => x.venue);
       const venue = bestVenue(venues, s.type, s.from, s.to, prev && prev.venue, used);
       if (venue) used.add(venue.id);
@@ -634,6 +648,7 @@
     }
     writeHash(true, push);
     renderPlan();
+    if (rainSwap) toast('Rain forecast, so drinks outside became a pub');
     sendEvent({ step:'plan', shown:plan.filter(x => x.venue).map(x => x.venue.id) });
     markSeen(plan.filter(x => x.venue).map(x => x.venue.id));
   }
@@ -655,6 +670,47 @@
     s.seen.add(alt.id);
     writeHash(true);
     renderPlan(true);
+  }
+
+  // ---------- weather: MET Norway forecast via /api/weather (CC BY 4.0) ----------
+  const RAIN_MM = 0.3;                       // mm in an hour that counts as "rain likely"
+  const weatherData = {};
+  // City-local "YYYY-MM-DD HH" -> { temp, rain }, for the area's next ~9 days.
+  function forecast(area){
+    if (!weatherData[area.id]) weatherData[area.id] = fetch('/api/weather?area=' + encodeURIComponent(area.id))
+      .then(r => r.ok ? r.json() : null).then(w => {
+        if (!w || !w.hours) return null;
+        const f = new Intl.DateTimeFormat('en-CA', { timeZone:cityOf(area).tz, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', hourCycle:'h23' });
+        const m = new Map();
+        for (const [t, temp, rain, span = 1] of w.hours) for (let h = 0; h < span; h++) {
+          const p = Object.fromEntries(f.formatToParts(new Date(Date.parse(t) + h * 3600000)).map(x => [x.type, x.value]));
+          const k = p.year + '-' + p.month + '-' + p.day + ' ' + p.hour;
+          if (!m.has(k)) m.set(k, { temp, rain });
+        }
+        return m;
+      }).catch(() => null);
+    return weatherData[area.id];
+  }
+  // The forecast hours covering a stretch of the night (minutes may run past midnight).
+  function weatherFor(fc, date, from, to){
+    const out = [];
+    for (let m = Math.floor(from / 60) * 60; m < to; m += 60) {
+      const x = fc.get(addDays(date, Math.floor(m / 1440)) + ' ' + String(Math.floor((m % 1440) / 60)).padStart(2, '0'));
+      if (x) out.push({ ...x, m });
+    }
+    return out;
+  }
+  async function renderWeather(){
+    const el = $('plan-weather'), area = form.area, date = group ? group.date : nightDate();
+    const fc = await forecast(area);
+    if (form.area !== area) return;
+    const hrs = fc ? weatherFor(fc, date, form.start, form.end) : [];
+    if (!hrs.length) { el.hidden = true; return; }
+    const ts = hrs.map(h => Math.round(h.temp)), lo = Math.min(...ts), hi = Math.max(...ts);
+    const wet = hrs.find(h => h.rain >= RAIN_MM);
+    el.innerHTML = (lo === hi ? lo : lo + '–' + hi) + '° · ' + (wet ? (wet.m <= form.start ? 'rain likely' : 'rain likely from ' + clock(wet.m)) : 'dry') +
+      '<a href="https://api.met.no/" target="_blank" rel="noopener">Forecast: MET Norway</a>';
+    el.hidden = false;
   }
 
   // ---------- editing a plan: remove, reorder, change a stop's type, add one ----------
@@ -797,11 +853,28 @@
     return '<div class="rate"><span>Go again?</span>' +
       '<button class="btn'+(mine === 1 ? ' on' : '')+'" type="button" data-rate="'+v.id+'" data-vote="1" aria-pressed="'+(mine === 1)+'">👍 '+(up || '')+'</button>' +
       '<button class="btn'+(mine === -1 ? ' on' : '')+'" type="button" data-rate="'+v.id+'" data-vote="-1" aria-pressed="'+(mine === -1)+'">👎 '+(down || '')+'</button>' +
-      '<button class="btn'+(mine === -2 ? ' on' : '')+'" type="button" data-rate="'+v.id+'" data-vote="-2" aria-pressed="'+(mine === -2)+'" title="It was closed when we got there">Closed '+(closed || '')+'</button></div>';
+      '<button class="btn'+(mine === -2 ? ' on' : '')+'" type="button" data-rate="'+v.id+'" data-vote="-2" aria-pressed="'+(mine === -2)+'" title="It was closed when we got there">Closed '+(closed || '')+'</button></div>' +
+      (mine === 1 || mine === -1 ? '<div class="tag-row">' + TAG_NAMES.map(([t, label]) => {
+        const on = (group.tags[v.id] || []).includes(t);
+        return '<button type="button" class="chip'+(on ? ' on' : '')+'" data-tag="'+t+'" data-venue="'+v.id+'" aria-pressed="'+on+'">'+label+'</button>';
+      }).join('') + '</div>' : '');
+  }
+  const TAG_NAMES = [['vibe', 'Great vibe'], ['value', 'Good value'], ['groups', 'Good for groups'], ['date', 'Date spot'], ['busy', 'Too busy'], ['pricey', 'Pricey']];
+  // What people said about a place, shown once at least two agree.
+  function tagSummary(id){
+    const t = sig.tags[id] || {};
+    const said = TAG_NAMES.filter(([k]) => t[k] >= 2).sort((a, b) => t[b[0]] - t[a[0]]).slice(0, 3);
+    return said.length ? '<p class="tag-sum">People said: ' + said.map(([k, label]) => label.toLowerCase() + ' (' + t[k] + ')').join(', ') + '</p>' : '';
+  }
+  async function toggleTag(venue, tag){
+    const now = group.tags[venue] || [];
+    const tags = now.includes(tag) ? now.filter(t => t !== tag) : now.concat(tag);
+    await api('/api/plans/' + group.id + '/rate', { device:device(), venue, vote:group.votes[venue], tags });
+    await openGroup(group.id);
   }
   async function rate(venue, vote){
     const next = (group.votes[venue] || 0) === vote ? 0 : vote;     // tap your vote again to take it back
-    await api('/api/plans/' + group.id + '/rate', { device:device(), venue, vote:next });
+    await api('/api/plans/' + group.id + '/rate', { device:device(), venue, vote:next, tags:group.tags[venue] || [] });
     track('rate');
     await openGroup(group.id);
   }
@@ -1161,6 +1234,7 @@
           (sig.picks[v.id] ? esc(sig.picks[v.id]) : '') + '</p>' : '';
         const [up, down, closed = 0] = sig.ratings[v.id] || [0, 0, 0];
         const votes = (up + down >= 3 && up > down ? '<p class="votes">'+up+' of '+(up + down)+' would go again</p>' : '') +
+          tagSummary(v.id) +
           (closed ? '<p class="hours unknown">'+(closed === 1 ? 'A group' : closed + ' groups')+' found it closed recently, check before you go</p>' : '');
         body = '<p class="type">'+esc(s.type.name)+'</p><h3>'+esc(v.name)+'</h3>' +
           (v.street ? '<p class="addr">'+esc(v.street)+'</p>' : '') + note + votes + hoursLine +
@@ -1178,7 +1252,9 @@
     $('plan').querySelectorAll('[data-change]').forEach(b => b.onclick = () => pickType(+b.dataset.change));
     $('plan').querySelectorAll('[data-remove]').forEach(b => b.onclick = () => removeStop(+b.dataset.remove));
     $('plan').querySelectorAll('[data-rate]').forEach(b => b.onclick = () => rate(b.dataset.rate, +b.dataset.vote).catch(e => toast(e.message)));
+    $('plan').querySelectorAll('[data-tag]').forEach(b => b.onclick = () => toggleTag(b.dataset.venue, b.dataset.tag).catch(e => toast(e.message)));
     renderGroup();
+    renderWeather();
     $('plan-tools').hidden = !!group;
     $('reshuffle').style.display = group ? 'none' : '';
     $('share').textContent = group ? 'Share the link' : 'Send to the group';

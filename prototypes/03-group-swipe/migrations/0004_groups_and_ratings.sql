@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS ratings (
   venue_id   TEXT NOT NULL,
   device     TEXT NOT NULL,
   vote       INTEGER NOT NULL CHECK (vote IN (-2, -1, 1)),   -- 1 would go again, -1 wouldn't, -2 it was closed
+  tags       TEXT,                                            -- JSON, e.g. ["vibe","value"]; only with 1 / -1
   updated_at INTEGER NOT NULL,
   PRIMARY KEY (plan_id, venue_id, device)
 );

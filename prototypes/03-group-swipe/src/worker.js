@@ -2,11 +2,12 @@
 //
 //   GET  /api/signals?area=soho        public: picks + avoids (yours and research's), and usage stats, for ranking
 //   POST /api/event                     public: { area, step?, shown:[ids], swapped:[ids], kept:[ids] } usage counts
+//   GET  /api/weather?area=soho         public: hourly forecast for the area (MET Norway, CC BY 4.0), cached
 //   GET  /api/stats?days=30             curator: funnel counts per city and area
 //   POST /api/plans                     public: lock a plan for a group { area, date, start, end, stops, title?, device, name? } -> { id }
 //   GET  /api/plans/<id>?device=…       public: the plan, who joined, vote tallies, your own votes
 //   POST /api/plans/<id>/join           public: { device, name }
-//   POST /api/plans/<id>/rate           public: { device, venue, vote: 1 | -1 | -2 (closed) | 0 (clear) } members only, from the day of the night
+//   POST /api/plans/<id>/rate           public: { device, venue, vote: 1 | -1 | -2 (closed) | 0 (clear), tags? } members only, from the day of the night
 //   GET  /api/curation?area=soho        curator: every row incl. research suggestions
 //   POST /api/curation                  curator: { area, id, verdict: pick|avoid|dismissed|none, note }
 //   POST /api/curation/suggestions      curator: { area, items:[{ id, kind: pick|avoid, note, sources }] }
@@ -22,21 +23,23 @@ const TYPE_IDS = new Set(['pub', 'wine', 'rooftop', 'cheap', 'dinner', 'cocktail
 const DEVICE = /^[a-z0-9]{16,40}$/;
 const PLAN_ID = /^[a-z2-9]{6,10}$/;
 const MAX_MEMBERS = 40;
+const TAGS = new Set(['vibe', 'value', 'groups', 'date', 'busy', 'pricey']);
 // Group votes count toward rankings only from plans at least this many people joined.
 const MIN_MEMBERS_FOR_RANKING = 2;
 
-let areaCity = null;                       // area id -> city id
+let areaCity = null, areaById = null;      // area id -> city id / area
 async function loadAreas(env, url){
   if (!areaCity) {
-    const res = await env.ASSETS.fetch(new URL('/data/areas.json', url));
-    areaCity = new Map((await res.json()).map(a => [a.id, a.city || 'london']));
+    const list = await (await env.ASSETS.fetch(new URL('/data/areas.json', url))).json();
+    areaCity = new Map(list.map(a => [a.id, a.city || 'london']));
+    areaById = new Map(list.map(a => [a.id, a]));
   }
   return areaCity;
 }
 async function knownArea(env, url, id){ return (await loadAreas(env, url)).has(id); }
 
 export default {
-  async fetch(request, env){
+  async fetch(request, env, ctx){
     const url = new URL(request.url);
     // A group plan link is the app page; the page reads the id from the path. The page's
     // title and link-preview tags are rewritten for this plan, so WhatsApp shows its stops.
@@ -50,6 +53,7 @@ export default {
     try {
       const route = request.method + ' ' + url.pathname;
       if (route === 'GET /api/signals') return await signals(url, env);
+      if (route === 'GET /api/weather') return await weather(url, env, ctx);
       if (route === 'POST /api/event') return await event(request, url, env);
       const pm = url.pathname.match(/^\/api\/plans(?:\/([a-z2-9]{6,10})(?:\/(join|rate))?)?$/);
       if (pm) {
@@ -84,7 +88,7 @@ export default {
 async function signals(url, env){
   const area = url.searchParams.get('area') || '';
   if (!(await knownArea(env, url, area))) return json({ error:'Unknown area' }, 400);
-  const [cur, st, rt] = await env.DB.batch([
+  const [cur, st, rt, tg] = await env.DB.batch([
     env.DB.prepare("SELECT venue_id, verdict, note, origin FROM curation WHERE area = ?1 AND verdict IN ('pick', 'avoid')").bind(area),
     env.DB.prepare('SELECT venue_id, shown, swapped, kept FROM stats WHERE area = ?1').bind(area),
     env.DB.prepare(
@@ -92,6 +96,9 @@ async function signals(url, env){
          COUNT(DISTINCT CASE WHEN vote = -2 THEN plan_id END) AS closed FROM ratings   -- closed: groups, not people
        WHERE area = ?1 AND plan_id IN (SELECT plan_id FROM members GROUP BY plan_id HAVING COUNT(*) >= ?2)
        GROUP BY venue_id`).bind(area, MIN_MEMBERS_FOR_RANKING),
+    env.DB.prepare(
+      `SELECT venue_id, tags FROM ratings WHERE area = ?1 AND tags IS NOT NULL
+       AND plan_id IN (SELECT plan_id FROM members GROUP BY plan_id HAVING COUNT(*) >= ?2)`).bind(area, MIN_MEMBERS_FOR_RANKING),
   ]);
   // guides: picks that came from research, not from you, so the card can say so.
   const out = { picks:{}, guides:[], avoid:[], stats:{} };
@@ -104,6 +111,11 @@ async function signals(url, env){
   for (const r of st.results) out.stats[r.venue_id] = [r.shown, r.swapped, r.kept];
   out.ratings = {};                        // venue -> [would go again, wouldn't, was closed]
   for (const r of rt.results) out.ratings[r.venue_id] = [r.up, r.down, r.closed];
+  out.tags = {};                           // venue -> { tag: how many people said it }
+  for (const r of tg.results) for (const t of JSON.parse(r.tags)) {
+    const v = out.tags[r.venue_id] = out.tags[r.venue_id] || {};
+    v[t] = (v[t] || 0) + 1;
+  }
   return json(out, 200, 'public, max-age=60');
 }
 
@@ -129,6 +141,38 @@ async function event(request, url, env){
   }
   if (stmts.length) await env.DB.batch(stmts);
   return json({ ok:true });
+}
+
+// ---------- weather ----------
+// MET Norway's forecast, one request per area at most until their Expires time, shared by
+// everyone through Cloudflare's cache. Their terms: identify ourselves, respect Expires,
+// coordinates to 4 decimals, credit them (CC BY 4.0). Returns [[UTC hour, °C, rain mm/h], …].
+const MET_UA = 'Owlabout/0.3 https://getowlabout.com hello@getowlabout.com';
+async function weather(url, env, ctx){
+  const id = url.searchParams.get('area') || '';
+  await loadAreas(env, url);
+  const area = areaById.get(id);
+  if (!area) return json({ error:'Unknown area' }, 400);
+  const lat = area.lat.toFixed(4), lng = area.lng.toFixed(4);
+  const key = new Request('https://weather.cache/' + lat + ',' + lng);
+  const cache = caches.default;
+  const hit = await cache.match(key);
+  if (hit) return hit;
+  const res = await fetch('https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=' + lat + '&lon=' + lng,
+    { headers:{ 'User-Agent':MET_UA } });
+  if (!res.ok) return json({ error:'Weather unavailable' }, 502);
+  const data = await res.json();
+  const hours = [];
+  for (const t of data.properties.timeseries) {
+    const d = t.data, temp = d.instant.details.air_temperature;
+    if (d.next_1_hours) hours.push([t.time, temp, d.next_1_hours.details.precipitation_amount]);
+    else if (d.next_6_hours) hours.push([t.time, temp, +(d.next_6_hours.details.precipitation_amount / 6).toFixed(2), 6]);
+  }
+  const ttl = Math.max(600, Math.min(3 * 3600, Math.round((Date.parse(res.headers.get('Expires')) - Date.now()) / 1000) || 1800));
+  const out = new Response(JSON.stringify({ hours, source:'MET Norway', licence:'CC BY 4.0' }),
+    { headers:{ 'Content-Type':'application/json', 'Cache-Control':'public, max-age=' + ttl } });
+  ctx.waitUntil(cache.put(key, out.clone()));
+  return out;
 }
 
 // ---------- link preview for a group plan ----------
@@ -212,7 +256,7 @@ async function getPlan(id, url, env){
     env.DB.prepare('SELECT * FROM plans WHERE id = ?1').bind(id),
     env.DB.prepare('SELECT device, name FROM members WHERE plan_id = ?1 ORDER BY joined_at').bind(id),
     env.DB.prepare('SELECT venue_id, SUM(vote = 1) AS up, SUM(vote = -1) AS down, SUM(vote = -2) AS closed FROM ratings WHERE plan_id = ?1 GROUP BY venue_id').bind(id),
-    env.DB.prepare('SELECT venue_id, vote FROM ratings WHERE plan_id = ?1 AND device = ?2').bind(id, device),
+    env.DB.prepare('SELECT venue_id, vote, tags FROM ratings WHERE plan_id = ?1 AND device = ?2').bind(id, device),
   ]);
   const plan = p.results[0];
   if (!plan) return json({ error:'Plan not found' }, 404);
@@ -222,6 +266,7 @@ async function getPlan(id, url, env){
     members:m.results.map(r => ({ name:r.name, me:r.device === device })),
     tallies:Object.fromEntries(t.results.map(r => [r.venue_id, [r.up, r.down, r.closed]])),
     votes:Object.fromEntries(mine.results.map(r => [r.venue_id, r.vote])),
+    tags:Object.fromEntries(mine.results.filter(r => r.tags).map(r => [r.venue_id, JSON.parse(r.tags)])),
   });
 }
 
@@ -255,10 +300,13 @@ async function ratePlan(id, request, env){
   // Votes open on the day of the night (a day's slack either side of UTC for time zones).
   if (Date.now() < Date.parse(plan.date + 'T00:00:00Z') - 86400000) return json({ error:'You can rate once the night has happened' }, 403);
   if (b.vote === 0) await env.DB.prepare('DELETE FROM ratings WHERE plan_id = ?1 AND venue_id = ?2 AND device = ?3').bind(id, b.venue, b.device).run();
-  else await env.DB.prepare(
-    `INSERT INTO ratings (plan_id, area, venue_id, device, vote, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-     ON CONFLICT (plan_id, venue_id, device) DO UPDATE SET vote = ?5, updated_at = ?6`)
-    .bind(id, plan.area, b.venue, b.device, b.vote, Date.now()).run();
+  else {
+    const tags = b.vote !== -2 && Array.isArray(b.tags) ? [...new Set(b.tags.filter(t => TAGS.has(t)))] : [];
+    await env.DB.prepare(
+      `INSERT INTO ratings (plan_id, area, venue_id, device, vote, tags, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+       ON CONFLICT (plan_id, venue_id, device) DO UPDATE SET vote = ?5, tags = ?6, updated_at = ?7`)
+      .bind(id, plan.area, b.venue, b.device, b.vote, tags.length ? JSON.stringify(tags) : null, Date.now()).run();
+  }
   return json({ ok:true });
 }
 
