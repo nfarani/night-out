@@ -6,7 +6,7 @@
 //   POST /api/plans                     public: lock a plan for a group { area, date, start, end, stops, title?, device, name? } -> { id }
 //   GET  /api/plans/<id>?device=…       public: the plan, who joined, vote tallies, your own votes
 //   POST /api/plans/<id>/join           public: { device, name }
-//   POST /api/plans/<id>/rate           public: { device, venue, vote: 1 | -1 | 0 } members only, from the day of the night
+//   POST /api/plans/<id>/rate           public: { device, venue, vote: 1 | -1 | -2 (closed) | 0 (clear) } members only, from the day of the night
 //   GET  /api/curation?area=soho        curator: every row incl. research suggestions
 //   POST /api/curation                  curator: { area, id, verdict: pick|avoid|dismissed|none, note }
 //   POST /api/curation/suggestions      curator: { area, items:[{ id, kind: pick|avoid, note, sources }] }
@@ -38,8 +38,10 @@ async function knownArea(env, url, id){ return (await loadAreas(env, url)).has(i
 export default {
   async fetch(request, env){
     const url = new URL(request.url);
-    // A group plan link is the app page; the page reads the id from the path.
-    if (/^\/p\/[a-z2-9]{6,10}\/?$/.test(url.pathname)) return env.ASSETS.fetch(new Request(new URL('/', url), request));
+    // A group plan link is the app page; the page reads the id from the path. The page's
+    // title and link-preview tags are rewritten for this plan, so WhatsApp shows its stops.
+    const gp = url.pathname.match(/^\/p\/([a-z2-9]{6,10})\/?$/);
+    if (gp) return await planPage(gp[1], request, url, env);
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
 
     const origin = request.headers.get('Origin');
@@ -72,7 +74,8 @@ export default {
         if (route === 'POST /api/curation/auto') return await setAuto(request, url, env);
       }
     } catch (e) {
-      return json({ error:'Server error', detail:String(e && e.message || e) }, 500);
+      console.error('API error', request.method, url.pathname, e && e.stack || e);   // shows in Workers Logs
+      return json({ error:'Server error' }, 500);
     }
     return json({ error:'Not found' }, 404);
   },
@@ -85,7 +88,8 @@ async function signals(url, env){
     env.DB.prepare("SELECT venue_id, verdict, note, origin FROM curation WHERE area = ?1 AND verdict IN ('pick', 'avoid')").bind(area),
     env.DB.prepare('SELECT venue_id, shown, swapped, kept FROM stats WHERE area = ?1').bind(area),
     env.DB.prepare(
-      `SELECT venue_id, SUM(vote = 1) AS up, SUM(vote = -1) AS down FROM ratings
+      `SELECT venue_id, SUM(vote = 1) AS up, SUM(vote = -1) AS down,
+         COUNT(DISTINCT CASE WHEN vote = -2 THEN plan_id END) AS closed FROM ratings   -- closed: groups, not people
        WHERE area = ?1 AND plan_id IN (SELECT plan_id FROM members GROUP BY plan_id HAVING COUNT(*) >= ?2)
        GROUP BY venue_id`).bind(area, MIN_MEMBERS_FOR_RANKING),
   ]);
@@ -98,8 +102,8 @@ async function signals(url, env){
     } else out.avoid.push(r.venue_id);
   }
   for (const r of st.results) out.stats[r.venue_id] = [r.shown, r.swapped, r.kept];
-  out.ratings = {};                        // venue -> [would go again, wouldn't]
-  for (const r of rt.results) out.ratings[r.venue_id] = [r.up, r.down];
+  out.ratings = {};                        // venue -> [would go again, wouldn't, was closed]
+  for (const r of rt.results) out.ratings[r.venue_id] = [r.up, r.down, r.closed];
   return json(out, 200, 'public, max-age=60');
 }
 
@@ -125,6 +129,48 @@ async function event(request, url, env){
   }
   if (stmts.length) await env.DB.batch(stmts);
   return json({ ok:true });
+}
+
+// ---------- link preview for a group plan ----------
+const TYPE_NAMES = { pub:'pub', wine:'wine bar', rooftop:'drinks outside', cheap:'cheap eats', dinner:'dinner', cocktail:'cocktail bar',
+  games:'bar games', live:'live music', comedy:'comedy', karaoke:'karaoke', dance:'club', latefood:'late-night food' };
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const clock = m => { m = ((m % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+
+async function planPage(id, request, url, env){
+  const page = await env.ASSETS.fetch(new Request(new URL('/', url), request));
+  let title, desc;
+  try {
+    const [p, m] = await env.DB.batch([
+      env.DB.prepare('SELECT area, date, start_min, end_min, stops, title FROM plans WHERE id = ?1').bind(id),
+      env.DB.prepare('SELECT name FROM members WHERE plan_id = ?1 ORDER BY joined_at LIMIT 6').bind(id),
+    ]);
+    const plan = p.results[0];
+    if (!plan) return page;
+    const areas = await (await env.ASSETS.fetch(new URL('/data/areas.json', url))).json();
+    const area = areas.find(a => a.id === plan.area);
+    const venues = await (await env.ASSETS.fetch(new URL('/data/areas/' + plan.area + '.json', url))).json().then(d => d.venues).catch(() => []);
+    const stops = JSON.parse(plan.stops), step = (plan.end_min - plan.start_min) / stops.length;
+    const lines = stops.map((x, k) => {
+      const v = x.venue && venues.find(y => y.id === x.venue);
+      return clock(Math.round(plan.start_min + k * step)) + ' ' + (v ? v.name : TYPE_NAMES[x.type] || x.type);
+    });
+    const day = DAYS[new Date(plan.date + 'T12:00:00Z').getUTCDay()];
+    const names = m.results.map(r => r.name);
+    title = day + ' in ' + (area ? area.name : plan.area) + (plan.title ? ' · ' + plan.title : '');
+    desc = lines.join(' → ') + (names.length ? '. ' + (names.length === 1 ? names[0] + ' is in' : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] + ' are in') : '') + '. Tap to join.';
+  } catch (e) {
+    return page;                                   // never break the page over a preview
+  }
+  const set = content => ({ element(el){ el.setAttribute('content', content); } });
+  return new HTMLRewriter()
+    .on('title', { element(el){ el.setInnerContent(title + ' · Owlabout'); } })
+    .on('meta[name="description"]', set(desc))
+    .on('meta[property="og:title"]', set(title))
+    .on('meta[property="og:description"]', set(desc))
+    .on('meta[property="og:url"]', set(url.origin + '/p/' + id))
+    .on('link[rel="canonical"]', { element(el){ el.setAttribute('href', url.origin + '/p/' + id); } })
+    .transform(page);
 }
 
 // ---------- group plans ----------
@@ -165,7 +211,7 @@ async function getPlan(id, url, env){
   const [p, m, t, mine] = await env.DB.batch([
     env.DB.prepare('SELECT * FROM plans WHERE id = ?1').bind(id),
     env.DB.prepare('SELECT device, name FROM members WHERE plan_id = ?1 ORDER BY joined_at').bind(id),
-    env.DB.prepare('SELECT venue_id, SUM(vote = 1) AS up, SUM(vote = -1) AS down FROM ratings WHERE plan_id = ?1 GROUP BY venue_id').bind(id),
+    env.DB.prepare('SELECT venue_id, SUM(vote = 1) AS up, SUM(vote = -1) AS down, SUM(vote = -2) AS closed FROM ratings WHERE plan_id = ?1 GROUP BY venue_id').bind(id),
     env.DB.prepare('SELECT venue_id, vote FROM ratings WHERE plan_id = ?1 AND device = ?2').bind(id, device),
   ]);
   const plan = p.results[0];
@@ -174,7 +220,7 @@ async function getPlan(id, url, env){
     id, area:plan.area, city:plan.city, date:plan.date, start:plan.start_min, end:plan.end_min,
     stops:JSON.parse(plan.stops), title:plan.title, mine:plan.created_by === device,
     members:m.results.map(r => ({ name:r.name, me:r.device === device })),
-    tallies:Object.fromEntries(t.results.map(r => [r.venue_id, [r.up, r.down]])),
+    tallies:Object.fromEntries(t.results.map(r => [r.venue_id, [r.up, r.down, r.closed]])),
     votes:Object.fromEntries(mine.results.map(r => [r.venue_id, r.vote])),
   });
 }
@@ -197,7 +243,7 @@ async function joinPlan(id, request, env){
 
 async function ratePlan(id, request, env){
   const b = await request.json().catch(() => null);
-  if (!b || !DEVICE.test(b.device || '') || !VENUE_ID.test(b.venue || '') || ![1, -1, 0].includes(b.vote)) return json({ error:'Bad request' }, 400);
+  if (!b || !DEVICE.test(b.device || '') || !VENUE_ID.test(b.venue || '') || ![1, -1, -2, 0].includes(b.vote)) return json({ error:'Bad request' }, 400);
   const [p, m] = await env.DB.batch([
     env.DB.prepare('SELECT area, date, stops FROM plans WHERE id = ?1').bind(id),
     env.DB.prepare('SELECT 1 FROM members WHERE plan_id = ?1 AND device = ?2').bind(id, b.device),

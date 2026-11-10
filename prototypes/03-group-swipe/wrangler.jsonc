@@ -6,6 +6,8 @@
   // getowlabout.com is the real address; www works too. The workers.dev URL keeps working.
   // Keep the old workers.dev URL alive: the README, case study and early shares link to it.
   "workers_dev": true,
+  // Request logs and errors in the Cloudflare dashboard (Workers → night-out-london → Logs).
+  "observability": { "enabled": true },
   "routes": [
     { "pattern": "getowlabout.com", "custom_domain": true },
     { "pattern": "www.getowlabout.com", "custom_domain": true }

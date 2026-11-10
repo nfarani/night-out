@@ -135,7 +135,7 @@
     $('list').innerHTML = '';
     $('summary').textContent = 'Loading…';
     const [file, cur] = await Promise.all([
-      fetch('data/areas/' + area.id + '.json').then(r => r.json()),
+      fetch('/data/areas/' + area.id + '.json').then(r => r.json()),
       token ? api('/api/curation?area=' + area.id).catch(() => null) : null,
     ]);
     venues = file.venues.filter(v => distM(area, v) <= RADIUS_M).sort((a, b) => a.name.localeCompare(b.name));
@@ -257,7 +257,7 @@
     loadArea().catch(e => status(e.message, true));
   };
 
-  fetch('data/areas.json').then(r => r.json()).then(list => {
+  fetch('/data/areas.json').then(r => r.json()).then(list => {
     areas = list;
     let last = null; try { last = localStorage.getItem('no_curate_area'); } catch (e) {}
     area = areas.find(a => a.id === last) || areas[0];

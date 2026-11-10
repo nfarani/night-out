@@ -80,3 +80,18 @@ planner ◀── GET /api/signals: picks (+ your note on the card), avoids ◀�
 - Database schema lives in `migrations/`. Apply a new one with `npm run db:migrate`.
 - To change the curator password: `npx wrangler secret put CURATOR_TOKEN`, and update
   `.curator-token`.
+
+## If something breaks
+
+- **Errors:** Cloudflare dashboard → Workers & Pages → night-out-london → Logs. API errors are
+  logged as `API error <method> <path>` with the stack.
+- **Alerts:** dashboard → Notifications → add one for Workers errors and one for
+  "Health check" on `https://getowlabout.com/`, sent to hello@getowlabout.com.
+- **Database backups:** D1 keeps 30 days of history (Time Travel), no setup needed.
+  ```
+  npx wrangler d1 time-travel info night-out                                # current bookmark
+  npx wrangler d1 time-travel restore night-out --timestamp=2026-11-10T09:00:00Z   # roll back
+  ```
+  Restoring replaces the whole database (plans, votes, stats, curation) with that moment.
+- **Roll back the code:** `npx wrangler rollback` returns the site to the previous deploy.
+- **Usage numbers:** `https://getowlabout.com/stats` (curator password).

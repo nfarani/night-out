@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS ratings (
   area       TEXT NOT NULL,
   venue_id   TEXT NOT NULL,
   device     TEXT NOT NULL,
-  vote       INTEGER NOT NULL CHECK (vote IN (-1, 1)),
+  vote       INTEGER NOT NULL CHECK (vote IN (-2, -1, 1)),   -- 1 would go again, -1 wouldn't, -2 it was closed
   updated_at INTEGER NOT NULL,
   PRIMARY KEY (plan_id, venue_id, device)
 );
