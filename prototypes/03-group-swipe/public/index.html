@@ -116,6 +116,11 @@
   .pick:hover, .pick:focus-within{ background:var(--card); }
   .pick span{ text-decoration:underline dotted; text-decoration-thickness:.06em; text-underline-offset:.14em; text-decoration-color:color-mix(in srgb, currentColor 50%, transparent); }
   .pick.accent{ color:var(--red); }
+  .area-link{ margin:-8px 0 16px; font-size:15px; font-weight:500; }
+  .area-link a{ color:var(--route); text-decoration:none; }
+  .area-link a:hover{ text-decoration:underline; }
+  .home-foot{ order:3; grid-column:1 / -1; font-size:12px; color:var(--muted); margin:0; }   /* last on phones (see .ready/.builder order) and on wide screens */
+  .home-foot a{ color:var(--text-2); }
   /* City bar: the first choice, above everything else on home. Scrolls sideways on phones. */
   .cities{ display:flex; gap:8px; overflow-x:auto; scroll-snap-type:x proximity; padding:16px 20px; border-bottom:1px solid var(--line); scrollbar-width:none; }
   .cities::-webkit-scrollbar{ display:none; }
@@ -262,6 +267,7 @@
     .intro{ grid-column:1; grid-row:1; }
     .ready{ grid-column:1; grid-row:2; }
     .builder{ position:sticky; top:24px; grid-column:2; grid-row:1 / span 2; }
+    .home-foot{ grid-row:3; }
     .presets{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; overflow:visible; margin:0; padding:0; }
     .preset{ flex:none; }
     .preset.featured{ grid-column:1 / -1; flex-direction:row; }
@@ -321,6 +327,7 @@
           <label class="pick"><span id="day-label">Tonight</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="day" aria-label="Change the day" title="Change the day"></select></label>
           <span data-t="home.in">in</span> <label class="pick accent"><span id="area-label">Soho</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="area" aria-label="Change the area" title="Change the area"></select></label>
         </h1>
+        <p class="area-link"><a id="area-page" href="/neighbourhoods"></a></p>
         <p class="lede" data-t="home.lede">A timed night out where every stop is a short walk from the last, checked against opening hours where we have them</p>
       </div>
 
@@ -338,6 +345,7 @@
         <div class="section-head"><h2 id="ready-title">Ready-made nights</h2><span data-t="home.readySub">Tap one to plan it</span></div>
         <div class="presets" id="presets"></div>
       </div>
+      <p class="home-foot"><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com" data-t="link.contact">Contact</a></p>
     </div>
   </section>
 
@@ -534,6 +542,11 @@
   let AREAS = [], CITIES = [];
   const cityOf = a => CITIES.find(c => c.id === (a.city || 'london')) || CITIES[0];
   const cityName = c => (c.names && c.names[lang]) || c.name;
+  // The neighbourhood's own page (built by scripts/build-pages.mjs; keep the slug rules in step).
+  const PAGE_LANG = { paris:'fr', madrid:'es', barcelona:'es', rome:'it', lisbon:'pt' };
+  const slug = x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/&/g, ' and ').replace(/[’'()]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const areaPage = a => { const c = a.city || 'london'; return (PAGE_LANG[c] === lang ? '/' + lang : '') + '/' + c + '/' + slug(a.name); };
   // stops: null for a plan built from types + n; once edited, the exact type of each stop in order.
   const form = { area:null, types:['pub', 'dinner', 'cocktail'], n:3, start:19 * 60, end:24 * 60, day:0, preset:null, stops:null };
   let plan = [];             // [{ type, from, to, venue, seen }]
@@ -1290,6 +1303,8 @@
   function renderHeader(){
     $('day-label').textContent = dayLabel();
     $('area-label').textContent = form.area.name;
+    $('area-page').href = areaPage(form.area);
+    $('area-page').textContent = t('home.aboutArea', { area:form.area.name });
     const today = todayIdx();
     $('day').innerHTML = Array.from({ length:7 }, (_, k) => {
       const d = (today + k) % 7;
