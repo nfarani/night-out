@@ -10,10 +10,12 @@
     "db:migrate": "wrangler d1 migrations apply night-out --remote",
     "research:all": "node scripts/research-all.mjs",
     "check-areas": "node scripts/check-areas.mjs",
-    "pages": "node scripts/build-pages.mjs"
+    "pages": "node scripts/build-pages.mjs",
+    "qa": "node tests/cross-device.mjs"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
+    "playwright": "^1.65.0",
     "wrangler": "^4.86.0"
   }
 }
