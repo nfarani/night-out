@@ -95,6 +95,13 @@ What it would be: sign in by email link (no passwords) · "My nights" across dev
 3. Prefer English venue names where they exist (Tokyo/Kyoto)
 4. Then: add the city to `cities.json`, run `npm run check-areas -- --prune`, `npm run pages`, deploy
 
+**City picker at scale** (idea 10 Nov 2026): Nick suggested countries with a dropdown of their cities. Agreed for later, with this design.
+Switch when there are about 12–15 cities (the row stops fitting on a laptop), i.e. with the first expansion wave:
+1. Replace the city bar with one "📍 Madrid ▾" button at the top
+2. It opens a panel: search box ("lis" → Lisbon), Near me (nearest city by location), Recent cities
+3. Below: cities grouped by country (Spain: Madrid · Barcelona; UK: London · Manchester · Liverpool…), the visitor's own country first (from language or location)
+4. Needs a `country` field per city in `cities.json` (already there) and country names in each language
+
 Adding a language: copy the `en` block in `public/i18n.js`, translate, add to `LANGS`, have a native speaker read it. Japanese arrives with Tokyo/Kyoto.
 
 ---
