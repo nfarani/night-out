@@ -72,6 +72,41 @@ Idea 10 Nov 2026: reservation buttons on the site, take a percentage, and approa
 
 ---
 
+## Other ways to make money
+
+Idea 10 Nov 2026: don't depend on selling to a publisher; build revenue. The test for every idea: does it make plans worse? If yes, it's a bad deal however much it pays.
+
+**Early (hundreds to a few thousand users):**
+
+| # | Idea | How it makes money | Steps |
+|---|---|---|---|
+| 1 | **Owlabout Nights**: hosted crawls | Tickets (£10–20) for a guided night in one neighbourhood ("Thursday in Malasaña, 4 stops, first drink included"); partner venues give a discount or a cut | 1. Pick one neighbourhood you know + 3–4 friendly venues · 2. Ticket page (a ticketing platform to start) · 3. Run it, film it for TikTok · 4. Repeat weekly, then other cities. Needs: event insurance, a host, clear age policy |
+| 2 | **Event ticket affiliates** | Ticketed stops in plans (gigs, comedy, club nights) via Dice, Skiddle, Fever, Eventbrite… usually a % or fee per ticket; check each programme's terms | 1. Apply to programmes · 2. Pull "what's on tonight" near the area · 3. Offer an event as a plan stop |
+| 3 | **Booking affiliates** | See "Bookings and revenue" above | — |
+| 4 | **Hotel and hostel widget** | Monthly fee (say £20–50) for a branded "Tonight near you" page or lobby QR code | 1. Branded plan page per property · 2. Pilot with 2–3 hostels you can walk into · 3. Price it once they use it |
+| 5 | **Team nights, birthdays, hen and stag parties** | Fee or venue commission per big-group event (10–30 people) | 1. "Planning for 10+?" form · 2. Do the first ones by hand · 3. Productise what repeats |
+
+**Middle (a few thousand to tens of thousands):**
+
+| # | Idea | How | Watch out |
+|---|---|---|---|
+| 6 | **Venue subscriptions** ("Owlabout for venues") | £20–50/month: your stats (in plans, kept vs swapped, ratings, tags), post a group offer | Never affects ranking |
+| 7 | **Group offers** | "Groups of 6+: first round 20% off", shown when a group plan locks; venue pays per redeemed group | Needs a simple redeem code |
+| 8 | **Sponsored plans and partners** | Tourism boards, festivals, events sponsor a labelled ready-made night or the weekend drop | Alcohol brands: strict ad rules (no appeal to under-18s, no linking drinking to social success); start with tourism/events |
+
+**Later (large scale):**
+
+| # | Idea | How | Note |
+|---|---|---|---|
+| 9 | **Owlabout+** | Small subscription: unlimited crews, tag filters, recaps | People rarely pay for planning; only once crews/history exist |
+| 10 | **Night-time economy insights** | Anonymised totals for councils, business districts, the London Night Czar's office | Totals only, never individuals |
+| 11 | **Gift a night out** | Vouchers for a pre-booked night with partner venues | Margin product |
+| 12 | **Ads** | Native, labelled "Sponsored" cards only | No banner ads: tiny money, cheapens the brand |
+
+**Avoid:** paid ranking · banner ads before scale · handling group money (kitties, deposits) yourself (payments regulation; use a provider if ever needed).
+
+**Suggested order:** now 1 + 2 → next 3 + 4 → later 6, 7, 8 → much later 5 at scale, 9–11. The publisher sale stays as an exit; revenue makes that conversation stronger.
+
 ## Accounts (later, "Plan C")
 
 No accounts yet, deliberately: sign-up kills the group loop, and accounts mean storing emails and naming the operator (you or a company) on the privacy page.
