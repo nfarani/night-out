@@ -244,6 +244,9 @@
   .card.pinned{ border-color:color-mix(in srgb, var(--route) 55%, var(--line)); }
   .pinned-note{ display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:600; color:var(--route); margin:0 0 8px; }
   .pinned-note svg{ width:14px; height:14px; }
+  .report{ display:inline-flex; align-items:center; min-height:40px; margin:4px 0 -8px; padding:0; background:none; border:none; font-size:13px;
+    color:var(--muted); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+  .report:hover{ color:var(--text-2); }
   .actions .btn{ height:40px; }
   /* Sheets: centred dialogs on wide screens, bottom sheets on phones. */
   dialog.sheet{ width:min(28rem, calc(100vw - 32px)); max-height:min(85vh, 760px); overflow:auto; background:var(--card); color:var(--text); border:1px solid var(--line-2); border-radius:16px; padding:20px; }
@@ -709,13 +712,13 @@
   }
   // Your curation and usage stats for an area. If the API is unreachable the planner
   // still works on OSM alone, so failures resolve to empty signals.
-  const NO_SIGNALS = { picks:{}, guides:new Set(), avoid:new Set(), stats:{}, ratings:{}, tags:{} };
+  const NO_SIGNALS = { picks:{}, guides:new Set(), avoid:new Set(), stats:{}, ratings:{}, tags:{}, reports:{} };
   const signalData = {};
   let sig = NO_SIGNALS;
   function loadSignals(id){
     if (!signalData[id]) signalData[id] = fetch('/api/signals?area=' + encodeURIComponent(id))
       .then(r => r.ok ? r.json() : {})
-      .then(d => ({ picks:d.picks || {}, guides:new Set(d.guides || []), avoid:new Set(d.avoid || []), stats:d.stats || {}, ratings:d.ratings || {}, tags:d.tags || {} }))
+      .then(d => ({ picks:d.picks || {}, guides:new Set(d.guides || []), avoid:new Set(d.avoid || []), stats:d.stats || {}, ratings:d.ratings || {}, tags:d.tags || {}, reports:d.reports || {} }))
       .catch(() => NO_SIGNALS);
     return signalData[id];
   }
@@ -833,6 +836,11 @@
       const keepRate = shown >= 5 ? Math.min(1, kept / shown) : 0;
       const [up, down, closed = 0] = sig.ratings[v.id] || [0, 0, 0];   // group votes: "would go again?"
       if (closed >= 2 && closed > up) continue;            // groups keep finding it shut: probably gone
+      // Reported closed for good: hidden here at once, and for everyone after two reports, unless
+      // groups keep saying they'd go back (three times as many 👍 as reports), so a rival can't
+      // bury a place that's clearly still open.
+      const reports = sig.reports[v.id] || 0;
+      if (reportedHere.has(v.id) || reports >= 2 && up < reports * 3) continue;
       const voteScore = (up - down - closed) / (up + down + closed + 2);
       const score = (v.id in sig.picks ? 2 : 0) + (v.known ? 1.5 : 0) - (recent.includes(v.id) ? 2.5 : 0) + (st === 'open' ? 2 : 0) + (v.website ? 0.5 : 0) - swapRate * 4 + keepRate * 2 + voteScore * 3 +
         Math.random() * 1.5 - d / 300 - (d > 700 ? 3 : 0);
@@ -903,6 +911,22 @@
     s.seen.add(alt.id);
     writeHash(true);
     renderPlan(true);
+  }
+
+  // ---------- "closed for good" reports: hidden here at once, for everyone after two reports ----------
+  let reportedHere = new Set();
+  try { reportedHere = new Set(JSON.parse(recall('no_closed') || '[]')); } catch (e) {}
+  async function reportClosed(k){
+    const x = plan[k];
+    if (!x || !x.venue) return;
+    reportedHere.add(x.venue.id);
+    remember('no_closed', JSON.stringify([...reportedHere].slice(-200)));
+    api('/api/report', { area:form.area.id, venue:x.venue.id, device:device() }).catch(() => {});
+    track('report');
+    toast(t('toast.reported'));
+    if (group) { renderPlan(true); return; }                  // a locked group plan stays as it is
+    x.pinned = false;
+    await swapStop(k);
   }
 
   // ---------- fallbacks: nearest kind of place when one runs out (wine bars, comedy and karaoke are sparse) ----------
@@ -1793,13 +1817,14 @@
         const [up, down, closed = 0] = sig.ratings[v.id] || [0, 0, 0];
         const votes = (up + down >= 3 && up > down ? '<p class="votes">'+esc(t('plan.wouldGoAgain', { up, total:up + down }))+'</p>' : '') +
           tagSummary(v.id) +
-          (closed ? '<p class="hours unknown">'+esc(closed === 1 ? t('plan.closedOne') : t('plan.closedMany', { n:closed }))+'</p>' : '');
+          (closed ? '<p class="hours unknown">'+esc(closed === 1 ? t('plan.closedOne') : t('plan.closedMany', { n:closed }))+'</p>' : '') +
+          (sig.reports[v.id] && !closed ? '<p class="hours unknown">'+esc(t('plan.reportedOne'))+'</p>' : '');
         body = cardTop(s, k) + '<h3>'+esc(v.name)+'</h3>' +
           (v.street ? '<p class="addr">'+esc(v.street)+'</p>' : '') + note + votes + hoursLine +
           '<div class="actions"><a class="btn" href="'+esc(mapsLink(v))+'" target="_blank" rel="noopener">'+ICON_PIN+esc(t('plan.maps'))+'</a>' +
           (group ? '' : '<button class="btn" type="button" data-swap="'+k+'"'+(s.pinned ? ' disabled' : '')+'>'+ICON_SWAP+esc(t('plan.swap'))+'</button>' +
             (s.history && s.history.length ? '<button class="btn" type="button" data-back="'+k+'" title="'+esc(t('plan.backTitle'))+'">'+ICON_BACK+esc(t('plan.back'))+'</button>' : '')) +
-          '</div>' + rateRow(v);
+          '</div>' + (reportedHere.has(v.id) ? '' : '<button class="report" type="button" data-report="'+k+'">'+esc(t('plan.reportClosed'))+'</button>') + rateRow(v);
       }
       html += '<div class="stop"><button class="time" type="button" data-time="'+k+'"'+(group ? ' disabled' : ' aria-label="'+esc(t('stop.timeTap', { n:k + 1 }))+'"')+'>'+clock(s.from)+'</button>' +
         '<div class="rail"><span class="pin-n'+(v ? '' : ' none')+'">'+(v ? num : '–')+'</span></div>' +
@@ -1808,6 +1833,7 @@
     $('plan').innerHTML = html;
     $('plan').querySelectorAll('[data-swap]').forEach(b => b.onclick = () => swapStop(+b.dataset.swap).catch(e => toast(e.message)));
     $('plan').querySelectorAll('[data-back]').forEach(b => b.onclick = () => goBack(+b.dataset.back));
+    $('plan').querySelectorAll('[data-report]').forEach(b => b.onclick = () => reportClosed(+b.dataset.report).catch(e => toast(e.message)));
     $('plan').querySelectorAll('[data-pin]').forEach(b => b.onclick = () => togglePin(+b.dataset.pin));
     $('plan').querySelectorAll('[data-menu]').forEach(b => b.onclick = () => openStop(+b.dataset.menu));
     $('plan').querySelectorAll('[data-time]:not([disabled])').forEach(b => b.onclick = () => openStop(+b.dataset.time));

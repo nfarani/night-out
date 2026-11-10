@@ -20,6 +20,10 @@
   ],
   // Per-IP cap on usage events, so one person can't tank a venue. Approximate, per location.
   "ratelimits": [
-    { "name": "LIMITER", "namespace_id": "1001", "simple": { "limit": 30, "period": 60 } }
+    // Background usage counts (plans shown, swaps, visits): generous, an active planner fires many.
+    { "name": "LIMITER", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } },
+    // Things people do on purpose (save a plan, join, vote, rate, report): their own allowance,
+    // so heavy planning never blocks someone from joining their group.
+    { "name": "WRITES", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } }
   ]
 }

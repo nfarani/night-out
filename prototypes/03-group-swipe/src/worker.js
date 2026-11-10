@@ -2,6 +2,7 @@
 //
 //   GET  /api/signals?area=soho        public: picks + avoids (yours and research's), and usage stats, for ranking
 //   POST /api/event                     public: { area, step?, shown:[ids], swapped:[ids], kept:[ids] } usage counts
+//   POST /api/report                    public: { area, venue, device } "closed for good" report, one per browser per venue
 //   GET  /api/weather?area=soho         public: hourly forecast for the area (MET Norway, CC BY 4.0), cached
 //   POST /api/polls                     public: ask the group first { areas[1-3], date, start, device, name?, lang } -> { id }
 //   GET  /api/polls/<id>?device=…       public: the vote so far (everyone's picks, yours marked)
@@ -25,7 +26,7 @@ const VENUE_ID = /^[nwr]\d{1,12}$/;
 const MAX_IDS = 8;
 
 const STEPS = new Set(['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route', 'lock', 'join', 'rate',
-  'poll_create', 'poll_open', 'poll_vote', 'poll_plan']);
+  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report']);
 const TYPE_IDS = new Set(['pub', 'wine', 'rooftop', 'cheap', 'dinner', 'cocktail', 'games', 'live', 'comedy', 'karaoke', 'dance', 'latefood']);
 const DEVICE = /^[a-z0-9]{16,40}$/;
 const PLAN_ID = /^[a-z2-9]{6,10}$/;
@@ -63,11 +64,22 @@ export default {
       const route = request.method + ' ' + url.pathname;
       if (route === 'GET /api/signals') return await signals(url, env);
       if (route === 'GET /api/weather') return await weather(url, env, ctx);
+      if (route === 'POST /api/report') {
+        if (env.WRITES) {
+          const { success } = await env.WRITES.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
+          if (!success) return json({ error:'Too many requests' }, 429);
+        }
+        const b = await request.json().catch(() => null);
+        if (!b || !DEVICE.test(b.device || '') || !VENUE_ID.test(b.venue || '') || !(await knownArea(env, url, b.area))) return json({ error:'Bad request' }, 400);
+        await env.DB.prepare('INSERT INTO reports (area, venue_id, device, created_at) VALUES (?1, ?2, ?3, ?4) ON CONFLICT DO NOTHING')
+          .bind(b.area, b.venue, b.device, Date.now()).run();
+        return json({ ok:true });
+      }
       if (route === 'POST /api/event') return await event(request, url, env);
       const pm = url.pathname.match(/^\/api\/plans(?:\/([a-z2-9]{6,10})(?:\/(join|rate))?)?$/);
       if (pm) {
-        if (request.method === 'POST' && env.LIMITER) {
-          const { success } = await env.LIMITER.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
+        if (request.method === 'POST' && env.WRITES) {
+          const { success } = await env.WRITES.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
           if (!success) return json({ error:'Too many requests' }, 429);
         }
         if (route === 'POST /api/plans') return await createPlan(request, url, env);
@@ -77,8 +89,8 @@ export default {
       }
       const vm = url.pathname.match(/^\/api\/polls(?:\/([a-z2-9]{6,10})(?:\/(vote|plan))?)?$/);
       if (vm) {
-        if (request.method === 'POST' && env.LIMITER) {
-          const { success } = await env.LIMITER.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
+        if (request.method === 'POST' && env.WRITES) {
+          const { success } = await env.WRITES.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
           if (!success) return json({ error:'Too many requests' }, 429);
         }
         if (route === 'POST /api/polls') return await createPoll(request, url, env);
@@ -108,7 +120,7 @@ export default {
 async function signals(url, env){
   const area = url.searchParams.get('area') || '';
   if (!(await knownArea(env, url, area))) return json({ error:'Unknown area' }, 400);
-  const [cur, st, rt, tg] = await env.DB.batch([
+  const [cur, st, rt, tg, rp] = await env.DB.batch([
     env.DB.prepare("SELECT venue_id, verdict, note, origin FROM curation WHERE area = ?1 AND verdict IN ('pick', 'avoid')").bind(area),
     env.DB.prepare('SELECT venue_id, shown, swapped, kept FROM stats WHERE area = ?1').bind(area),
     env.DB.prepare(
@@ -119,6 +131,7 @@ async function signals(url, env){
     env.DB.prepare(
       `SELECT venue_id, tags FROM ratings WHERE area = ?1 AND tags IS NOT NULL
        AND plan_id IN (SELECT plan_id FROM members GROUP BY plan_id HAVING COUNT(*) >= ?2)`).bind(area, MIN_MEMBERS_FOR_RANKING),
+    env.DB.prepare('SELECT venue_id, COUNT(*) AS n FROM reports WHERE area = ?1 GROUP BY venue_id').bind(area),
   ]);
   // guides: picks that came from research, not from you, so the card can say so.
   const out = { picks:{}, guides:[], avoid:[], stats:{} };
@@ -131,6 +144,8 @@ async function signals(url, env){
   for (const r of st.results) out.stats[r.venue_id] = [r.shown, r.swapped, r.kept];
   out.ratings = {};                        // venue -> [would go again, wouldn't, was closed]
   for (const r of rt.results) out.ratings[r.venue_id] = [r.up, r.down, r.closed];
+  out.reports = {};                        // venue -> how many different browsers said "closed for good"
+  for (const r of rp.results) out.reports[r.venue_id] = r.n;
   out.tags = {};                           // venue -> { tag: how many people said it }
   for (const r of tg.results) for (const t of JSON.parse(r.tags)) {
     const v = out.tags[r.venue_id] = out.tags[r.venue_id] || {};

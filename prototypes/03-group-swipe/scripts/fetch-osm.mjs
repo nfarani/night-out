@@ -96,6 +96,12 @@ for (const area of areas) {
     const lat = el.lat ?? el.center?.lat, lng = el.lon ?? el.center?.lon;
     const vibes = classify(t);
     if (!vibes.length || lat == null) continue;
+    // Marked as gone: closed in the name, hours of "closed"/"off", an end date that has passed,
+    // or flagged disused. (Most closures aren't marked at all; user reports catch those.)
+    const today = new Date().toISOString().slice(0, 10);
+    if (/\b(closed|permanently closed|cerrado|fermé|chiuso|fechado|geschlossen)\b/i.test(t.name) ||
+        /^\s*(closed|off)\s*$|^\s*mo-su\s+off\s*$/i.test(t.opening_hours || '') ||
+        (t.end_date && t.end_date <= today) || t.disused === 'yes' || t.abandoned === 'yes') continue;
     venues.push({
       id: el.type[0] + el.id,                       // n123 / w456 / r789
       name: t.name,
