@@ -862,7 +862,8 @@
     return ts.map((type, k) => ({ type, from:at(k), to:at(k + 1) }));
   }
 
-  async function buildPlan(push){
+  // keepScroll: rebuilding the plan you're already looking at (reshuffle) stays where you are.
+  async function buildPlan(push, keepScroll){
     const [venues, fc] = await Promise.all([loadAreaWithSignals(form.area.id), forecast(form.area)]);
     const used = new Set();
     plan = [];
@@ -884,7 +885,7 @@
     }
     if (fellBack) form.stops = plan.map(x => x.type.id);
     writeHash(true, push);
-    renderPlan();
+    renderPlan(keepScroll);
     if (rainSwap) toast(t('toast.rainSwap'));
     sendEvent({ step:'plan', shown:plan.filter(x => x.venue).map(x => x.venue.id) });
     markSeen(plan.filter(x => x.venue).map(x => x.venue.id));
@@ -1148,7 +1149,7 @@
   }
   // New places for every stop that isn't pinned; pinned ones (and their times) stay.
   async function reshuffle(){
-    if (!plan.some(x => x.pinned)) return go(null, false);
+    if (!plan.some(x => x.pinned)) return go(null, false, true);
     const venues = await loadAreaWithSignals(form.area.id);
     plan.forEach((x, k) => {
       if (x.pinned) return;
@@ -1414,7 +1415,7 @@
     const mine = p.votes.find(v => v.me);
     draft = mine ? { areas:[...mine.areas], types:[...mine.types], end:mine.end } : { areas:[...p.areas], types:[], end:24 * 60 };
     renderVote();
-    show('s-vote');
+    if (!$('s-vote').classList.contains('on')) show('s-vote');   // refreshing after a vote stays where you are
     if (first && !organiser) track('poll_open');
   }
   // What the votes add up to: the most-wanted area, the kinds of place at least half want
@@ -1704,7 +1705,7 @@
 
   // One plan at a time: ignores double taps, says "Planning" if the data takes a moment.
   let planning = false, cameFromHome = false;
-  async function go(changes, push = true){
+  async function go(changes, push = true, keepScroll = false){
     if (planning) return;
     if (changes) Object.assign(form, { stops:null, times:null }, changes);
     if (!form.types.length) { toast(t('toast.pickOne')); return; }
@@ -1712,7 +1713,7 @@
     $('go').disabled = true;
     const slow = setTimeout(() => toast(t('toast.planning')), 250);
     try {
-      await buildPlan(push);
+      await buildPlan(push, keepScroll);
       if (push) cameFromHome = true;
     } catch (e) { toast(e.message); }
     finally { clearTimeout(slow); planning = false; $('go').disabled = false; }
