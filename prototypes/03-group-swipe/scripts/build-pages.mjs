@@ -31,10 +31,15 @@ if (!presetSrc) throw new Error('Could not find PRESETS in index.html');
 const PRESETS = Function('"use strict"; return ' + presetSrc[1])();
 
 const TYPE_IDS = ['pub', 'cocktail', 'wine', 'rooftop', 'dinner', 'cheap', 'live', 'comedy', 'games', 'karaoke', 'dance', 'latefood'];
+// List pages: /london/soho/pubs. Same English slugs in every language (the folder prefix carries the language).
+const TYPE_SLUG = { pub:'pubs', cocktail:'cocktail-bars', wine:'wine-bars', rooftop:'drinks-outside', dinner:'dinner', cheap:'cheap-eats',
+  live:'live-music', comedy:'comedy', games:'bar-games', karaoke:'karaoke', dance:'clubs', latefood:'late-night-food' };
+const REPEATS = new Set(['pub', 'cocktail', 'wine', 'rooftop']);         // fine to do three of in one night
 
 // Page copy. Type names and presets come from the app's i18n.js; these are only for pages.
 const PAGE = {
   en: {
+    typeH1:'{types} in {area}', typeLede:'All {n} {types} within a short walk of the middle of {area}. Well-known places first, then A to Z.', search:'Search by name', map:'Map', website:'Website', planWith:'Plan a night in {area}', back:'Back to {area}', noMatch:'Nothing matches', knownBadge:'Well known', seeAll:'Tap a number to see every place.',
     plural: { pub:'pubs', cocktail:'cocktail bars', wine:'wine bars', rooftop:'places to drink outside', dinner:'places for dinner', cheap:'cheap eats',
       live:'live music venues', comedy:'comedy venues', games:'bars with games', karaoke:'karaoke spots', dance:'clubs', latefood:'late-night food spots' },
     and:'and', h1:'A night out in {area}',
@@ -50,6 +55,7 @@ const PAGE = {
     footer:'Places change: check before you go.', privacy:'Privacy', terms:'Terms',
   },
   fr: {
+    typeH1:'{types} à {area}', typeLede:'Les {n} {types} à quelques minutes à pied du centre de {area}. Les lieux connus d’abord, puis de A à Z.', search:'Chercher par nom', map:'Carte', website:'Site web', planWith:'Planifier une soirée à {area}', back:'Retour à {area}', noMatch:'Aucun résultat', knownBadge:'Lieu connu', seeAll:'Touchez un nombre pour voir tous les lieux.',
     plural: { pub:'pubs', cocktail:'bars à cocktails', wine:'bars à vin', rooftop:'terrasses', dinner:'restaurants', cheap:'adresses petits prix',
       live:'salles de concert', comedy:'scènes de stand-up', games:'bars à jeux', karaoke:'karaokés', dance:'clubs', latefood:'adresses pour manger tard' },
     and:'et', h1:'Une soirée à {area}',
@@ -65,6 +71,7 @@ const PAGE = {
     footer:'Les lieux changent : vérifiez avant d’y aller.', privacy:'Confidentialité', terms:'Conditions',
   },
   es: {
+    typeH1:'{types} en {area}', typeLede:'Los {n} {types} a un paseo del centro de {area}. Primero los sitios conocidos y luego de la A a la Z.', search:'Buscar por nombre', map:'Mapa', website:'Web', planWith:'Planear una noche en {area}', back:'Volver a {area}', noMatch:'No hay resultados', knownBadge:'Conocido', seeAll:'Toca un número para ver todos los sitios.',
     plural: { pub:'pubs', cocktail:'coctelerías', wine:'bares de vinos', rooftop:'terrazas', dinner:'restaurantes', cheap:'sitios baratos',
       live:'salas con música en directo', comedy:'locales de comedia', games:'bares con juegos', karaoke:'karaokes', dance:'discotecas', latefood:'sitios para comer de madrugada' },
     and:'y', h1:'Una noche en {area}',
@@ -80,6 +87,7 @@ const PAGE = {
     footer:'Los sitios cambian: compruébalo antes de ir.', privacy:'Privacidad', terms:'Condiciones',
   },
   it: {
+    typeH1:'{types} a {area}', typeLede:'Tutti i {n} {types} a pochi passi dal centro di {area}. Prima i posti noti, poi dalla A alla Z.', search:'Cerca per nome', map:'Mappa', website:'Sito web', planWith:'Organizza una serata a {area}', back:'Torna a {area}', noMatch:'Nessun risultato', knownBadge:'Posto noto', seeAll:'Tocca un numero per vedere tutti i posti.',
     plural: { pub:'pub', cocktail:'cocktail bar', wine:'enoteche', rooftop:'posti per bere all’aperto', dinner:'ristoranti', cheap:'posti economici',
       live:'locali con musica dal vivo', comedy:'locali comedy', games:'bar con giochi', karaoke:'karaoke', dance:'discoteche', latefood:'posti per mangiare a tarda notte' },
     and:'e', h1:'Una serata a {area}',
@@ -95,6 +103,7 @@ const PAGE = {
     footer:'I locali cambiano: controlla prima di andare.', privacy:'Privacy', terms:'Condizioni',
   },
   pt: {
+    typeH1:'{types} em {area}', typeLede:'Todos os {n} {types} a uma caminhada do centro de {area}. Primeiro os lugares conhecidos, depois de A a Z.', search:'Buscar pelo nome', map:'Mapa', website:'Site', planWith:'Planejar uma noite em {area}', back:'Voltar para {area}', noMatch:'Nada encontrado', knownBadge:'Conhecido', seeAll:'Toque num número para ver todos os lugares.',
     plural: { pub:'pubs', cocktail:'bares de drinks', wine:'bares de vinhos', rooftop:'lugares ao ar livre', dinner:'restaurantes', cheap:'lugares baratos',
       live:'casas de show', comedy:'casas de comédia', games:'bares com jogos', karaoke:'karaokês', dance:'baladas', latefood:'lugares para comer de madrugada' },
     and:'e', h1:'Uma noite em {area}',
@@ -132,7 +141,7 @@ const appLink = (params, lang) => '/#' + new URLSearchParams({ ...params, ...(la
 const presetLink = (a, p, lang) => appLink({ a:a.id, t:p.types.join(','), n:p.n, s:p.start, e:p.end, x:p.name }, lang);
 
 const STYLE = `
-  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
+  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --line-2:#3d3a35; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--bg); color:var(--text); font:400 16px/26px Inter,system-ui,sans-serif; }
   a{ color:var(--route); }
@@ -154,7 +163,21 @@ const STYLE = `
   .grid li span{ display:block; font-size:14px; color:var(--text-2); margin-top:4px; }
   ul.places{ padding-left:20px; margin:0; }
   .counts{ display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
-  .counts li{ border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:14px; }
+  .counts li a{ display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--line-2); border-radius:999px; padding:0 14px; font-size:14px;
+    color:var(--text); text-decoration:none; background:var(--card); }
+  .counts li a:hover{ border-color:var(--route); }
+  .counts li a b{ color:var(--route); font-weight:600; margin-left:6px; }
+  .hint{ font-size:14px; color:var(--muted); margin:0 0 12px; }
+  .search{ width:100%; height:48px; padding:0 14px; margin:8px 0 16px; border:1px solid var(--line-2); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-size:16px; }
+  ul.venues{ list-style:none; padding:0; margin:0; }
+  ul.venues li{ padding:14px 0; border-top:1px solid var(--line); }
+  ul.venues h3{ margin:0 0 2px; font:600 22px/1.2 var(--display); color:var(--text); }
+  ul.venues .meta{ margin:0; font-size:14px; color:var(--text-2); }
+  ul.venues .hours{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  ul.venues .badge{ display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font:500 12px/1.4 Inter,sans-serif; color:var(--route); border:1px solid var(--route); vertical-align:middle; }
+  ul.venues .links{ display:flex; gap:16px; margin-top:6px; font-size:14px; }
+  ul.venues .links a{ display:inline-flex; align-items:center; min-height:32px; }
+  .back-link{ display:inline-flex; align-items:center; min-height:44px; }
   footer{ max-width:48rem; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--muted); }
   footer a{ color:var(--text-2); }`;
 
@@ -242,7 +265,8 @@ for (const a of areas) {
 <a class="cta" href="${esc(appLink({ a:a.id }, lang))}">${esc(fill(P.cta, v))}</a>
 
 <h2>${esc(P.here)}</h2>
-<ul class="counts">${counts.map(([id, n]) => '<li>' + esc(tr(lang, 'type.' + id)) + ' · ' + num(n) + '</li>').join('')}</ul>
+<p class="hint">${esc(P.seeAll)}</p>
+<ul class="counts">${counts.map(([id, n]) => '<li><a href="' + areaUrl(a, lang) + '/' + TYPE_SLUG[id] + '">' + esc(tr(lang, 'type.' + id)) + '<b>' + num(n) + '</b></a></li>').join('')}</ul>
 
 <h2>${esc(fill(P.ready, v))}</h2>
 <ul class="grid">${PRESETS.map((p, i) => '<li><a href="' + esc(presetLink(a, p, lang)) + '">' + esc(tr(lang, 'preset.' + i + '.name')) + '</a><span>' +
@@ -264,6 +288,41 @@ ${near.length ? `<h2>${esc(fill(P.near, v))}</h2>
     }));
     urls.push(path);
     pages++;
+
+    for (const [id, n] of counts) {
+      const list = venues.filter(x => x.vibes.includes(id) && x.name)
+        .sort((x, y) => (y.known ? 1 : 0) - (x.known ? 1 : 0) || x.name.localeCompare(y.name, LOCALE[lang]));
+      const types = P.plural[id], Types = types.charAt(0).toUpperCase() + types.slice(1);
+      const tv = { types:Types, area:a.name, n:num(n) };
+      const maps = x => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([x.name, x.street, x.postcode || cityName(city, 'en')].filter(Boolean).join(', '));
+      const tpath = path + '/' + TYPE_SLUG[id];
+      const tbody = `<h1>${esc(fill(P.typeH1, tv))}</h1>
+<p>${esc(fill(P.typeLede, { ...tv, types }))}</p>
+<a class="cta" href="${esc(appLink({ a:a.id, t:id, n:REPEATS.has(id) ? 3 : 1 }, lang))}">${esc(fill(P.planWith, v))}</a>
+<input class="search" id="q" type="search" autocomplete="off" placeholder="${esc(P.search)}" aria-label="${esc(P.search)}">
+<ul class="venues" id="list">${list.map(x => '<li data-name="' + esc(x.name.toLowerCase()) + '"><h3>' + esc(x.name) + (x.known ? '<span class="badge">' + esc(P.knownBadge) + '</span>' : '') + '</h3>' +
+  (x.street ? '<p class="meta">' + esc(x.street) + '</p>' : '') + (x.hours ? '<p class="hours">' + esc(x.hours) + '</p>' : '') +
+  '<p class="links"><a href="' + esc(maps(x)) + '" rel="noopener nofollow" target="_blank">' + esc(P.map) + '</a>' +
+  (x.website && /^https?:\/\//.test(x.website) ? '<a href="' + esc(x.website) + '" rel="noopener nofollow ugc" target="_blank">' + esc(P.website) + '</a>' : '') + '</p></li>').join('')}</ul>
+<p class="hint" id="none" hidden>${esc(P.noMatch)}</p>
+<p><a class="back-link" href="${path}">← ${esc(fill(P.back, v))}</a></p>
+<script>
+  const q = document.getElementById('q'), items = [...document.querySelectorAll('#list li')], none = document.getElementById('none');
+  q.addEventListener('input', () => {
+    const s = q.value.trim().toLowerCase(); let shown = 0;
+    for (const li of items) { const on = !s || li.dataset.name.includes(s); li.hidden = !on; if (on) shown++; }
+    none.hidden = shown > 0;
+  });
+</script>`;
+      await write(tpath, page({
+        lang, path:tpath, body:tbody, alternates:langs.map(l => [l, areaUrl(a, l) + '/' + TYPE_SLUG[id]]),
+        title: fill(P.typeH1, tv) + ' · Owlabout',
+        desc: fill(P.typeLede, { ...tv, types }),
+        crumbs: `<a href="/neighbourhoods">${esc(P.all)}</a> › <a href="${cityUrl(city, lang)}">${esc(cityName(city, lang))}</a> › <a href="${path}">${esc(a.name)}</a> › ${esc(Types)}`,
+      }));
+      urls.push(tpath);
+      pages++;
+    }
   }
   built.push(a);
 }

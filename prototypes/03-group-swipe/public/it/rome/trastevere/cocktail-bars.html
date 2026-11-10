@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#161513">
+<title>Cocktail bar a Trastevere · Owlabout</title>
+<meta name="description" content="Tutti i 30 cocktail bar a pochi passi dal centro di Trastevere. Prima i posti noti, poi dalla A alla Z.">
+<link rel="canonical" href="https://getowlabout.com/it/rome/trastevere/cocktail-bars">
+<link rel="alternate" hreflang="en" href="https://getowlabout.com/rome/trastevere/cocktail-bars">
+<link rel="alternate" hreflang="it" href="https://getowlabout.com/it/rome/trastevere/cocktail-bars">
+<link rel="alternate" hreflang="x-default" href="https://getowlabout.com/rome/trastevere/cocktail-bars">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:site_name" content="Owlabout">
+<meta property="og:title" content="Cocktail bar a Trastevere · Owlabout">
+<meta property="og:description" content="Tutti i 30 cocktail bar a pochi passi dal centro di Trastevere. Prima i posti noti, poi dalla A alla Z.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getowlabout.com/it/rome/trastevere/cocktail-bars">
+<meta property="og:image" content="https://getowlabout.com/og.png">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --line-2:#3d3a35; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font:400 16px/26px Inter,system-ui,sans-serif; }
+  a{ color:var(--route); }
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; height:64px; padding:0 16px; border-bottom:1px solid var(--line); }
+  .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); color:var(--text); text-decoration:none; }
+  .logo img{ width:28px; height:28px; }
+  .top nav{ display:flex; gap:12px; font-size:14px; }
+  main{ max-width:48rem; margin:0 auto; padding:32px 16px 64px; }
+  .crumbs{ font-size:14px; color:var(--text-2); margin:0 0 16px; }
+  .crumbs a{ color:var(--text-2); }
+  h1{ font:600 48px/1 var(--display); margin:0 0 16px; }
+  h2{ font:600 28px/1.1 var(--display); margin:40px 0 12px; }
+  h3{ font:600 20px/1.2 var(--display); margin:20px 0 6px; }
+  p, li{ color:var(--text-2); }
+  .cta{ display:inline-block; margin:8px 0 0; padding:14px 22px; border-radius:999px; background:var(--route); color:#1a1508; font-weight:600; text-decoration:none; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; padding:0; list-style:none; }
+  .grid li{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .grid li a{ font:600 20px/1.2 var(--display); text-decoration:none; color:var(--text); }
+  .grid li span{ display:block; font-size:14px; color:var(--text-2); margin-top:4px; }
+  ul.places{ padding-left:20px; margin:0; }
+  .counts{ display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
+  .counts li a{ display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--line-2); border-radius:999px; padding:0 14px; font-size:14px;
+    color:var(--text); text-decoration:none; background:var(--card); }
+  .counts li a:hover{ border-color:var(--route); }
+  .counts li a b{ color:var(--route); font-weight:600; margin-left:6px; }
+  .hint{ font-size:14px; color:var(--muted); margin:0 0 12px; }
+  .search{ width:100%; height:48px; padding:0 14px; margin:8px 0 16px; border:1px solid var(--line-2); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-size:16px; }
+  ul.venues{ list-style:none; padding:0; margin:0; }
+  ul.venues li{ padding:14px 0; border-top:1px solid var(--line); }
+  ul.venues h3{ margin:0 0 2px; font:600 22px/1.2 var(--display); color:var(--text); }
+  ul.venues .meta{ margin:0; font-size:14px; color:var(--text-2); }
+  ul.venues .hours{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  ul.venues .badge{ display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font:500 12px/1.4 Inter,sans-serif; color:var(--route); border:1px solid var(--route); vertical-align:middle; }
+  ul.venues .links{ display:flex; gap:16px; margin-top:6px; font-size:14px; }
+  ul.venues .links a{ display:inline-flex; align-items:center; min-height:32px; }
+  .back-link{ display:inline-flex; align-items:center; min-height:44px; }
+  footer{ max-width:48rem; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--muted); }
+  footer a{ color:var(--text-2); }
+</style>
+</head>
+<body>
+<header class="top"><a class="logo" href="/#l=it"><img src="/icon.svg" alt="">Owlabout</a><nav><a href="/rome/trastevere/cocktail-bars" hreflang="en" lang="en">EN</a><a href="/neighbourhoods">Tutti i quartieri</a></nav></header>
+<main>
+<p class="crumbs"><a href="/neighbourhoods">Tutti i quartieri</a> › <a href="/it/rome">Roma</a> › <a href="/it/rome/trastevere">Trastevere</a> › Cocktail bar</p>
+<h1>Cocktail bar a Trastevere</h1>
+<p>Tutti i 30 cocktail bar a pochi passi dal centro di Trastevere. Prima i posti noti, poi dalla A alla Z.</p>
+<a class="cta" href="/#a=rome-trastevere&amp;t=cocktail&amp;n=3&amp;l=it">Organizza una serata a Trastevere</a>
+<input class="search" id="q" type="search" autocomplete="off" placeholder="Cerca per nome" aria-label="Cerca per nome">
+<ul class="venues" id="list"><li data-name="8 millimetro"><h3>8 Millimetro</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=8%20Millimetro%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="almalu trastavere"><h3>Almalu Trastavere</h3><p class="meta">77 Via della Scala</p><p class="hours">Mo-Th 18:00-2:00, Fr-Su 16:00-2:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Almalu%20Trastavere%2C%2077%20Via%20della%20Scala%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a><a href="https://www.facebook.com/almalu.trastevere.roma" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="bar amore"><h3>Bar Amore</h3><p class="meta">17 Via Florida</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Amore%2C%2017%20Via%20Florida%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="bar del cinque"><h3>Bar del Cinque</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20del%20Cinque%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="bar san calisto"><h3>Bar San Calisto</h3><p class="meta">3/4/5 Piazza di San Calisto</p><p class="hours">Mo-Su 06:30-01:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20San%20Calisto%2C%203%2F4%2F5%20Piazza%20di%20San%20Calisto%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a><a href="https://barsancalisto.it" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="bar torre argentina"><h3>BAR TORRE ARGENTINA</h3><p class="meta">42 Via di Torre Argentina</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=BAR%20TORRE%20ARGENTINA%2C%2042%20Via%20di%20Torre%20Argentina%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="beerland trilussa"><h3>Beerland Trilussa</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Beerland%20Trilussa%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="beige roma"><h3>Beige Roma</h3><p class="meta">13/14 Via del Politeama</p><p class="hours">Mo-Su 19:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Beige%20Roma%2C%2013%2F14%20Via%20del%20Politeama%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a><a href="http://www.beige-roma.com/" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="big star"><h3>Big Star</h3><p class="meta">25 Via Goffredo Mameli</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Big%20Star%2C%2025%20Via%20Goffredo%20Mameli%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="bulldog inn rome"><h3>Bulldog Inn Rome</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bulldog%20Inn%20Rome%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="caffè ai banchi vecchi"><h3>Caffè ai Banchi Vecchi</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Caff%C3%A8%20ai%20Banchi%20Vecchi%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="caffé gli archi"><h3>Caffé Gli Archi</h3><p class="meta">4 Via Fratelli Bonnet</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Caff%C3%A9%20Gli%20Archi%2C%204%20Via%20Fratelli%20Bonnet%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="caffe peru"><h3>Caffe Peru</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Caffe%20Peru%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="camponeschi"><h3>Camponeschi</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Camponeschi%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="cantina dei papi"><h3>Cantina Dei Papi</h3><p class="meta">71 Via della Scala</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Cantina%20Dei%20Papi%2C%2071%20Via%20della%20Scala%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a><a href="https://cantinadeipapi.com" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="capitan cosmo"><h3>Capitan Cosmo</h3><p class="meta">7 Via dei Cartari</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Capitan%20Cosmo%2C%207%20Via%20dei%20Cartari%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a><a href="http://www.facebook.com/CapitanCosmo" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="chocolat"><h3>Chocolat</h3><p class="meta">54a Via del Teatro Valle</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Chocolat%2C%2054a%20Via%20del%20Teatro%20Valle%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="ciao"><h3>Ciao</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Ciao%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="fluid"><h3>Fluid</h3><p class="meta">Vicolo del Governo Vecchio</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Fluid%2C%20Vicolo%20del%20Governo%20Vecchio%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="freni e frizioni"><h3>Freni e Frizioni</h3><p class="meta">4 Via del Politeama</p><p class="hours">Mo-Su 18:30-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Freni%20e%20Frizioni%2C%204%20Via%20del%20Politeama%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="full moon club"><h3>Full Moon Club</h3><p class="meta">13 Via Luigi Santini</p><p class="hours">Tu-Fr, Su 20:30-02:00; Sa 17:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Full%20Moon%20Club%2C%2013%20Via%20Luigi%20Santini%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a><a href="https://fullmoonclub.org/" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="gallery art bar"><h3>Gallery Art Bar</h3><p class="meta">85 Via dei Coronari</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Gallery%20Art%20Bar%2C%2085%20Via%20dei%20Coronari%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="il vinaietto"><h3>Il Vinaietto</h3><p class="meta">38 Via del Monte della Farina</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Il%20Vinaietto%2C%2038%20Via%20del%20Monte%20della%20Farina%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="mate bar"><h3>Mate Bar</h3><p class="meta">17 Via Benedetta</p><p class="hours">Mo-Su 18:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Mate%20Bar%2C%2017%20Via%20Benedetta%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a><a href="http://www.m8bar.com/" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="milea"><h3>Milea</h3><p class="meta">164 Via della Lungaretta</p><p class="hours">Fr-Sa 17:00-02:00; Mo-Th 17:00-24:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Milea%2C%20164%20Via%20della%20Lungaretta%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="pub cuccagna"><h3>Pub Cuccagna</h3><p class="meta">17/18 Via della Cuccagna</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Pub%20Cuccagna%2C%2017%2F18%20Via%20della%20Cuccagna%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a><a href="http://www.cucagnapub.it" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="samivar"><h3>Samivar</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Samivar%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="sciscia"><h3>Sciscia</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Sciscia%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="shari vari"><h3>Shari Vari</h3><p class="meta">78 Via di Torre Argentina</p><p class="hours">08:00-16:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Shari%20Vari%2C%2078%20Via%20di%20Torre%20Argentina%2C%2000186" rel="noopener nofollow" target="_blank">Mappa</a><a href="https://www.sharivari.it/" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="vynique"><h3>VyNique</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=VyNique%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li></ul>
+<p class="hint" id="none" hidden>Nessun risultato</p>
+<p><a class="back-link" href="/it/rome/trastevere">← Torna a Trastevere</a></p>
+<script>
+  const q = document.getElementById('q'), items = [...document.querySelectorAll('#list li')], none = document.getElementById('none');
+  q.addEventListener('input', () => {
+    const s = q.value.trim().toLowerCase(); let shown = 0;
+    for (const li of items) { const on = !s || li.dataset.name.includes(s); li.hidden = !on; if (on) shown++; }
+    none.hidden = shown > 0;
+  });
+</script>
+</main>
+<footer>Venue data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. I locali cambiano: controlla prima di andare. · <a href="/privacy">Privacy</a> · <a href="/terms">Condizioni</a></footer>
+</body>
+</html>

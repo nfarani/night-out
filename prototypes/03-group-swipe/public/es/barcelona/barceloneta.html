@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
+  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --line-2:#3d3a35; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--bg); color:var(--text); font:400 16px/26px Inter,system-ui,sans-serif; }
   a{ color:var(--route); }
@@ -47,7 +47,21 @@
   .grid li span{ display:block; font-size:14px; color:var(--text-2); margin-top:4px; }
   ul.places{ padding-left:20px; margin:0; }
   .counts{ display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
-  .counts li{ border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:14px; }
+  .counts li a{ display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--line-2); border-radius:999px; padding:0 14px; font-size:14px;
+    color:var(--text); text-decoration:none; background:var(--card); }
+  .counts li a:hover{ border-color:var(--route); }
+  .counts li a b{ color:var(--route); font-weight:600; margin-left:6px; }
+  .hint{ font-size:14px; color:var(--muted); margin:0 0 12px; }
+  .search{ width:100%; height:48px; padding:0 14px; margin:8px 0 16px; border:1px solid var(--line-2); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-size:16px; }
+  ul.venues{ list-style:none; padding:0; margin:0; }
+  ul.venues li{ padding:14px 0; border-top:1px solid var(--line); }
+  ul.venues h3{ margin:0 0 2px; font:600 22px/1.2 var(--display); color:var(--text); }
+  ul.venues .meta{ margin:0; font-size:14px; color:var(--text-2); }
+  ul.venues .hours{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  ul.venues .badge{ display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font:500 12px/1.4 Inter,sans-serif; color:var(--route); border:1px solid var(--route); vertical-align:middle; }
+  ul.venues .links{ display:flex; gap:16px; margin-top:6px; font-size:14px; }
+  ul.venues .links a{ display:inline-flex; align-items:center; min-height:32px; }
+  .back-link{ display:inline-flex; align-items:center; min-height:44px; }
   footer{ max-width:48rem; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--muted); }
   footer a{ color:var(--text-2); }
 </style>
@@ -61,7 +75,8 @@
 <a class="cta" href="/#a=bcn-barceloneta&amp;l=es">Planear una noche en Barceloneta</a>
 
 <h2>Qué hay</h2>
-<ul class="counts"><li>Pub · 21</li><li>Coctelería · 106</li><li>Bar de vinos · 11</li><li>Terraza · 11</li><li>Cena · 350</li><li>Comer barato · 46</li><li>Música en directo · 2</li><li>Comedia · 2</li><li>Discoteca · 4</li><li>Comida de madrugada · 74</li></ul>
+<p class="hint">Toca un número para ver todos los sitios.</p>
+<ul class="counts"><li><a href="/es/barcelona/barceloneta/pubs">Pub<b>21</b></a></li><li><a href="/es/barcelona/barceloneta/cocktail-bars">Coctelería<b>106</b></a></li><li><a href="/es/barcelona/barceloneta/wine-bars">Bar de vinos<b>11</b></a></li><li><a href="/es/barcelona/barceloneta/drinks-outside">Terraza<b>11</b></a></li><li><a href="/es/barcelona/barceloneta/dinner">Cena<b>350</b></a></li><li><a href="/es/barcelona/barceloneta/cheap-eats">Comer barato<b>46</b></a></li><li><a href="/es/barcelona/barceloneta/live-music">Música en directo<b>2</b></a></li><li><a href="/es/barcelona/barceloneta/comedy">Comedia<b>2</b></a></li><li><a href="/es/barcelona/barceloneta/clubs">Discoteca<b>4</b></a></li><li><a href="/es/barcelona/barceloneta/late-night-food">Comida de madrugada<b>74</b></a></li></ul>
 
 <h2>Noches listas en Barceloneta</h2>
 <ul class="grid"><li><a href="/#a=bcn-barceloneta&amp;t=pub&amp;n=4&amp;s=1140&amp;e=1380&amp;x=The+pub+crawl&amp;l=es">Ruta de pubs</a><span>Cuatro pubs de verdad, a pocos minutos entre sí. Nadie tiene que elegir</span></li><li><a href="/#a=bcn-barceloneta&amp;t=wine%2Cdinner%2Ccocktail&amp;n=3&amp;s=1140&amp;e=1440&amp;x=Date+night&amp;l=es">Cita</a><span>Vino para empezar, cena y luego algún sitio con luz tenue</span></li><li><a href="/#a=bcn-barceloneta&amp;t=pub%2Cdinner%2Ccocktail%2Cdance%2Clatefood&amp;n=5&amp;s=1140&amp;e=1620&amp;x=Big+night+out&amp;l=es">Gran noche</a><span>Primero cenar, luego bailar y algo de comer de madrugada al final</span></li><li><a href="/#a=bcn-barceloneta&amp;t=cheap%2Cpub&amp;n=3&amp;s=1080&amp;e=1380&amp;x=Cheap+and+cheerful&amp;l=es">Bueno y barato</a><span>Comida callejera y un par de bares, nada pijo</span></li><li><a href="/#a=bcn-barceloneta&amp;t=pub%2Clive%2Ccocktail&amp;n=3&amp;s=1200&amp;e=1500&amp;x=Live+and+loud&amp;l=es">En directo</a><span>Una copa, un grupo que no conoces y la última</span></li><li><a href="/#a=bcn-barceloneta&amp;t=games%2Ckaraoke%2Clatefood&amp;n=3&amp;s=1200&amp;e=1560&amp;x=Make+it+weird&amp;l=es">Noche rara</a><span>Dardos, karaoke y comida a las 2. Confía en el proceso</span></li></ul>

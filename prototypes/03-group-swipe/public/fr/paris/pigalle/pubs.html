@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#161513">
+<title>Pubs à Pigalle · Owlabout</title>
+<meta name="description" content="Les 30 pubs à quelques minutes à pied du centre de Pigalle. Les lieux connus d’abord, puis de A à Z.">
+<link rel="canonical" href="https://getowlabout.com/fr/paris/pigalle/pubs">
+<link rel="alternate" hreflang="en" href="https://getowlabout.com/paris/pigalle/pubs">
+<link rel="alternate" hreflang="fr" href="https://getowlabout.com/fr/paris/pigalle/pubs">
+<link rel="alternate" hreflang="x-default" href="https://getowlabout.com/paris/pigalle/pubs">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:site_name" content="Owlabout">
+<meta property="og:title" content="Pubs à Pigalle · Owlabout">
+<meta property="og:description" content="Les 30 pubs à quelques minutes à pied du centre de Pigalle. Les lieux connus d’abord, puis de A à Z.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getowlabout.com/fr/paris/pigalle/pubs">
+<meta property="og:image" content="https://getowlabout.com/og.png">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --line-2:#3d3a35; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font:400 16px/26px Inter,system-ui,sans-serif; }
+  a{ color:var(--route); }
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; height:64px; padding:0 16px; border-bottom:1px solid var(--line); }
+  .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); color:var(--text); text-decoration:none; }
+  .logo img{ width:28px; height:28px; }
+  .top nav{ display:flex; gap:12px; font-size:14px; }
+  main{ max-width:48rem; margin:0 auto; padding:32px 16px 64px; }
+  .crumbs{ font-size:14px; color:var(--text-2); margin:0 0 16px; }
+  .crumbs a{ color:var(--text-2); }
+  h1{ font:600 48px/1 var(--display); margin:0 0 16px; }
+  h2{ font:600 28px/1.1 var(--display); margin:40px 0 12px; }
+  h3{ font:600 20px/1.2 var(--display); margin:20px 0 6px; }
+  p, li{ color:var(--text-2); }
+  .cta{ display:inline-block; margin:8px 0 0; padding:14px 22px; border-radius:999px; background:var(--route); color:#1a1508; font-weight:600; text-decoration:none; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; padding:0; list-style:none; }
+  .grid li{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .grid li a{ font:600 20px/1.2 var(--display); text-decoration:none; color:var(--text); }
+  .grid li span{ display:block; font-size:14px; color:var(--text-2); margin-top:4px; }
+  ul.places{ padding-left:20px; margin:0; }
+  .counts{ display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
+  .counts li a{ display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--line-2); border-radius:999px; padding:0 14px; font-size:14px;
+    color:var(--text); text-decoration:none; background:var(--card); }
+  .counts li a:hover{ border-color:var(--route); }
+  .counts li a b{ color:var(--route); font-weight:600; margin-left:6px; }
+  .hint{ font-size:14px; color:var(--muted); margin:0 0 12px; }
+  .search{ width:100%; height:48px; padding:0 14px; margin:8px 0 16px; border:1px solid var(--line-2); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-size:16px; }
+  ul.venues{ list-style:none; padding:0; margin:0; }
+  ul.venues li{ padding:14px 0; border-top:1px solid var(--line); }
+  ul.venues h3{ margin:0 0 2px; font:600 22px/1.2 var(--display); color:var(--text); }
+  ul.venues .meta{ margin:0; font-size:14px; color:var(--text-2); }
+  ul.venues .hours{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  ul.venues .badge{ display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font:500 12px/1.4 Inter,sans-serif; color:var(--route); border:1px solid var(--route); vertical-align:middle; }
+  ul.venues .links{ display:flex; gap:16px; margin-top:6px; font-size:14px; }
+  ul.venues .links a{ display:inline-flex; align-items:center; min-height:32px; }
+  .back-link{ display:inline-flex; align-items:center; min-height:44px; }
+  footer{ max-width:48rem; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--muted); }
+  footer a{ color:var(--text-2); }
+</style>
+</head>
+<body>
+<header class="top"><a class="logo" href="/#l=fr"><img src="/icon.svg" alt="">Owlabout</a><nav><a href="/paris/pigalle/pubs" hreflang="en" lang="en">EN</a><a href="/neighbourhoods">Tous les quartiers</a></nav></header>
+<main>
+<p class="crumbs"><a href="/neighbourhoods">Tous les quartiers</a> › <a href="/fr/paris">Paris</a> › <a href="/fr/paris/pigalle">Pigalle</a> › Pubs</p>
+<h1>Pubs à Pigalle</h1>
+<p>Les 30 pubs à quelques minutes à pied du centre de Pigalle. Les lieux connus d’abord, puis de A à Z.</p>
+<a class="cta" href="/#a=paris-pigalle&amp;t=pub&amp;n=3&amp;l=fr">Planifier une soirée à Pigalle</a>
+<input class="search" id="q" type="search" autocomplete="off" placeholder="Chercher par nom" aria-label="Chercher par nom">
+<ul class="venues" id="list"><li data-name="à la bière comme à la bière"><h3>À la bière comme à la bière</h3><p class="hours">Tu 16:00-21:00; We-Th 16:00-22:00; Fr-Sa 12:00-22:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=%C3%80%20la%20bi%C3%A8re%20comme%20%C3%A0%20la%20bi%C3%A8re%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a><a href="https://www.alabierecommealabiere.com" rel="noopener nofollow ugc" target="_blank">Site web</a></p></li><li data-name="à la place saint-georges"><h3>À la place Saint-Georges</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=%C3%80%20la%20place%20Saint-Georges%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="apertivus"><h3>Apertivus</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Apertivus%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="au rendez-vous des amis"><h3>Au Rendez-Vous des Amis</h3><p class="meta">23 Rue Gabrielle</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Au%20Rendez-Vous%20des%20Amis%2C%2023%20Rue%20Gabrielle%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="bonne heure"><h3>Bonne Heure</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bonne%20Heure%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="brasserie de la goutte d&#39;or"><h3>Brasserie de la Goutte d&#39;Or</h3><p class="meta">28 Rue de la Goutte d&#39;Or</p><p class="hours">Th 18:00-24:00; Fr 18:00-23:00; Sa 16:00-23:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Brasserie%20de%20la%20Goutte%20d&#39;Or%2C%2028%20Rue%20de%20la%20Goutte%20d&#39;Or%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a><a href="http://www.brasserielagouttedor.com" rel="noopener nofollow ugc" target="_blank">Site web</a></p></li><li data-name="clichy&#39;s tavern"><h3>Clichy&#39;s Tavern</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Clichy&#39;s%20Tavern%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="corcoran&#39;s irish pub"><h3>Corcoran&#39;s Irish Pub</h3><p class="meta">110 Boulevard de Clichy</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Corcoran&#39;s%20Irish%20Pub%2C%20110%20Boulevard%20de%20Clichy%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="dikkenek"><h3>Dikkenek</h3><p class="meta">59 Rue Ramey</p><p class="hours">Mo-Su 16:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Dikkenek%2C%2059%20Rue%20Ramey%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="dunkerque"><h3>Dunkerque</h3><p class="hours">Mo-Su 08:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Dunkerque%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a><a href="http://cafedunkerque.com/" rel="noopener nofollow ugc" target="_blank">Site web</a></p></li><li data-name="edward &amp; sons"><h3>Edward &amp; Sons</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Edward%20%26%20Sons%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="josy pub"><h3>Josy Pub</h3><p class="meta">35 Rue Saint-Georges</p><p class="hours">Mo-Su 12:00-23:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Josy%20Pub%2C%2035%20Rue%20Saint-Georges%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="l&#39;étoile de montmartre"><h3>L&#39;Étoile de Montmartre</h3><p class="meta">26 Rue Duhesme</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=L&#39;%C3%89toile%20de%20Montmartre%2C%2026%20Rue%20Duhesme%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="l&#39;hélice"><h3>L&#39;Hélice</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=L&#39;H%C3%A9lice%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="la fourmi"><h3>La Fourmi</h3><p class="meta">74 Rue des Martyrs</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=La%20Fourmi%2C%2074%20Rue%20des%20Martyrs%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="la virgule"><h3>La Virgule</h3><p class="meta">51 Rue du Chevalier de la Barre</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=La%20Virgule%2C%2051%20Rue%20du%20Chevalier%20de%20la%20Barre%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le havane"><h3>Le Havane</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Havane%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le klink"><h3>Le Klink</h3><p class="meta">20 Rue Saulnier</p><p class="hours">Tu-Sa 18:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Klink%2C%2020%20Rue%20Saulnier%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le monaco"><h3>Le Monaco</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Monaco%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le mondain"><h3>Le Mondain</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Mondain%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le narval"><h3>Le Narval</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Narval%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le petit moulin"><h3>Le Petit Moulin</h3><p class="meta">17 Rue Tholozé</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Petit%20Moulin%2C%2017%20Rue%20Tholoz%C3%A9%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le pub montmartre"><h3>Le Pub Montmartre</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Pub%20Montmartre%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le saint-claude"><h3>Le Saint-Claude</h3><p class="hours">Mo-Fr 09:30-20:30;Sa 08:30-20:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Saint-Claude%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="le saint-georges"><h3>Le Saint-Georges</h3><p class="meta">22 Rue Saint-Lazare</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Le%20Saint-Georges%2C%2022%20Rue%20Saint-Lazare%2C%2075009" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="n’collin’s pub - meetup duc bitcoin montmartre"><h3>N’Collin’s Pub - Meetup DUC BITCOIN Montmartre</h3><p class="meta">47 Rue Lamarck</p><p class="hours">Sa-Su 14:00-02:00; Mo-Fr 14:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=N%E2%80%99Collin%E2%80%99s%20Pub%20-%20Meetup%20DUC%20BITCOIN%20Montmartre%2C%2047%20Rue%20Lamarck%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="o&#39;sullivans by the mill"><h3>O&#39;Sullivans By The Mill</h3><p class="meta">92 Boulevard de Clichy</p><p class="hours">Mo 00:00-06:00,13:00-24:00; Tu-Fr 00:00-05:00,13:00-24:00; Sa,Su 00:00-06:00,12:00-24:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=O&#39;Sullivans%20By%20The%20Mill%2C%2092%20Boulevard%20de%20Clichy%2C%2075018" rel="noopener nofollow" target="_blank">Carte</a><a href="https://www.osullivans-pubs.com/pub-irlandais/by-the-mill/" rel="noopener nofollow ugc" target="_blank">Site web</a></p></li><li data-name="parme clichy"><h3>Parme Clichy</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Parme%20Clichy%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a></p></li><li data-name="the coq &amp; bulldog"><h3>The Coq &amp; Bulldog</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Coq%20%26%20Bulldog%2C%20Paris" rel="noopener nofollow" target="_blank">Carte</a><a href="http://www.facebook.com/pages/The-Coq-Bulldog-Pub/226637367401560" rel="noopener nofollow ugc" target="_blank">Site web</a></p></li><li data-name="tigermilk"><h3>Tigermilk</h3><p class="hours">Mo-Th 12:00-14:30, 19:00-22:30; Fr 12:00-14:30, 18:45-23:00; Sa 12:00-15:00, 18:45-23:00; Su 11:30-15:00, 19:00-22:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Tigermilk%2C%2075009" rel="noopener nofollow" target="_blank">Carte</a></p></li></ul>
+<p class="hint" id="none" hidden>Aucun résultat</p>
+<p><a class="back-link" href="/fr/paris/pigalle">← Retour à Pigalle</a></p>
+<script>
+  const q = document.getElementById('q'), items = [...document.querySelectorAll('#list li')], none = document.getElementById('none');
+  q.addEventListener('input', () => {
+    const s = q.value.trim().toLowerCase(); let shown = 0;
+    for (const li of items) { const on = !s || li.dataset.name.includes(s); li.hidden = !on; if (on) shown++; }
+    none.hidden = shown > 0;
+  });
+</script>
+</main>
+<footer>Venue data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. Les lieux changent : vérifiez avant d’y aller. · <a href="/privacy">Confidentialité</a> · <a href="/terms">Conditions</a></footer>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#161513">
+<title>Pubs in Deptford · Owlabout</title>
+<meta name="description" content="All 25 pubs within a short walk of the middle of Deptford. Well-known places first, then A to Z.">
+<link rel="canonical" href="https://getowlabout.com/london/deptford/pubs">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:site_name" content="Owlabout">
+<meta property="og:title" content="Pubs in Deptford · Owlabout">
+<meta property="og:description" content="All 25 pubs within a short walk of the middle of Deptford. Well-known places first, then A to Z.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getowlabout.com/london/deptford/pubs">
+<meta property="og:image" content="https://getowlabout.com/og.png">
+<meta property="og:locale" content="en_GB">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --line-2:#3d3a35; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font:400 16px/26px Inter,system-ui,sans-serif; }
+  a{ color:var(--route); }
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; height:64px; padding:0 16px; border-bottom:1px solid var(--line); }
+  .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); color:var(--text); text-decoration:none; }
+  .logo img{ width:28px; height:28px; }
+  .top nav{ display:flex; gap:12px; font-size:14px; }
+  main{ max-width:48rem; margin:0 auto; padding:32px 16px 64px; }
+  .crumbs{ font-size:14px; color:var(--text-2); margin:0 0 16px; }
+  .crumbs a{ color:var(--text-2); }
+  h1{ font:600 48px/1 var(--display); margin:0 0 16px; }
+  h2{ font:600 28px/1.1 var(--display); margin:40px 0 12px; }
+  h3{ font:600 20px/1.2 var(--display); margin:20px 0 6px; }
+  p, li{ color:var(--text-2); }
+  .cta{ display:inline-block; margin:8px 0 0; padding:14px 22px; border-radius:999px; background:var(--route); color:#1a1508; font-weight:600; text-decoration:none; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; padding:0; list-style:none; }
+  .grid li{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .grid li a{ font:600 20px/1.2 var(--display); text-decoration:none; color:var(--text); }
+  .grid li span{ display:block; font-size:14px; color:var(--text-2); margin-top:4px; }
+  ul.places{ padding-left:20px; margin:0; }
+  .counts{ display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
+  .counts li a{ display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--line-2); border-radius:999px; padding:0 14px; font-size:14px;
+    color:var(--text); text-decoration:none; background:var(--card); }
+  .counts li a:hover{ border-color:var(--route); }
+  .counts li a b{ color:var(--route); font-weight:600; margin-left:6px; }
+  .hint{ font-size:14px; color:var(--muted); margin:0 0 12px; }
+  .search{ width:100%; height:48px; padding:0 14px; margin:8px 0 16px; border:1px solid var(--line-2); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-size:16px; }
+  ul.venues{ list-style:none; padding:0; margin:0; }
+  ul.venues li{ padding:14px 0; border-top:1px solid var(--line); }
+  ul.venues h3{ margin:0 0 2px; font:600 22px/1.2 var(--display); color:var(--text); }
+  ul.venues .meta{ margin:0; font-size:14px; color:var(--text-2); }
+  ul.venues .hours{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  ul.venues .badge{ display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font:500 12px/1.4 Inter,sans-serif; color:var(--route); border:1px solid var(--route); vertical-align:middle; }
+  ul.venues .links{ display:flex; gap:16px; margin-top:6px; font-size:14px; }
+  ul.venues .links a{ display:inline-flex; align-items:center; min-height:32px; }
+  .back-link{ display:inline-flex; align-items:center; min-height:44px; }
+  footer{ max-width:48rem; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--muted); }
+  footer a{ color:var(--text-2); }
+</style>
+</head>
+<body>
+<header class="top"><a class="logo" href="/#"><img src="/icon.svg" alt="">Owlabout</a><nav><a href="/neighbourhoods">All neighbourhoods</a></nav></header>
+<main>
+<p class="crumbs"><a href="/neighbourhoods">All neighbourhoods</a> › <a href="/london">London</a> › <a href="/london/deptford">Deptford</a> › Pubs</p>
+<h1>Pubs in Deptford</h1>
+<p>All 25 pubs within a short walk of the middle of Deptford. Well-known places first, then A to Z.</p>
+<a class="cta" href="/#a=deptford&amp;t=pub&amp;n=3">Plan a night in Deptford</a>
+<input class="search" id="q" type="search" autocomplete="off" placeholder="Search by name" aria-label="Search by name">
+<ul class="venues" id="list"><li data-name="amersham arms"><h3>Amersham Arms</h3><p class="meta">388 New Cross Road</p><p class="hours">Su-We 12:00-24:00; Th-Sa 12:00-27:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Amersham%20Arms%2C%20388%20New%20Cross%20Road%2C%20SE14%206TY" rel="noopener nofollow" target="_blank">Map</a><a href="https://amershamarms.co.uk/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="badger badger"><h3>Badger Badger</h3><p class="meta">139-145 Deptford High Street</p><p class="hours">Mo-Th 10:00-23:00; Fr 10:00-25:00; Sa-Su 12:00-25:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Badger%20Badger%2C%20139-145%20Deptford%20High%20Street%2C%20SE8%203NU" rel="noopener nofollow" target="_blank">Map</a><a href="https://www.badgerbadger.org/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="big j&#39;s biltong bar"><h3>Big J&#39;s Biltong Bar</h3><p class="meta">29 Deptford High Street</p><p class="hours">Mo-We 16:00-22:00; Th 16:00-23:00; Fr 16:00-24:00; Sa 14:00-24:00; Su 16:00-20:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Big%20J&#39;s%20Biltong%20Bar%2C%2029%20Deptford%20High%20Street%2C%20SE8%204AD" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="marquis of granby"><h3>Marquis of Granby</h3><p class="meta">322 New Cross Road</p><p class="hours">Mo-Th 14:00-24:00; Fr-Sa 12:00-25:00; Su 12:00-24:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Marquis%20of%20Granby%2C%20322%20New%20Cross%20Road%2C%20SE14%206AG" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="morden arms"><h3>Morden Arms</h3><p class="meta">1 Brand Street</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Morden%20Arms%2C%201%20Brand%20Street%2C%20SE10%208SP" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="new cross inn"><h3>New Cross Inn</h3><p class="meta">323 New Cross Road</p><p class="hours">Mo-Th 18:00-27:00; Fr-Sa 18:00-28:00; Su 18:00-26:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=New%20Cross%20Inn%2C%20323%20New%20Cross%20Road%2C%20SE14%206AS" rel="noopener nofollow" target="_blank">Map</a><a href="https://www.newcrossinn.com/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="royal albert"><h3>Royal Albert</h3><p class="meta">460 New Cross Road</p><p class="hours">Mo-Th 16:00-23:00; Fr-Sa 12:00-01:00; Su 12:00-22:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Royal%20Albert%2C%20460%20New%20Cross%20Road%2C%20SE14%206TJ" rel="noopener nofollow" target="_blank">Map</a><a href="https://royalalbertpub.co.uk/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="royal george"><h3>Royal George</h3><p class="meta">85 Tanners Hill</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Royal%20George%2C%2085%20Tanners%20Hill%2C%20SE8%204QD" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="royal standard"><h3>Royal Standard</h3><p class="meta">86 Tanners Hill</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Royal%20Standard%2C%2086%20Tanners%20Hill%2C%20SE8%204PN" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="salt deptford"><h3>Salt Deptford</h3><p class="meta">Market Yard</p><p class="hours">Mo-Th 16:00-23:00; Fr-Sa 12:00-23:00; Su 12:00-22:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Salt%20Deptford%2C%20Market%20Yard%2C%20SE8%204BX" rel="noopener nofollow" target="_blank">Map</a><a href="https://www.saltbeerfactory.co.uk/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the birds nest"><h3>The Birds Nest</h3><p class="meta">32 Deptford Church Street</p><p class="hours">Mo-Th 10:00-23:00; Fr-Su 11:00-26:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Birds%20Nest%2C%2032%20Deptford%20Church%20Street%2C%20SE8%204RZ" rel="noopener nofollow" target="_blank">Map</a><a href="http://www.thebirdsnestpub.co.uk/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the brookmill pub"><h3>The Brookmill Pub</h3><p class="meta">65 Cranbrook Road</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Brookmill%20Pub%2C%2065%20Cranbrook%20Road%2C%20SE8%204EJ" rel="noopener nofollow" target="_blank">Map</a><a href="https://www.thebrookmill.co.uk/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the dog &amp; bell"><h3>The Dog &amp; Bell</h3><p class="meta">116 Prince Street</p><p class="hours">Mo 12:00-00:00; Tu-Th 11:00-00:00; Fr 11:00-01:00; Sa 09:00-01:00; Su 09:00-00:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Dog%20%26%20Bell%2C%20116%20Prince%20Street%2C%20SE8%203JD" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="the duke"><h3>The Duke</h3><p class="meta">125 Creek Road</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Duke%2C%20125%20Creek%20Road%2C%20SE8%203BU" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="the george &amp; dragon"><h3>The George &amp; Dragon</h3><p class="meta">2 Blackheath Hill</p><p class="hours">Th 18:00-26:00; Fr-Sa 18:00-28:00; Su 16:00-26:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20George%20%26%20Dragon%2C%202%20Blackheath%20Hill%2C%20SE10%208DE" rel="noopener nofollow" target="_blank">Map</a><a href="https://georgedragon.com/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the graduate"><h3>The Graduate</h3><p class="meta">107-109 Blackheath Road</p><p class="hours">Mo-Th, Sa 11:00-24:00; Fr 11:00-26:30; Su 11:30-23:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Graduate%2C%20107-109%20Blackheath%20Road%2C%20SE10%208PD" rel="noopener nofollow" target="_blank">Map</a><a href="https://thegraduate.uk/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the guildford arms"><h3>The Guildford Arms</h3><p class="meta">55 Guildford Grove</p><p class="hours">Tu-Su 12:00-23:00; Dec 25-26 off</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Guildford%20Arms%2C%2055%20Guildford%20Grove%2C%20SE10%208JY" rel="noopener nofollow" target="_blank">Map</a><a href="https://www.theguildfordarms.co.uk/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the little crown"><h3>The Little Crown</h3><p class="meta">495 New Cross Road</p><p class="hours">Mo-Th 11:00-23:00; Fr-Sa 11:00-24:00; Su 12:00-22:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Little%20Crown%2C%20495%20New%20Cross%20Road%2C%20SE14%206TJ" rel="noopener nofollow" target="_blank">Map</a><a href="https://thelittlecrownpub.com/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the lost hour"><h3>The Lost Hour</h3><p class="meta">217-219 Greenwich High Road</p><p class="hours">Mo-We 12:00-23:00; Th 12:00-24:00; Fr 12:00-25:00; Sa 10:00-25:00; Su 10:00-23:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Lost%20Hour%2C%20217-219%20Greenwich%20High%20Road%2C%20SE10%208NB" rel="noopener nofollow" target="_blank">Map</a><a href="https://www.crafted-social.co.uk/lost-hour-greenwich" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the lucky anchor ale house"><h3>The Lucky Anchor Ale House</h3><p class="meta">18 Deptford High Street</p><p class="hours">Mo-Th 15:00-24:30; Fr-Su 13:30-24:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Lucky%20Anchor%20Ale%20House%2C%2018%20Deptford%20High%20Street%2C%20SE8%204AF" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="the north pole"><h3>The North Pole</h3><p class="meta">131 Greenwich High Road</p><p class="hours">Su-We 12:00-24:00; Th 12:00-24:30; Fr-Sa 12:00-25:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20North%20Pole%2C%20131%20Greenwich%20High%20Road%2C%20SE10%208JA" rel="noopener nofollow" target="_blank">Map</a><a href="https://www.northpolegreenwich.co.uk/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the rose"><h3>The Rose</h3><p class="meta">272 New Cross Road</p><p class="hours">Su-Tu 11:30-23:00; We-Th 11:30-24:00; Fr-Sa 11:30-25:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Rose%2C%20272%20New%20Cross%20Road%2C%20SE14%206AA" rel="noopener nofollow" target="_blank">Map</a><a href="https://www.rosepubandkitchen.com" rel="noopener nofollow ugc" target="_blank">Website</a></p></li><li data-name="the shirker&#39;s rest"><h3>The Shirker&#39;s Rest</h3><p class="meta">9 Lewisham Way</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Shirker&#39;s%20Rest%2C%209%20Lewisham%20Way%2C%20SE14%206PP" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="the wolf&#39;s tavern"><h3>The Wolf&#39;s Tavern</h3><p class="meta">195 Evelyn Street</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=The%20Wolf&#39;s%20Tavern%2C%20195%20Evelyn%20Street%2C%20SE8%205RE" rel="noopener nofollow" target="_blank">Map</a></p></li><li data-name="villages"><h3>Villages</h3><p class="meta">21-26 Resolution Way</p><p class="hours">Th-Fr 18:00-23:00; Sa 12:00-23:00; Su 12:00-22:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Villages%2C%2021-26%20Resolution%20Way%2C%20SE8%204NT" rel="noopener nofollow" target="_blank">Map</a><a href="https://villagesbrewery.com/" rel="noopener nofollow ugc" target="_blank">Website</a></p></li></ul>
+<p class="hint" id="none" hidden>Nothing matches</p>
+<p><a class="back-link" href="/london/deptford">← Back to Deptford</a></p>
+<script>
+  const q = document.getElementById('q'), items = [...document.querySelectorAll('#list li')], none = document.getElementById('none');
+  q.addEventListener('input', () => {
+    const s = q.value.trim().toLowerCase(); let shown = 0;
+    for (const li of items) { const on = !s || li.dataset.name.includes(s); li.hidden = !on; if (on) shown++; }
+    none.hidden = shown > 0;
+  });
+</script>
+</main>
+<footer>Venue data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. Places change: check before you go. · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></footer>
+</body>
+</html>

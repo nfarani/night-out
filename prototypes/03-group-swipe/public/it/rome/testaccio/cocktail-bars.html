@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#161513">
+<title>Cocktail bar a Testaccio · Owlabout</title>
+<meta name="description" content="Tutti i 17 cocktail bar a pochi passi dal centro di Testaccio. Prima i posti noti, poi dalla A alla Z.">
+<link rel="canonical" href="https://getowlabout.com/it/rome/testaccio/cocktail-bars">
+<link rel="alternate" hreflang="en" href="https://getowlabout.com/rome/testaccio/cocktail-bars">
+<link rel="alternate" hreflang="it" href="https://getowlabout.com/it/rome/testaccio/cocktail-bars">
+<link rel="alternate" hreflang="x-default" href="https://getowlabout.com/rome/testaccio/cocktail-bars">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:site_name" content="Owlabout">
+<meta property="og:title" content="Cocktail bar a Testaccio · Owlabout">
+<meta property="og:description" content="Tutti i 17 cocktail bar a pochi passi dal centro di Testaccio. Prima i posti noti, poi dalla A alla Z.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getowlabout.com/it/rome/testaccio/cocktail-bars">
+<meta property="og:image" content="https://getowlabout.com/og.png">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --line-2:#3d3a35; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font:400 16px/26px Inter,system-ui,sans-serif; }
+  a{ color:var(--route); }
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; height:64px; padding:0 16px; border-bottom:1px solid var(--line); }
+  .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); color:var(--text); text-decoration:none; }
+  .logo img{ width:28px; height:28px; }
+  .top nav{ display:flex; gap:12px; font-size:14px; }
+  main{ max-width:48rem; margin:0 auto; padding:32px 16px 64px; }
+  .crumbs{ font-size:14px; color:var(--text-2); margin:0 0 16px; }
+  .crumbs a{ color:var(--text-2); }
+  h1{ font:600 48px/1 var(--display); margin:0 0 16px; }
+  h2{ font:600 28px/1.1 var(--display); margin:40px 0 12px; }
+  h3{ font:600 20px/1.2 var(--display); margin:20px 0 6px; }
+  p, li{ color:var(--text-2); }
+  .cta{ display:inline-block; margin:8px 0 0; padding:14px 22px; border-radius:999px; background:var(--route); color:#1a1508; font-weight:600; text-decoration:none; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; padding:0; list-style:none; }
+  .grid li{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .grid li a{ font:600 20px/1.2 var(--display); text-decoration:none; color:var(--text); }
+  .grid li span{ display:block; font-size:14px; color:var(--text-2); margin-top:4px; }
+  ul.places{ padding-left:20px; margin:0; }
+  .counts{ display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
+  .counts li a{ display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--line-2); border-radius:999px; padding:0 14px; font-size:14px;
+    color:var(--text); text-decoration:none; background:var(--card); }
+  .counts li a:hover{ border-color:var(--route); }
+  .counts li a b{ color:var(--route); font-weight:600; margin-left:6px; }
+  .hint{ font-size:14px; color:var(--muted); margin:0 0 12px; }
+  .search{ width:100%; height:48px; padding:0 14px; margin:8px 0 16px; border:1px solid var(--line-2); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-size:16px; }
+  ul.venues{ list-style:none; padding:0; margin:0; }
+  ul.venues li{ padding:14px 0; border-top:1px solid var(--line); }
+  ul.venues h3{ margin:0 0 2px; font:600 22px/1.2 var(--display); color:var(--text); }
+  ul.venues .meta{ margin:0; font-size:14px; color:var(--text-2); }
+  ul.venues .hours{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  ul.venues .badge{ display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font:500 12px/1.4 Inter,sans-serif; color:var(--route); border:1px solid var(--route); vertical-align:middle; }
+  ul.venues .links{ display:flex; gap:16px; margin-top:6px; font-size:14px; }
+  ul.venues .links a{ display:inline-flex; align-items:center; min-height:32px; }
+  .back-link{ display:inline-flex; align-items:center; min-height:44px; }
+  footer{ max-width:48rem; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--muted); }
+  footer a{ color:var(--text-2); }
+</style>
+</head>
+<body>
+<header class="top"><a class="logo" href="/#l=it"><img src="/icon.svg" alt="">Owlabout</a><nav><a href="/rome/testaccio/cocktail-bars" hreflang="en" lang="en">EN</a><a href="/neighbourhoods">Tutti i quartieri</a></nav></header>
+<main>
+<p class="crumbs"><a href="/neighbourhoods">Tutti i quartieri</a> › <a href="/it/rome">Roma</a> › <a href="/it/rome/testaccio">Testaccio</a> › Cocktail bar</p>
+<h1>Cocktail bar a Testaccio</h1>
+<p>Tutti i 17 cocktail bar a pochi passi dal centro di Testaccio. Prima i posti noti, poi dalla A alla Z.</p>
+<a class="cta" href="/#a=rome-testaccio&amp;t=cocktail&amp;n=3&amp;l=it">Organizza una serata a Testaccio</a>
+<input class="search" id="q" type="search" autocomplete="off" placeholder="Cerca per nome" aria-label="Cerca per nome">
+<ul class="venues" id="list"><li data-name="bar fratelli capone"><h3>Bar Fratelli Capone</h3><p class="meta">30 Piazza Testaccio</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Fratelli%20Capone%2C%2030%20Piazza%20Testaccio%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="bar marmorata"><h3>Bar Marmorata</h3><p class="meta">127 Via Marmorata</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Marmorata%2C%20127%20Via%20Marmorata%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="big star"><h3>Big Star</h3><p class="meta">25 Via Goffredo Mameli</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Big%20Star%2C%2025%20Via%20Goffredo%20Mameli%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="euphoria"><h3>Euphoria</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Euphoria%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="full moon club"><h3>Full Moon Club</h3><p class="meta">13 Via Luigi Santini</p><p class="hours">Tu-Fr, Su 20:30-02:00; Sa 17:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Full%20Moon%20Club%2C%2013%20Via%20Luigi%20Santini%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a><a href="https://fullmoonclub.org/" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="il bar del fornaretto"><h3>il Bar del Fornaretto</h3><p class="meta">20 Piazza Ippolito Nievo</p><p class="hours">Mo-Sa 06:00-21:30; Su 05:00-18:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=il%20Bar%20del%20Fornaretto%2C%2020%20Piazza%20Ippolito%20Nievo%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="la rosa dei 4 venti"><h3>La Rosa dei 4 Venti</h3><p class="meta">65 Via Alessandro Volta</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=La%20Rosa%20dei%204%20Venti%2C%2065%20Via%20Alessandro%20Volta%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="lana mixology &amp; rooftop bar"><h3>Lana Mixology &amp; Rooftop bar</h3><p class="meta">35 Via del Porto Fluviale</p><p class="hours">Mo-Sa 18:00-24:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Lana%20Mixology%20%26%20Rooftop%20bar%2C%2035%20Via%20del%20Porto%20Fluviale%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a><a href="https://lanarooftop.com/" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="mostro"><h3>Mostro</h3><p class="meta">Piazza di Porta San Paolo</p><p class="hours">Mo-Th 08:00-00:00; Fr 08:00-01:00; Sa 09:00-01:00; Su 09:00-00:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Mostro%2C%20Piazza%20di%20Porta%20San%20Paolo%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="mostro"><h3>Mostro</h3><p class="meta">Piazza di Porta San Paolo</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Mostro%2C%20Piazza%20di%20Porta%20San%20Paolo%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="oasi della birra"><h3>Oasi della Birra</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Oasi%20della%20Birra%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="peso bistrot"><h3>Peso Bistrot</h3><p class="meta">Lungotevere degli Artigiani</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Peso%20Bistrot%2C%20Lungotevere%20degli%20Artigiani%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a><a href="http://www.pesoroma.it" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="redrum"><h3>Redrum</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Redrum%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="samivar"><h3>Samivar</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Samivar%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="städlin"><h3>Städlin</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=St%C3%A4dlin%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a><a href="http://www.stadlin.club" rel="noopener nofollow ugc" target="_blank">Sito web</a></p></li><li data-name="treefolk&#39;s public house"><h3>Treefolk&#39;s Public House</h3><p class="meta">192 Viale di Trastevere 192</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Treefolk&#39;s%20Public%20House%2C%20192%20Viale%20di%20Trastevere%20192%2C%2000153" rel="noopener nofollow" target="_blank">Mappa</a></p></li><li data-name="vinificio"><h3>Vinificio</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Vinificio%2C%20Rome" rel="noopener nofollow" target="_blank">Mappa</a></p></li></ul>
+<p class="hint" id="none" hidden>Nessun risultato</p>
+<p><a class="back-link" href="/it/rome/testaccio">← Torna a Testaccio</a></p>
+<script>
+  const q = document.getElementById('q'), items = [...document.querySelectorAll('#list li')], none = document.getElementById('none');
+  q.addEventListener('input', () => {
+    const s = q.value.trim().toLowerCase(); let shown = 0;
+    for (const li of items) { const on = !s || li.dataset.name.includes(s); li.hidden = !on; if (on) shown++; }
+    none.hidden = shown > 0;
+  });
+</script>
+</main>
+<footer>Venue data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. I locali cambiano: controlla prima di andare. · <a href="/privacy">Privacy</a> · <a href="/terms">Condizioni</a></footer>
+</body>
+</html>

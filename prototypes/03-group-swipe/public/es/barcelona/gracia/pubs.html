@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#161513">
+<title>Pubs en Gràcia · Owlabout</title>
+<meta name="description" content="Los 28 pubs a un paseo del centro de Gràcia. Primero los sitios conocidos y luego de la A a la Z.">
+<link rel="canonical" href="https://getowlabout.com/es/barcelona/gracia/pubs">
+<link rel="alternate" hreflang="en" href="https://getowlabout.com/barcelona/gracia/pubs">
+<link rel="alternate" hreflang="es" href="https://getowlabout.com/es/barcelona/gracia/pubs">
+<link rel="alternate" hreflang="x-default" href="https://getowlabout.com/barcelona/gracia/pubs">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:site_name" content="Owlabout">
+<meta property="og:title" content="Pubs en Gràcia · Owlabout">
+<meta property="og:description" content="Los 28 pubs a un paseo del centro de Gràcia. Primero los sitios conocidos y luego de la A a la Z.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getowlabout.com/es/barcelona/gracia/pubs">
+<meta property="og:image" content="https://getowlabout.com/og.png">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --line-2:#3d3a35; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font:400 16px/26px Inter,system-ui,sans-serif; }
+  a{ color:var(--route); }
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; height:64px; padding:0 16px; border-bottom:1px solid var(--line); }
+  .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); color:var(--text); text-decoration:none; }
+  .logo img{ width:28px; height:28px; }
+  .top nav{ display:flex; gap:12px; font-size:14px; }
+  main{ max-width:48rem; margin:0 auto; padding:32px 16px 64px; }
+  .crumbs{ font-size:14px; color:var(--text-2); margin:0 0 16px; }
+  .crumbs a{ color:var(--text-2); }
+  h1{ font:600 48px/1 var(--display); margin:0 0 16px; }
+  h2{ font:600 28px/1.1 var(--display); margin:40px 0 12px; }
+  h3{ font:600 20px/1.2 var(--display); margin:20px 0 6px; }
+  p, li{ color:var(--text-2); }
+  .cta{ display:inline-block; margin:8px 0 0; padding:14px 22px; border-radius:999px; background:var(--route); color:#1a1508; font-weight:600; text-decoration:none; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; padding:0; list-style:none; }
+  .grid li{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .grid li a{ font:600 20px/1.2 var(--display); text-decoration:none; color:var(--text); }
+  .grid li span{ display:block; font-size:14px; color:var(--text-2); margin-top:4px; }
+  ul.places{ padding-left:20px; margin:0; }
+  .counts{ display:flex; flex-wrap:wrap; gap:8px; padding:0; list-style:none; }
+  .counts li a{ display:inline-flex; align-items:center; min-height:40px; border:1px solid var(--line-2); border-radius:999px; padding:0 14px; font-size:14px;
+    color:var(--text); text-decoration:none; background:var(--card); }
+  .counts li a:hover{ border-color:var(--route); }
+  .counts li a b{ color:var(--route); font-weight:600; margin-left:6px; }
+  .hint{ font-size:14px; color:var(--muted); margin:0 0 12px; }
+  .search{ width:100%; height:48px; padding:0 14px; margin:8px 0 16px; border:1px solid var(--line-2); border-radius:12px; background:var(--card); color:var(--text); font:inherit; font-size:16px; }
+  ul.venues{ list-style:none; padding:0; margin:0; }
+  ul.venues li{ padding:14px 0; border-top:1px solid var(--line); }
+  ul.venues h3{ margin:0 0 2px; font:600 22px/1.2 var(--display); color:var(--text); }
+  ul.venues .meta{ margin:0; font-size:14px; color:var(--text-2); }
+  ul.venues .hours{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  ul.venues .badge{ display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font:500 12px/1.4 Inter,sans-serif; color:var(--route); border:1px solid var(--route); vertical-align:middle; }
+  ul.venues .links{ display:flex; gap:16px; margin-top:6px; font-size:14px; }
+  ul.venues .links a{ display:inline-flex; align-items:center; min-height:32px; }
+  .back-link{ display:inline-flex; align-items:center; min-height:44px; }
+  footer{ max-width:48rem; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--muted); }
+  footer a{ color:var(--text-2); }
+</style>
+</head>
+<body>
+<header class="top"><a class="logo" href="/#l=es"><img src="/icon.svg" alt="">Owlabout</a><nav><a href="/barcelona/gracia/pubs" hreflang="en" lang="en">EN</a><a href="/neighbourhoods">Todos los barrios</a></nav></header>
+<main>
+<p class="crumbs"><a href="/neighbourhoods">Todos los barrios</a> › <a href="/es/barcelona">Barcelona</a> › <a href="/es/barcelona/gracia">Gràcia</a> › Pubs</p>
+<h1>Pubs en Gràcia</h1>
+<p>Los 28 pubs a un paseo del centro de Gràcia. Primero los sitios conocidos y luego de la A a la Z.</p>
+<a class="cta" href="/#a=bcn-gracia&amp;t=pub&amp;n=3&amp;l=es">Planear una noche en Gràcia</a>
+<input class="search" id="q" type="search" autocomplete="off" placeholder="Buscar por nombre" aria-label="Buscar por nombre">
+<ul class="venues" id="list"><li data-name="bar - restaurant san miguel"><h3>Bar - Restaurant San Miguel</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20-%20Restaurant%20San%20Miguel%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="bar billar hdp"><h3>Bar Billar HDP</h3><p class="meta">35 Carrer de Sant Joaquim</p><p class="hours">Tu-Th 18:00-01:00; Fr-Sa 18:00-03:00; Su-Mo 18:00-00:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Billar%20HDP%2C%2035%20Carrer%20de%20Sant%20Joaquim%2C%2008012" rel="noopener nofollow" target="_blank">Mapa</a><a href="https://hdpbillar.com/" rel="noopener nofollow ugc" target="_blank">Web</a></p></li><li data-name="bar blau"><h3>Bar Blau</h3><p class="meta">69 Avinguda de la Riera de Cassoles</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Blau%2C%2069%20Avinguda%20de%20la%20Riera%20de%20Cassoles%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="bar cros"><h3>Bar Cros</h3><p class="meta">433 Avinguda Diagonal</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Cros%2C%20433%20Avinguda%20Diagonal%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="bar restaurante casa jaime"><h3>Bar Restaurante Casa Jaime</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Restaurante%20Casa%20Jaime%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="bar trattoria el pepino"><h3>Bar Trattoria El Pepino</h3><p class="meta">33 Carrer de Tordera</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Trattoria%20El%20Pepino%2C%2033%20Carrer%20de%20Tordera%2C%2008012" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="bar vulcano"><h3>Bar Vulcano</h3><p class="meta">43 Carrer de la Llibertat</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Bar%20Vulcano%2C%2043%20Carrer%20de%20la%20Llibertat%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="bar1"><h3>bar1</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=bar1%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="café bar r-207"><h3>Café Bar R-207</h3><p class="meta">Carrer del Rosselló</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Caf%C3%A9%20Bar%20R-207%2C%20Carrer%20del%20Rossell%C3%B3%2C%2008008" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="can queta"><h3>Can Queta</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Can%20Queta%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="cerbeseria lesseps"><h3>Cerbeseria Lesseps</h3><p class="meta">Carrer del Torrent de l&#39;Olla</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Cerbeseria%20Lesseps%2C%20Carrer%20del%20Torrent%20de%20l&#39;Olla%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="cerveceria"><h3>Cerveceria</h3><p class="meta">Carrer de Milà i Fontanals</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Cerveceria%2C%20Carrer%20de%20Mil%C3%A0%20i%20Fontanals%2C%2008012" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="chulo"><h3>Chulo</h3><p class="meta">150 Carrer de Bailèn</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Chulo%2C%20150%20Carrer%20de%20Bail%C3%A8n%2C%2008037" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="el punt"><h3>El Punt</h3><p class="meta">279 Carrer de Balmes</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=El%20Punt%2C%20279%20Carrer%20de%20Balmes%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="l&#39;atomic"><h3>L&#39;Atomic</h3><p class="meta">40 Carrer de Puigmartí</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=L&#39;Atomic%2C%2040%20Carrer%20de%20Puigmart%C3%AD%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="la beata"><h3>La Beata</h3><p class="meta">16 Carrer de Jesús</p><p class="hours">Tu-Sa 18:00-24:00; Su 18:00-01:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=La%20Beata%2C%2016%20Carrer%20de%20Jes%C3%BAs%2C%2008012" rel="noopener nofollow" target="_blank">Mapa</a><a href="https://barlabeata.com" rel="noopener nofollow ugc" target="_blank">Web</a></p></li><li data-name="la cervesera artesana"><h3>La Cervesera Artesana</h3><p class="meta">14 Carrer de Sant Agustí</p><p class="hours">Su,Tu-Th 17:00-01:00; Fr,Sa 17:00-03:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=La%20Cervesera%20Artesana%2C%2014%20Carrer%20de%20Sant%20Agust%C3%AD%2C%2008012" rel="noopener nofollow" target="_blank">Mapa</a><a href="https://lacervesera.net" rel="noopener nofollow ugc" target="_blank">Web</a></p></li><li data-name="la rovira"><h3>La Rovira</h3><p class="meta">23 Carrer de Rabassa</p><p class="hours">Mo-We,Su 09:00-00:00; Th 09:00-01:00; Fr,Sa 09:00-02:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=La%20Rovira%2C%2023%20Carrer%20de%20Rabassa%2C%2008024" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="lamenuda"><h3>Lamenuda</h3><p class="meta">318 Carrer de Provença</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Lamenuda%2C%20318%20Carrer%20de%20Proven%C3%A7a%2C%2008037" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="maría castaña"><h3>María Castaña</h3><p class="meta">53 Via Augusta</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Mar%C3%ADa%20Casta%C3%B1a%2C%2053%20Via%20Augusta%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="musical maria"><h3>Musical Maria</h3><p class="meta">Carrer de Maria</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Musical%20Maria%2C%20Carrer%20de%20Maria%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="raïm"><h3>Raïm</h3><p class="meta">4 Carrer de Siracusa</p><p class="hours">We-Sa 21:00-02:30</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Ra%C3%AFm%2C%204%20Carrer%20de%20Siracusa%2C%2008012" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="soda acústic"><h3>Soda Acústic</h3><p class="meta">Carrer de les Guilleries</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Soda%20Ac%C3%BAstic%2C%20Carrer%20de%20les%20Guilleries%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="tomàs enrique"><h3>Tomàs Enrique</h3><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Tom%C3%A0s%20Enrique%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="tumatey"><h3>Tumatey</h3><p class="meta">357 Avinguda Diagonal</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Tumatey%2C%20357%20Avinguda%20Diagonal%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a><a href="https://www.tumatey.com/" rel="noopener nofollow ugc" target="_blank">Web</a></p></li><li data-name="twice"><h3>Twice</h3><p class="meta">212 Carrer d&#39;Aribau</p><p class="hours">Mo-Fr 07:00-18:00; Fr-Sa 23:30-03:00</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Twice%2C%20212%20Carrer%20d&#39;Aribau%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="ultramarinos marin"><h3>Ultramarinos Marin</h3><p class="meta">187 Carrer de Balmes</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Ultramarinos%20Marin%2C%20187%20Carrer%20de%20Balmes%2C%20Barcelona" rel="noopener nofollow" target="_blank">Mapa</a></p></li><li data-name="velcro"><h3>Velcro</h3><p class="meta">10 Carrer Vallfogona</p><p class="links"><a href="https://www.google.com/maps/search/?api=1&amp;query=Velcro%2C%2010%20Carrer%20Vallfogona%2C%2008012" rel="noopener nofollow" target="_blank">Mapa</a></p></li></ul>
+<p class="hint" id="none" hidden>No hay resultados</p>
+<p><a class="back-link" href="/es/barcelona/gracia">← Volver a Gràcia</a></p>
+<script>
+  const q = document.getElementById('q'), items = [...document.querySelectorAll('#list li')], none = document.getElementById('none');
+  q.addEventListener('input', () => {
+    const s = q.value.trim().toLowerCase(); let shown = 0;
+    for (const li of items) { const on = !s || li.dataset.name.includes(s); li.hidden = !on; if (on) shown++; }
+    none.hidden = shown > 0;
+  });
+</script>
+</main>
+<footer>Venue data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. Los sitios cambian: compruébalo antes de ir. · <a href="/privacy">Privacidad</a> · <a href="/terms">Condiciones</a></footer>
+</body>
+</html>
