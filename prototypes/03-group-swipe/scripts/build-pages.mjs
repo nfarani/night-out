@@ -1,6 +1,8 @@
 // Static pages people can find in search: one per neighbourhood (/london/soho), one per
-// city (/london), and an index of everything (/neighbourhoods). Built from the same venue
-// snapshots the planner uses, so run it after `npm run data`, then deploy.
+// city (/london), and an index of everything (/neighbourhoods). Cities where English isn't
+// the local language also get local-language pages (/es/madrid/malasana), linked to their
+// English twin with hreflang. Built from the same venue snapshots the planner uses, so run
+// it after `npm run data`, then deploy.
 //
 //   npm run pages
 //
@@ -9,9 +11,12 @@
 // ready-made nights straight into the planner, and points to nearby neighbourhoods.
 
 import { readFile, writeFile, mkdir, rm, access } from 'node:fs/promises';
+import '../public/i18n.js';                       // globalThis.I18N: type and preset names
 
 const SITE = 'https://getowlabout.com';
 const RADIUS_M = 1100;                       // same walking radius as the planner
+const LOCAL_LANG = { paris:'fr', madrid:'es', barcelona:'es', rome:'it', lisbon:'pt' };
+const LOCALE = { en:'en-GB', fr:'fr-FR', es:'es-ES', it:'it-IT', pt:'pt-BR' };
 const pub = new URL('../public/', import.meta.url);
 const read = async p => JSON.parse(await readFile(new URL(p, pub), 'utf8'));
 const exists = p => access(new URL(p, pub)).then(() => true, () => false);
@@ -25,13 +30,88 @@ const presetSrc = html.match(/const PRESETS = (\[[\s\S]*?\n  \]);/);
 if (!presetSrc) throw new Error('Could not find PRESETS in index.html');
 const PRESETS = Function('"use strict"; return ' + presetSrc[1])();
 
-const TYPES = [
-  ['pub', 'Pubs', 'pubs'], ['cocktail', 'Cocktail bars', 'cocktail bars'], ['wine', 'Wine bars', 'wine bars'],
-  ['rooftop', 'Drinks outside', 'places to drink outside'], ['dinner', 'Dinner', 'places for dinner'],
-  ['cheap', 'Cheap eats', 'cheap eats'], ['live', 'Live music', 'live music venues'], ['comedy', 'Comedy', 'comedy venues'],
-  ['games', 'Bar games', 'bars with games'], ['karaoke', 'Karaoke', 'karaoke spots'], ['dance', 'Clubs', 'clubs'],
-  ['latefood', 'Late-night food', 'late-night food spots'],
-];
+const TYPE_IDS = ['pub', 'cocktail', 'wine', 'rooftop', 'dinner', 'cheap', 'live', 'comedy', 'games', 'karaoke', 'dance', 'latefood'];
+
+// Page copy. Type names and presets come from the app's i18n.js; these are only for pages.
+const PAGE = {
+  en: {
+    plural: { pub:'pubs', cocktail:'cocktail bars', wine:'wine bars', rooftop:'places to drink outside', dinner:'places for dinner', cheap:'cheap eats',
+      live:'live music venues', comedy:'comedy venues', games:'bars with games', karaoke:'karaoke spots', dance:'clubs', latefood:'late-night food spots' },
+    and:'and', h1:'A night out in {area}',
+    lede:'Within a short walk of the middle of {area} there are {list}. Owlabout turns that into a plan: a few stops in walking order, timed for the evening, with one link to send the group.',
+    cta:'Plan a night in {area}', here:'What’s here', ready:'Ready-made nights in {area}', known:'Well-known places in {area}',
+    knownP:'Places here with their own Wikipedia entry or a listed building. Plans favour them a little, alongside newer spots.',
+    near:'Near {area}', km:'{km} km away', all:'All neighbourhoods',
+    title:'Night out in {where}: bars, dinner and a walkable plan · Owlabout',
+    desc:'Plan a night out in {where}. {list}, turned into a timed, walkable plan to send to your group.',
+    cityH1:'A night out in {city}', cityP:'{n} neighbourhoods. Pick one to see what’s there, or go straight to a plan.', cityHoods:'Neighbourhoods',
+    cityTitle:'Night out in {city}: {n} neighbourhoods, planned for you · Owlabout',
+    cityDesc:'Plan a night out in {city}. {n} neighbourhoods, each turned into a timed, walkable plan to send to your group.',
+    footer:'Places change: check before you go.', privacy:'Privacy', terms:'Terms',
+  },
+  fr: {
+    plural: { pub:'pubs', cocktail:'bars à cocktails', wine:'bars à vin', rooftop:'terrasses', dinner:'restaurants', cheap:'adresses petits prix',
+      live:'salles de concert', comedy:'scènes de stand-up', games:'bars à jeux', karaoke:'karaokés', dance:'clubs', latefood:'adresses pour manger tard' },
+    and:'et', h1:'Une soirée à {area}',
+    lede:'À quelques minutes à pied du centre de {area}, il y a {list}. Owlabout en fait une soirée : quelques étapes dans l’ordre du trajet, minutées, avec un seul lien à envoyer au groupe.',
+    cta:'Planifier une soirée à {area}', here:'Ce qu’il y a', ready:'Soirées toutes prêtes à {area}', known:'Lieux connus à {area}',
+    knownP:'Des lieux qui ont leur propre page Wikipédia ou occupent un bâtiment classé. Les soirées les privilégient un peu, à côté d’adresses plus récentes.',
+    near:'Près de {area}', km:'à {km} km', all:'Tous les quartiers',
+    title:'Sortir à {where} : bars, dîner et une soirée à pied · Owlabout',
+    desc:'Planifiez une soirée à {where}. {list}, en une soirée minutée à faire à pied, à envoyer à votre groupe.',
+    cityH1:'Une soirée à {city}', cityP:'{n} quartiers. Choisissez-en un pour voir ce qu’il y a, ou passez directement à la soirée.', cityHoods:'Quartiers',
+    cityTitle:'Sortir à {city} : {n} quartiers, une soirée toute prête · Owlabout',
+    cityDesc:'Planifiez une soirée à {city}. {n} quartiers, chacun en une soirée minutée à faire à pied, à envoyer à votre groupe.',
+    footer:'Les lieux changent : vérifiez avant d’y aller.', privacy:'Confidentialité', terms:'Conditions',
+  },
+  es: {
+    plural: { pub:'pubs', cocktail:'coctelerías', wine:'bares de vinos', rooftop:'terrazas', dinner:'restaurantes', cheap:'sitios baratos',
+      live:'salas con música en directo', comedy:'locales de comedia', games:'bares con juegos', karaoke:'karaokes', dance:'discotecas', latefood:'sitios para comer de madrugada' },
+    and:'y', h1:'Una noche en {area}',
+    lede:'A un paseo del centro de {area} hay {list}. Owlabout lo convierte en un plan: unas pocas paradas en orden, con horario, y un solo enlace para enviar al grupo.',
+    cta:'Planear una noche en {area}', here:'Qué hay', ready:'Noches listas en {area}', known:'Sitios conocidos en {area}',
+    knownP:'Sitios con su propia entrada en Wikipedia o en un edificio protegido. Los planes los prefieren un poco, junto a sitios más nuevos.',
+    near:'Cerca de {area}', km:'a {km} km', all:'Todos los barrios',
+    title:'Salir por {where}: bares, cena y un plan a pie · Owlabout',
+    desc:'Planea una noche en {where}. {list}, convertidos en un plan con horario y a pie para enviar a tu grupo.',
+    cityH1:'Una noche en {city}', cityP:'{n} barrios. Elige uno para ver qué hay o ve directo a un plan.', cityHoods:'Barrios',
+    cityTitle:'Salir por {city}: {n} barrios, planes hechos para ti · Owlabout',
+    cityDesc:'Planea una noche en {city}. {n} barrios, cada uno convertido en un plan con horario y a pie para enviar a tu grupo.',
+    footer:'Los sitios cambian: compruébalo antes de ir.', privacy:'Privacidad', terms:'Condiciones',
+  },
+  it: {
+    plural: { pub:'pub', cocktail:'cocktail bar', wine:'enoteche', rooftop:'posti per bere all’aperto', dinner:'ristoranti', cheap:'posti economici',
+      live:'locali con musica dal vivo', comedy:'locali comedy', games:'bar con giochi', karaoke:'karaoke', dance:'discoteche', latefood:'posti per mangiare a tarda notte' },
+    and:'e', h1:'Una serata a {area}',
+    lede:'A pochi passi dal centro di {area} ci sono {list}. Owlabout li trasforma in un piano: qualche tappa in ordine di percorso, a orari, con un solo link da mandare al gruppo.',
+    cta:'Organizza una serata a {area}', here:'Cosa c’è', ready:'Serate pronte a {area}', known:'Posti noti a {area}',
+    knownP:'Posti con una propria pagina Wikipedia o in un edificio storico. I piani li preferiscono un po’, insieme a locali più nuovi.',
+    near:'Vicino a {area}', km:'a {km} km', all:'Tutti i quartieri',
+    title:'Uscire a {where}: bar, cena e una serata a piedi · Owlabout',
+    desc:'Organizza una serata a {where}. {list}, trasformati in un piano a orari da fare a piedi, da mandare al tuo gruppo.',
+    cityH1:'Una serata a {city}', cityP:'{n} quartieri. Scegline uno per vedere cosa c’è, o vai subito a un piano.', cityHoods:'Quartieri',
+    cityTitle:'Uscire a {city}: {n} quartieri, serate già pronte · Owlabout',
+    cityDesc:'Organizza una serata a {city}. {n} quartieri, ognuno trasformato in un piano a orari da fare a piedi, da mandare al tuo gruppo.',
+    footer:'I locali cambiano: controlla prima di andare.', privacy:'Privacy', terms:'Condizioni',
+  },
+  pt: {
+    plural: { pub:'pubs', cocktail:'bares de drinks', wine:'bares de vinhos', rooftop:'lugares ao ar livre', dinner:'restaurantes', cheap:'lugares baratos',
+      live:'casas de show', comedy:'casas de comédia', games:'bares com jogos', karaoke:'karaokês', dance:'baladas', latefood:'lugares para comer de madrugada' },
+    and:'e', h1:'Uma noite em {area}',
+    lede:'A uma caminhada do centro de {area} há {list}. O Owlabout transforma isso num plano: algumas paradas na ordem do caminho, com horários, e um link só para mandar pro grupo.',
+    cta:'Planejar uma noite em {area}', here:'O que tem', ready:'Noites prontas em {area}', known:'Lugares conhecidos em {area}',
+    knownP:'Lugares com página própria na Wikipédia ou em prédio tombado. Os planos dão um pouco de preferência a eles, junto com lugares mais novos.',
+    near:'Perto de {area}', km:'a {km} km', all:'Todos os bairros',
+    title:'Sair em {where}: bares, jantar e um plano a pé · Owlabout',
+    desc:'Planeje uma noite em {where}. {list}, num plano com horários e a pé para mandar pro seu grupo.',
+    cityH1:'Uma noite em {city}', cityP:'{n} bairros. Escolha um para ver o que tem ou vá direto para um plano.', cityHoods:'Bairros',
+    cityTitle:'Sair em {city}: {n} bairros, planos prontos para você · Owlabout',
+    cityDesc:'Planeje uma noite em {city}. {n} bairros, cada um num plano com horários e a pé para mandar pro seu grupo.',
+    footer:'Os lugares mudam: confira antes de ir.', privacy:'Privacidade', terms:'Termos',
+  },
+};
+const fill = (s, v) => s.replace(/\{(\w+)\}/g, (m, k) => v[k] ?? m);
+const tr = (lang, key) => I18N[lang][key] ?? I18N.en[key];
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
@@ -42,18 +122,24 @@ function distM(a, b){
   return 2 * 6371000 * Math.asin(Math.sqrt(h));
 }
 const cityOf = a => cities.find(c => c.id === (a.city || 'london'));
-const areaUrl = a => '/' + cityOf(a).id + '/' + slug(a.name);
-const listJoin = xs => xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
-const presetLink = (a, p) => '/#' + new URLSearchParams({ a:a.id, t:p.types.join(','), n:p.n, s:p.start, e:p.end, x:p.name }).toString();
+const cityName = (c, lang) => (c.names && c.names[lang]) || c.name;
+const prefix = lang => lang === 'en' ? '' : '/' + lang;
+const areaUrl = (a, lang) => prefix(lang) + '/' + cityOf(a).id + '/' + slug(a.name);
+const cityUrl = (c, lang) => prefix(lang) + '/' + c.id;
+const langsFor = c => LOCAL_LANG[c.id] ? ['en', LOCAL_LANG[c.id]] : ['en'];
+const listJoin = (xs, lang) => xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' ' + PAGE[lang].and + ' ' + xs[xs.length - 1];
+const appLink = (params, lang) => '/#' + new URLSearchParams({ ...params, ...(lang === 'en' ? {} : { l:lang }) }).toString();
+const presetLink = (a, p, lang) => appLink({ a:a.id, t:p.types.join(','), n:p.n, s:p.start, e:p.end, x:p.name }, lang);
 
 const STYLE = `
   :root{ --bg:#161513; --card:#1e1d1a; --text:#efe9de; --text-2:#aaa398; --muted:#7d776d; --line:#2c2a26; --route:#f5c84b; --red:#ff4d3d; --display:"Barlow Condensed",sans-serif; }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--bg); color:var(--text); font:400 16px/26px Inter,system-ui,sans-serif; }
   a{ color:var(--route); }
-  .top{ display:flex; align-items:center; justify-content:space-between; height:64px; padding:0 16px; border-bottom:1px solid var(--line); }
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; height:64px; padding:0 16px; border-bottom:1px solid var(--line); }
   .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); color:var(--text); text-decoration:none; }
   .logo img{ width:28px; height:28px; }
+  .top nav{ display:flex; gap:12px; font-size:14px; }
   main{ max-width:48rem; margin:0 auto; padding:32px 16px 64px; }
   .crumbs{ font-size:14px; color:var(--text-2); margin:0 0 16px; }
   .crumbs a{ color:var(--text-2); }
@@ -72,9 +158,12 @@ const STYLE = `
   footer{ max-width:48rem; margin:0 auto; padding:0 16px 48px; font-size:13px; color:var(--muted); }
   footer a{ color:var(--text-2); }`;
 
-function page({ path, title, desc, body, crumbs }){
+// alternates: [[lang, path], …] for the same page in every language it exists in.
+function page({ lang, path, title, desc, body, crumbs, alternates = [] }){
+  const P = PAGE[lang];
+  const other = alternates.filter(([l]) => l !== lang);
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${lang === 'pt' ? 'pt-BR' : lang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -82,7 +171,8 @@ function page({ path, title, desc, body, crumbs }){
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${SITE}${path}">
-<link rel="icon" href="/icon.svg" type="image/svg+xml">
+${alternates.length > 1 ? alternates.map(([l, p]) => `<link rel="alternate" hreflang="${l === 'pt' ? 'pt-BR' : l}" href="${SITE}${p}">`).join('\n') +
+  `\n<link rel="alternate" hreflang="x-default" href="${SITE}${alternates.find(([l]) => l === 'en')[1]}">\n` : ''}<link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:site_name" content="Owlabout">
@@ -91,6 +181,7 @@ function page({ path, title, desc, body, crumbs }){
 <meta property="og:type" content="website">
 <meta property="og:url" content="${SITE}${path}">
 <meta property="og:image" content="${SITE}/og.png">
+<meta property="og:locale" content="${LOCALE[lang].replace('-', '_')}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -99,12 +190,13 @@ function page({ path, title, desc, body, crumbs }){
 </style>
 </head>
 <body>
-<header class="top"><a class="logo" href="/"><img src="/icon.svg" alt="">Owlabout</a><a href="/neighbourhoods">All neighbourhoods</a></header>
+<header class="top"><a class="logo" href="${appLink({}, lang)}"><img src="/icon.svg" alt="">Owlabout</a><nav>${other.map(([l, p]) =>
+  `<a href="${p}" hreflang="${l}" lang="${l}">${l.toUpperCase()}</a>`).join('')}<a href="/neighbourhoods">${esc(P.all)}</a></nav></header>
 <main>
 ${crumbs ? '<p class="crumbs">' + crumbs + '</p>' : ''}
 ${body}
 </main>
-<footer>Venue data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. Places change: check before you go. · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></footer>
+<footer>Venue data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, ODbL. ${esc(P.footer)} · <a href="/privacy">${esc(P.privacy)}</a> · <a href="/terms">${esc(P.terms)}</a></footer>
 </body>
 </html>
 `;
@@ -118,82 +210,96 @@ async function write(path, text){
 
 // Start clean so renamed or pruned areas don't leave stale pages behind.
 for (const c of cities) await rm(new URL(c.id + '/', pub), { recursive:true, force:true });
+for (const l of Object.keys(PAGE)) if (l !== 'en') await rm(new URL(l + '/', pub), { recursive:true, force:true });
 
 const urls = ['/', '/neighbourhoods'];
 const built = [];
+let pages = 0;
 for (const a of areas) {
   if (!await exists(`data/areas/${a.id}.json`)) continue;
   const venues = (await read(`data/areas/${a.id}.json`)).venues.filter(v => distM(a, v) <= RADIUS_M);
   const city = cityOf(a);
-  const counts = TYPES.map(([id, label, plural]) => [id, label, plural, venues.filter(v => v.vibes.includes(id)).length]).filter(t => t[3] > 0);
-  const top = counts.filter(t => t[3] >= 3).sort((x, y) => y[3] - x[3]).slice(0, 4);
+  const counts = TYPE_IDS.map(id => [id, venues.filter(v => v.vibes.includes(id)).length]).filter(c => c[1] > 0);
+  const top = counts.filter(c => c[1] >= 3).sort((x, y) => y[1] - x[1]).slice(0, 4);
   const near = areas.filter(b => b.id !== a.id && (b.city || 'london') === city.id).map(b => [distM(a, b), b]).sort((x, y) => x[0] - y[0]).slice(0, 6);
+  const known = TYPE_IDS.map(id => [id, venues.filter(v => v.known && v.vibes.includes(id) && v.name)
+    .sort((x, y) => x.name.localeCompare(y.name)).slice(0, 6)]).filter(k => k[1].length);
+  const langs = langsFor(city), alternates = langs.map(l => [l, areaUrl(a, l)]);
 
-  const known = TYPES.map(([id, label]) => [label, venues.filter(v => v.known && v.vibes.includes(id) && v.name)
-    .sort((x, y) => x.name.localeCompare(y.name)).slice(0, 6)]).filter(t => t[1].length);
-  const seen = new Set();
-  const knownHtml = known.map(([label, vs]) => {
-    const fresh = vs.filter(v => !seen.has(v.id)); fresh.forEach(v => seen.add(v.id));
-    return fresh.length ? '<h3>' + esc(label) + '</h3><ul class="places">' + fresh.map(v => '<li>' + esc(v.name) +
-      (v.street ? ', ' + esc(v.street) : '') + '</li>').join('') + '</ul>' : '';
-  }).join('');
+  for (const lang of langs) {
+    const P = PAGE[lang], num = n => n.toLocaleString(LOCALE[lang]);
+    const seen = new Set();
+    const knownHtml = known.map(([id, vs]) => {
+      const fresh = vs.filter(v => !seen.has(v.id)); fresh.forEach(v => seen.add(v.id));
+      return fresh.length ? '<h3>' + esc(tr(lang, 'type.' + id)) + '</h3><ul class="places">' + fresh.map(v => '<li>' + esc(v.name) +
+        (v.street ? ', ' + esc(v.street) : '') + '</li>').join('') + '</ul>' : '';
+    }).join('');
+    const where = a.name + ', ' + cityName(city, lang);
+    const v = { area:a.name, where };
+    const list = listJoin(top.map(([id, n]) => num(n) + ' ' + P.plural[id]), lang);
+    const body = `<h1>${esc(fill(P.h1, v))}</h1>
+<p>${esc(fill(P.lede, { ...v, list }))}</p>
+<a class="cta" href="${esc(appLink({ a:a.id }, lang))}">${esc(fill(P.cta, v))}</a>
 
-  const path = areaUrl(a);
-  const where = a.name + ', ' + city.name;
-  const lede = `Within a short walk of the middle of ${a.name} there are ` +
-    listJoin(top.map(t => t[3].toLocaleString('en-GB') + ' ' + t[2])) + '. Owlabout turns that into a plan: a few stops in walking order, timed for the evening, with one link to send the group.';
-  const body = `<h1>A night out in ${esc(a.name)}</h1>
-<p>${esc(lede)}</p>
-<a class="cta" href="/#a=${encodeURIComponent(a.id)}">Plan a night in ${esc(a.name)}</a>
+<h2>${esc(P.here)}</h2>
+<ul class="counts">${counts.map(([id, n]) => '<li>' + esc(tr(lang, 'type.' + id)) + ' · ' + num(n) + '</li>').join('')}</ul>
 
-<h2>What’s here</h2>
-<ul class="counts">${counts.map(t => '<li>' + esc(t[1]) + ' · ' + t[3].toLocaleString('en-GB') + '</li>').join('')}</ul>
+<h2>${esc(fill(P.ready, v))}</h2>
+<ul class="grid">${PRESETS.map((p, i) => '<li><a href="' + esc(presetLink(a, p, lang)) + '">' + esc(tr(lang, 'preset.' + i + '.name')) + '</a><span>' +
+  esc(tr(lang, 'preset.' + i + '.desc')) + '</span></li>').join('')}</ul>
 
-<h2>Ready-made nights in ${esc(a.name)}</h2>
-<ul class="grid">${PRESETS.map(p => '<li><a href="' + esc(presetLink(a, p)) + '">' + esc(p.name) + '</a><span>' + esc(p.desc) + '</span></li>').join('')}</ul>
-
-${knownHtml ? `<h2>Well-known places in ${esc(a.name)}</h2>
-<p>Places here with their own Wikipedia entry or a listed building. Plans favour them a little, alongside newer spots.</p>
+${knownHtml ? `<h2>${esc(fill(P.known, v))}</h2>
+<p>${esc(P.knownP)}</p>
 ${knownHtml}` : ''}
 
-${near.length ? `<h2>Near ${esc(a.name)}</h2>
-<ul class="grid">${near.map(([d, b]) => '<li><a href="' + areaUrl(b) + '">' + esc(b.name) + '</a><span>' + (d / 1000).toFixed(1) + ' km away</span></li>').join('')}</ul>` : ''}`;
-  await write(path, page({
-    path, body,
-    title: `Night out in ${where}: bars, dinner and a walkable plan · Owlabout`,
-    desc: `Plan a night out in ${where}. ${top.map(t => t[3] + ' ' + t[2]).join(', ')}, turned into a timed, walkable plan to send to your group.`,
-    crumbs: `<a href="/neighbourhoods">All neighbourhoods</a> › <a href="/${city.id}">${esc(city.name)}</a> › ${esc(a.name)}`,
-  }));
-  urls.push(path);
+${near.length ? `<h2>${esc(fill(P.near, v))}</h2>
+<ul class="grid">${near.map(([d, b]) => '<li><a href="' + areaUrl(b, lang) + '">' + esc(b.name) + '</a><span>' +
+  esc(fill(P.km, { km:(d / 1000).toLocaleString(LOCALE[lang], { maximumFractionDigits:1 }) })) + '</span></li>').join('')}</ul>` : ''}`;
+    const path = areaUrl(a, lang);
+    await write(path, page({
+      lang, path, body, alternates,
+      title: fill(P.title, v),
+      desc: fill(P.desc, { where, list:top.map(([id, n]) => num(n) + ' ' + P.plural[id]).join(', ') }),
+      crumbs: `<a href="/neighbourhoods">${esc(P.all)}</a> › <a href="${cityUrl(city, lang)}">${esc(cityName(city, lang))}</a> › ${esc(a.name)}`,
+    }));
+    urls.push(path);
+    pages++;
+  }
   built.push(a);
 }
 
-// City pages: every built neighbourhood in that city.
+// City pages: every built neighbourhood in that city, in each of its languages.
+let cityPages = 0;
 for (const c of cities) {
   const list = built.filter(a => (a.city || 'london') === c.id);
   if (!list.length) continue;
-  const body = `<h1>A night out in ${esc(c.name)}</h1>
-<p>${list.length} neighbourhoods. Pick one to see what’s there, or go straight to a plan.</p>
-<a class="cta" href="/#a=${encodeURIComponent(c.default)}">Plan a night in ${esc(c.name)}</a>
-<h2>Neighbourhoods</h2>
-<ul class="grid">${list.slice().sort((x, y) => x.name.localeCompare(y.name)).map(a => '<li><a href="' + areaUrl(a) + '">' + esc(a.name) + '</a>' + (a.region ? '<span>' + esc(a.region) + '</span>' : '') + '</li>').join('')}</ul>`;
-  await write('/' + c.id, page({ path:'/' + c.id, body,
-    title:`Night out in ${c.name}: ${list.length} neighbourhoods, planned for you · Owlabout`,
-    desc:`Plan a night out in ${c.name}. ${list.length} neighbourhoods, each turned into a timed, walkable plan to send to your group.`,
-    crumbs:`<a href="/neighbourhoods">All neighbourhoods</a> › ${esc(c.name)}` }));
-  urls.push('/' + c.id);
+  const langs = langsFor(c), alternates = langs.map(l => [l, cityUrl(c, l)]);
+  for (const lang of langs) {
+    const P = PAGE[lang], v = { city:cityName(c, lang), n:list.length };
+    const body = `<h1>${esc(fill(P.cityH1, v))}</h1>
+<p>${esc(fill(P.cityP, v))}</p>
+<a class="cta" href="${esc(appLink({ a:c.default }, lang))}">${esc(fill(P.cta, { area:cityName(c, lang) }))}</a>
+<h2>${esc(P.cityHoods)}</h2>
+<ul class="grid">${list.slice().sort((x, y) => x.name.localeCompare(y.name)).map(a => '<li><a href="' + areaUrl(a, lang) + '">' + esc(a.name) + '</a>' +
+  (a.region ? '<span>' + esc(tr(lang, 'region.' + a.region)) + '</span>' : '') + '</li>').join('')}</ul>`;
+    const path = cityUrl(c, lang);
+    await write(path, page({ lang, path, body, alternates, title:fill(P.cityTitle, v), desc:fill(P.cityDesc, v),
+      crumbs:`<a href="/neighbourhoods">${esc(P.all)}</a> › ${esc(cityName(c, lang))}` }));
+    urls.push(path);
+    cityPages++;
+  }
 }
 
-// Index of everything.
+// Index of everything (English; local pages are linked from each city).
 const index = cities.map(c => [c, built.filter(a => (a.city || 'london') === c.id)]).filter(([, l]) => l.length);
-await write('/neighbourhoods', page({ path:'/neighbourhoods',
+await write('/neighbourhoods', page({ lang:'en', path:'/neighbourhoods',
   title:'Every neighbourhood on Owlabout',
   desc:`Night-out plans for ${built.length} neighbourhoods in ${index.length} cities.`,
   body:`<h1>Every neighbourhood</h1><p>${built.length} neighbourhoods in ${index.length} cities.</p>` +
-    index.map(([c, l]) => `<h2><a href="/${c.id}">${esc(c.name)}</a></h2><p>` +
-      l.slice().sort((x, y) => x.name.localeCompare(y.name)).map(a => '<a href="' + areaUrl(a) + '">' + esc(a.name) + '</a>').join(' · ') + '</p>').join('') }));
+    index.map(([c, l]) => `<h2><a href="/${c.id}">${esc(c.name)}</a>${LOCAL_LANG[c.id] ? ` <a href="${cityUrl(c, LOCAL_LANG[c.id])}" hreflang="${LOCAL_LANG[c.id]}" style="font-size:16px">${LOCAL_LANG[c.id].toUpperCase()}</a>` : ''}</h2><p>` +
+      l.slice().sort((x, y) => x.name.localeCompare(y.name)).map(a => '<a href="' + areaUrl(a, 'en') + '">' + esc(a.name) + '</a>').join(' · ') + '</p>').join('') }));
 
 urls.push('/privacy', '/terms');
 await writeFile(new URL('sitemap.xml', pub), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
   urls.map(u => '  <url><loc>' + SITE + u + '</loc></url>').join('\n') + '\n</urlset>\n');
-console.log(`${built.length} neighbourhood pages, ${index.length} city pages, sitemap with ${urls.length} URLs`);
+console.log(`${built.length} neighbourhoods → ${pages} pages, ${cityPages} city pages, sitemap with ${urls.length} URLs`);

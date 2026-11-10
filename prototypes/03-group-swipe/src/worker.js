@@ -15,6 +15,8 @@
 //
 // Curator routes need "Authorization: Bearer <CURATOR_TOKEN>" (a Worker secret).
 
+import '../public/i18n.js';                     // sets globalThis.I18N, shared with the app
+
 const VENUE_ID = /^[nwr]\d{1,12}$/;
 const MAX_IDS = 8;
 
@@ -176,9 +178,11 @@ async function weather(url, env, ctx){
 }
 
 // ---------- link preview for a group plan ----------
-const TYPE_NAMES = { pub:'pub', wine:'wine bar', rooftop:'drinks outside', cheap:'cheap eats', dinner:'dinner', cocktail:'cocktail bar',
-  games:'bar games', live:'live music', comedy:'comedy', karaoke:'karaoke', dance:'club', latefood:'late-night food' };
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+function tr(lang, key, vars){
+  let s = (I18N[lang] && I18N[lang][key]) ?? I18N.en[key] ?? key;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
+  return s;
+}
 const clock = m => { m = ((m % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
 
 async function planPage(id, request, url, env){
@@ -186,23 +190,27 @@ async function planPage(id, request, url, env){
   let title, desc;
   try {
     const [p, m] = await env.DB.batch([
-      env.DB.prepare('SELECT area, date, start_min, end_min, stops, title FROM plans WHERE id = ?1').bind(id),
+      env.DB.prepare('SELECT area, date, start_min, end_min, stops, title, lang FROM plans WHERE id = ?1').bind(id),
       env.DB.prepare('SELECT name FROM members WHERE plan_id = ?1 ORDER BY joined_at LIMIT 6').bind(id),
     ]);
     const plan = p.results[0];
     if (!plan) return page;
+    const lang = plan.lang || 'en';
     const areas = await (await env.ASSETS.fetch(new URL('/data/areas.json', url))).json();
     const area = areas.find(a => a.id === plan.area);
     const venues = await (await env.ASSETS.fetch(new URL('/data/areas/' + plan.area + '.json', url))).json().then(d => d.venues).catch(() => []);
     const stops = JSON.parse(plan.stops), step = (plan.end_min - plan.start_min) / stops.length;
     const lines = stops.map((x, k) => {
       const v = x.venue && venues.find(y => y.id === x.venue);
-      return clock(Math.round(plan.start_min + k * step)) + ' ' + (v ? v.name : TYPE_NAMES[x.type] || x.type);
+      return clock(Math.round(plan.start_min + k * step)) + ' ' + (v ? v.name : tr(lang, 'type.' + x.type).toLowerCase());
     });
-    const day = DAYS[new Date(plan.date + 'T12:00:00Z').getUTCDay()];
+    const day = tr(lang, 'day.' + (new Date(plan.date + 'T12:00:00Z').getUTCDay() + 6) % 7);
     const names = m.results.map(r => r.name);
-    title = day + ' in ' + (area ? area.name : plan.area) + (plan.title ? ' · ' + plan.title : '');
-    desc = lines.join(' → ') + (names.length ? '. ' + (names.length === 1 ? names[0] + ' is in' : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] + ' are in') : '') + '. Tap to join.';
+    const who = names.length < 2 ? names.join('') : names.slice(0, -1).join(', ') + ' ' + tr(lang, 'group.and') + ' ' + names[names.length - 1];
+    const presets = ['The pub crawl', 'Date night', 'Big night out', 'Cheap and cheerful', 'Live and loud', 'Make it weird'];
+    const titleName = plan.title === 'Surprise me' ? tr(lang, 'home.surprise') : presets.includes(plan.title) ? tr(lang, 'preset.' + presets.indexOf(plan.title) + '.name') : plan.title;
+    title = tr(lang, 'preview.title', { day, area:area ? area.name : plan.area }) + (titleName ? ' · ' + titleName : '');
+    desc = lines.join(' → ') + (names.length ? '. ' + tr(lang, names.length === 1 ? 'group.isIn' : 'group.areIn', { names:who }) : '') + '. ' + tr(lang, 'preview.tap');
   } catch (e) {
     return page;                                   // never break the page over a preview
   }
@@ -235,13 +243,14 @@ async function createPlan(request, url, env){
   const city = (await loadAreas(env, url)).get(b.area);
   const stops = JSON.stringify(b.stops.map(x => ({ type:x.type, venue:x.venue })));
   const title = typeof b.title === 'string' ? b.title.slice(0, 40) : null;
+  const lang = I18N[b.lang] ? b.lang : 'en';
   const name = cleanName(b.name);
   for (let attempt = 0; attempt < 3; attempt++) {
     const id = newId();
     const res = await env.DB.prepare(
-      `INSERT INTO plans (id, area, city, date, start_min, end_min, stops, title, created_by, created_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10) ON CONFLICT (id) DO NOTHING`)
-      .bind(id, b.area, city, b.date, b.start, b.end, stops, title, b.device, Date.now()).run();
+      `INSERT INTO plans (id, area, city, date, start_min, end_min, stops, title, lang, created_by, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11) ON CONFLICT (id) DO NOTHING`)
+      .bind(id, b.area, city, b.date, b.start, b.end, stops, title, lang, b.device, Date.now()).run();
     if (!res.meta.changes) continue;
     if (name) await env.DB.prepare('INSERT INTO members (plan_id, device, name, joined_at) VALUES (?1, ?2, ?3, ?4)')
       .bind(id, b.device, name, Date.now()).run();

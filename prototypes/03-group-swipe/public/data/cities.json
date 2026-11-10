@@ -1,0 +1,91 @@
+[
+  {
+    "id": "london",
+    "name": "London",
+    "country": "UK",
+    "tz": "Europe/London",
+    "default": "soho",
+    "names": {
+      "fr": "Londres",
+      "es": "Londres",
+      "it": "Londra",
+      "pt": "Londres"
+    }
+  },
+  {
+    "id": "paris",
+    "name": "Paris",
+    "country": "France",
+    "tz": "Europe/Paris",
+    "default": "paris-marais",
+    "names": {
+      "es": "París",
+      "it": "Parigi"
+    }
+  },
+  {
+    "id": "madrid",
+    "name": "Madrid",
+    "country": "Spain",
+    "tz": "Europe/Madrid",
+    "default": "madrid-malasana"
+  },
+  {
+    "id": "barcelona",
+    "name": "Barcelona",
+    "country": "Spain",
+    "tz": "Europe/Madrid",
+    "default": "bcn-born",
+    "names": {
+      "fr": "Barcelone"
+    }
+  },
+  {
+    "id": "rome",
+    "name": "Rome",
+    "country": "Italy",
+    "tz": "Europe/Rome",
+    "default": "rome-trastevere",
+    "names": {
+      "es": "Roma",
+      "it": "Roma",
+      "pt": "Roma"
+    }
+  },
+  {
+    "id": "lisbon",
+    "name": "Lisbon",
+    "country": "Portugal",
+    "tz": "Europe/Lisbon",
+    "default": "lis-bairroalto",
+    "names": {
+      "fr": "Lisbonne",
+      "es": "Lisboa",
+      "it": "Lisbona",
+      "pt": "Lisboa"
+    }
+  },
+  {
+    "id": "amsterdam",
+    "name": "Amsterdam",
+    "country": "Netherlands",
+    "tz": "Europe/Amsterdam",
+    "default": "ams-jordaan",
+    "names": {
+      "es": "Ámsterdam",
+      "pt": "Amsterdã"
+    }
+  },
+  {
+    "id": "berlin",
+    "name": "Berlin",
+    "country": "Germany",
+    "tz": "Europe/Berlin",
+    "default": "ber-kreuzberg",
+    "names": {
+      "es": "Berlín",
+      "it": "Berlino",
+      "pt": "Berlim"
+    }
+  }
+]

@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS plans (
   start_min   INTEGER NOT NULL,          -- minutes after midnight; past 1440 = after midnight
   end_min     INTEGER NOT NULL,
   stops       TEXT NOT NULL,             -- JSON [{ type, venue }] in order; venue is an OSM id or null
-  title       TEXT,                      -- preset name, if it started from one
+  title       TEXT,                      -- preset key (English name), if it started from one
+  lang        TEXT,                      -- organiser's language, for the link preview
   created_by  TEXT NOT NULL,             -- device id
   created_at  INTEGER NOT NULL
 );
