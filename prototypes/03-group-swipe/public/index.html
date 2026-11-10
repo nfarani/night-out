@@ -544,6 +544,14 @@
   <div id="times-stops"></div>
   <button class="btn close" type="button" id="times-done" data-t="times.done">Done</button>
 </dialog>
+<dialog class="sheet" id="report-sheet">
+  <h2 id="report-title" tabindex="-1">Has this place closed for good?</h2>
+  <p data-t="report.sub">Only say yes if you know it has shut down for good.</p>
+  <div class="sheet-list">
+    <button class="btn danger" type="button" id="report-yes" data-t="report.yes">Yes, it’s closed for good</button>
+    <button class="btn" type="button" id="report-no" data-t="report.no">No, cancel</button>
+  </div>
+</dialog>
 <dialog class="sheet" id="stop-sheet">
   <h2 id="stop-sheet-title" tabindex="-1">Stop</h2>
   <p id="stop-sheet-place"></p>
@@ -920,12 +928,25 @@
 
   // ---------- "closed for good" reports: hidden here at once, for everyone after two reports ----------
   let reportedHere = new Set();
-  try { reportedHere = new Set(JSON.parse(recall('no_closed') || '[]')); } catch (e) {}
+  // v2: reports from the first, one-tap version of the button are forgotten (too easy to hit by accident).
+  try { reportedHere = new Set(JSON.parse(recall('no_closed_v2') || '[]')); } catch (e) {}
+  try { localStorage.removeItem('no_closed'); } catch (e) {}
+  // Asks first: only a "yes" reports it.
+  let reportStop = 0;
+  function askReport(k){
+    const x = plan[k];
+    if (!x || !x.venue) return;
+    reportStop = k;
+    $('report-title').textContent = t('report.title', { name:x.venue.name });
+    openSheet($('report-sheet'));
+  }
+  $('report-no').onclick = () => $('report-sheet').close();
+  $('report-yes').onclick = () => { $('report-sheet').close(); reportClosed(reportStop).catch(e => toast(e.message)); };
   async function reportClosed(k){
     const x = plan[k];
     if (!x || !x.venue) return;
     reportedHere.add(x.venue.id);
-    remember('no_closed', JSON.stringify([...reportedHere].slice(-200)));
+    remember('no_closed_v2', JSON.stringify([...reportedHere].slice(-200)));
     api('/api/report', { area:form.area.id, venue:x.venue.id, device:device() }).catch(() => {});
     track('report');
     toast(t('toast.reported'));
@@ -1840,7 +1861,7 @@
     $('plan').innerHTML = html;
     $('plan').querySelectorAll('[data-swap]').forEach(b => b.onclick = () => swapStop(+b.dataset.swap).catch(e => toast(e.message)));
     $('plan').querySelectorAll('[data-back]').forEach(b => b.onclick = () => goBack(+b.dataset.back));
-    $('plan').querySelectorAll('[data-report]').forEach(b => b.onclick = () => reportClosed(+b.dataset.report).catch(e => toast(e.message)));
+    $('plan').querySelectorAll('[data-report]').forEach(b => b.onclick = () => askReport(+b.dataset.report));
     $('plan').querySelectorAll('[data-pin]').forEach(b => b.onclick = () => togglePin(+b.dataset.pin));
     $('plan').querySelectorAll('[data-menu]').forEach(b => b.onclick = () => openStop(+b.dataset.menu));
     $('plan').querySelectorAll('[data-time]:not([disabled])').forEach(b => b.onclick = () => openStop(+b.dataset.time));

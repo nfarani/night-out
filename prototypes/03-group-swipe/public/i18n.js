@@ -7,6 +7,7 @@ root.LANGS = [['en', 'EN', 'English', '🇬🇧'], ['fr', 'FR', 'Français', '�
 
 root.I18N = {
   en: {
+    'report.title': "Has {name} closed for good?", 'report.sub': "Only say yes if you know it has shut down for good, not just closed tonight. If two people say so, we stop suggesting it to everyone.", 'report.yes': "Yes, it’s closed for good", 'report.no': "No, cancel",
     'plan.editStop': "Edit",
     'plan.reportClosed': "Closed for good?", 'toast.reported': "Thanks. We won’t suggest it again", 'plan.reportedOne': "Someone reported it closed for good, check before you go",
     'plan.pinnedTag': "Pinned",
@@ -159,6 +160,7 @@ root.I18N = {
   },
 
   fr: {
+    'report.title': "{name} a fermé définitivement ?", 'report.sub': "Répondez oui seulement si vous savez que le lieu a fermé pour de bon, pas juste ce soir. Si deux personnes le signalent, on arrête de le proposer à tout le monde.", 'report.yes': "Oui, fermé définitivement", 'report.no': "Non, annuler",
     'plan.editStop': "Modifier",
     'plan.reportClosed': "Fermé définitivement ?", 'toast.reported': "Merci. On ne le proposera plus", 'plan.reportedOne': "Quelqu’un l’a signalé fermé définitivement, vérifiez avant d’y aller",
     'plan.pinnedTag': "Épinglé",
@@ -311,6 +313,7 @@ root.I18N = {
   },
 
   es: {
+    'report.title': "¿{name} ha cerrado para siempre?", 'report.sub': "Di que sí solo si sabes que ha cerrado del todo, no solo esta noche. Si dos personas lo avisan, dejamos de proponerlo a todo el mundo.", 'report.yes': "Sí, ha cerrado para siempre", 'report.no': "No, cancelar",
     'plan.editStop': "Editar",
     'plan.reportClosed': "¿Cerrado para siempre?", 'toast.reported': "Gracias. No lo volveremos a proponer", 'plan.reportedOne': "Alguien avisó de que ha cerrado, compruébalo antes de ir",
     'plan.pinnedTag': "Fijado",
@@ -463,6 +466,7 @@ root.I18N = {
   },
 
   it: {
+    'report.title': "{name} ha chiuso per sempre?", 'report.sub': "Rispondi sì solo se sai che ha chiuso definitivamente, non solo stasera. Se due persone lo segnalano, smettiamo di proporlo a tutti.", 'report.yes': "Sì, ha chiuso per sempre", 'report.no': "No, annulla",
     'plan.editStop': "Modifica",
     'plan.reportClosed': "Chiuso per sempre?", 'toast.reported': "Grazie. Non lo proporremo più", 'plan.reportedOne': "Qualcuno l’ha segnalato come chiuso, controlla prima di andare",
     'plan.pinnedTag': "Fissato",
@@ -615,6 +619,7 @@ root.I18N = {
   },
 
   pt: {
+    'report.title': "{name} fechou de vez?", 'report.sub': "Só diga sim se você sabe que fechou de vez, não só hoje à noite. Se duas pessoas avisarem, paramos de sugerir para todo mundo.", 'report.yes': "Sim, fechou de vez", 'report.no': "Não, cancelar",
     'plan.editStop': "Editar",
     'plan.reportClosed': "Fechou de vez?", 'toast.reported': "Valeu. Não vamos mais sugerir", 'plan.reportedOne': "Alguém avisou que fechou de vez, confira antes de ir",
     'plan.pinnedTag': "Fixado",
