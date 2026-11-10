@@ -234,6 +234,14 @@
   .tag-sum{ font-size:13px; color:var(--text-2); margin:0 0 8px; }
   .weather{ font-size:14px; color:var(--text-2); margin:0 0 12px; }
   .ask{ width:100%; height:44px; margin-top:8px; }
+  a.nav-link{ text-decoration:none; }
+  .hours.closed{ color:var(--red); }
+  select.field-input{ appearance:none; -webkit-appearance:none; padding-right:32px; cursor:pointer;
+    background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aaa398' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center / 14px; }
+  .time-row{ display:grid; grid-template-columns:1fr auto auto auto; align-items:center; gap:8px; padding:8px 0; border-top:1px solid var(--line); font-size:14px; }
+  .time-row b{ font:500 20px/1 var(--display); font-variant-numeric:tabular-nums; min-width:3.2em; text-align:center; }
+  .time-row .btn{ width:40px; padding:0; }
+  .times-pair{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
   .vote{ max-width:40rem; }
   .vote h1{ max-width:none; }
   .vote .group{ margin:24px 0; }
@@ -309,6 +317,7 @@
   <header class="top">
     <button class="logo" id="logo" type="button"><img src="/icon.svg" alt="">Owlabout</button>
     <div class="top-right">
+      <a class="nav-link" href="/neighbourhoods" data-t="nav.areas">Neighbourhoods</a>
       <button class="nav-link" id="about-link" type="button" data-t="nav.about">About</button>
       <label class="lang-pick"><svg class="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span id="lang-label">EN</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><select id="lang" aria-label="Language" data-t-aria="nav.lang"></select></label>
       <div class="view" id="view" role="group" aria-label="Preview" data-t-aria="aria.preview">
@@ -335,8 +344,8 @@
         <h2 data-t="home.build">Build your own</h2>
         <div class="field"><p class="label" data-t="home.what">What</p><div class="chips" id="types"></div></div>
         <div class="field"><p class="label" data-t="home.stops">Stops</p><div class="seg" id="stops-n"></div><p class="hint" id="stops-hint" aria-live="polite"></p></div>
-        <div class="field"><p class="label" data-t="home.start">Starting</p><div class="seg" id="start"></div></div>
-        <div class="field"><p class="label" data-t="home.until">Until</p><div class="seg" id="end"></div></div>
+        <div class="field"><label class="label" for="start" data-t="home.start">Starting</label><select class="field-input" id="start"></select></div>
+        <div class="field"><label class="label" for="end" data-t="home.until">Until</label><select class="field-input" id="end"></select></div>
         <button class="cta" id="go" type="button" data-t="home.go">Plan the night</button>
         <button class="btn ask" id="ask" type="button" data-t="vote.ask">Ask the group first</button>
       </aside>
@@ -369,6 +378,7 @@
         <div class="plan-tools" id="plan-tools">
           <button class="btn" id="add-stop" type="button" data-t="plan.add">+ Add a stop</button>
           <button class="btn" id="edit-stops" type="button" aria-pressed="false">Edit stops</button>
+          <button class="btn" id="times-btn" type="button" data-t="plan.times">Times</button>
         </div>
         <p class="credit"><span data-t="link.venueData">Venue data</span> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · <a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com" data-t="link.contact">Contact</a></p>
       </div>
@@ -458,6 +468,17 @@
     <button class="btn primary" type="button" id="vote-setup-go" data-t="vote.create">Create the vote</button>
   </div>
 </dialog>
+<dialog class="sheet" id="times-sheet">
+  <h2 data-t="times.title">Change the times</h2>
+  <p data-t="times.sub">Move the whole night, or nudge a single stop</p>
+  <div class="times-pair">
+    <div><label class="label" for="times-start" data-t="times.start">Starting</label><select class="field-input" id="times-start"></select></div>
+    <div><label class="label" for="times-end" data-t="times.until">Until</label><select class="field-input" id="times-end"></select></div>
+  </div>
+  <p class="label" data-t="times.each">Each stop</p>
+  <div id="times-stops"></div>
+  <button class="btn close" type="button" id="times-done" data-t="times.done">Done</button>
+</dialog>
 <dialog class="sheet" id="type-sheet">
   <h2 id="type-sheet-title">Add a stop</h2>
   <p id="type-sheet-sub">What kind of place?</p>
@@ -527,8 +548,10 @@
   ];
 
   const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
-  const STARTS = [18, 19, 20, 21, 22].map(h => h * 60);
-  const ENDS = [23, 24, 25, 26, 27].map(h => h * 60);          // past 24 = after midnight
+  const STARTS = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(h => h * 60);
+  const ENDS = [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27].map(h => h * 60);   // past 24 = after midnight
+  const MIN_NIGHT = 60;                        // shortest plan, in minutes
+  const firstEnd = start => ENDS.find(e => e - start >= MIN_NIGHT) || ENDS[ENDS.length - 1];
   const DAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
   let DAY_NAMES = [];
   // Re-label everything that has a name in the current language.
@@ -548,7 +571,8 @@
     .replace(/&/g, ' and ').replace(/[’'()]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const areaPage = a => { const c = a.city || 'london'; return (PAGE_LANG[c] === lang ? '/' + lang : '') + '/' + c + '/' + slug(a.name); };
   // stops: null for a plan built from types + n; once edited, the exact type of each stop in order.
-  const form = { area:null, types:['pub', 'dinner', 'cocktail'], n:3, start:19 * 60, end:24 * 60, day:0, preset:null, stops:null };
+  // times: null to spread stops evenly over the night; or each stop's start, once someone nudges them.
+  const form = { area:null, types:['pub', 'dinner', 'cocktail'], n:3, start:19 * 60, end:24 * 60, day:0, preset:null, stops:null, times:null };
   let plan = [];             // [{ type, from, to, venue, seen }]
   const areaData = {};
 
@@ -736,6 +760,8 @@
   }
 
   function slots(ts){
+    if (form.times && form.times.length === ts.length)
+      return ts.map((type, k) => ({ type, from:form.times[k], to:k + 1 < ts.length ? form.times[k + 1] : form.end }));
     const step = (form.end - form.start) / ts.length;
     return ts.map((type, k) => ({ type, from: Math.round(form.start + k * step), to: Math.round(form.start + (k + 1) * step) }));
   }
@@ -752,12 +778,15 @@
       if (s.type.id === 'rooftop' && weatherFor(fc, nightDate(), s.from, s.to).some(h => h.rain >= RAIN_MM)) { s.type = T.pub; rainSwap = true; }
     }
     if (rainSwap) form.stops = sl.map(s => s.type.id);
+    let fellBack = false;
     for (const s of sl) {
       const prev = [...plan].reverse().find(x => x.venue);
-      const venue = bestVenue(venues, s.type, s.from, s.to, prev && prev.venue, used);
-      if (venue) used.add(venue.id);
-      plan.push({ ...s, venue, seen: new Set(venue ? [venue.id] : []) });
+      const got = pickVenue(venues, s.type, s.from, s.to, prev && prev.venue, used);
+      if (got.venue) used.add(got.venue.id);
+      if (got.type !== s.type) fellBack = true;
+      plan.push({ ...s, type:got.type, wanted:got.type !== s.type ? s.type : null, venue:got.venue, seen:new Set(got.venue ? [got.venue.id] : []) });
     }
+    if (fellBack) form.stops = plan.map(x => x.type.id);
     writeHash(true, push);
     renderPlan();
     if (rainSwap) toast(t('toast.rainSwap'));
@@ -775,7 +804,13 @@
       s.seen = new Set(s.venue ? [s.venue.id] : []);
       alt = bestVenue(venues, s.type, s.from, s.to, prev && prev.venue, new Set([...used, ...s.seen]));
     }
-    if (!alt) { toast(t('toast.nothingElse', { type:s.type.name.toLowerCase() })); return; }
+    if (!alt) {                                 // none left of this kind: offer the nearest kind instead
+      const got = pickVenue(venues, s.wanted || s.type, s.from, s.to, prev && prev.venue, new Set([...used, ...(s.venue ? [s.venue.id] : [])]));
+      if (!got.venue) { toast(t('toast.nothingElse', { type:s.type.name.toLowerCase() })); return; }
+      toast(fallbackNote(s.wanted || s.type, got.type));
+      if (got.type !== s.type) { s.wanted = s.wanted || s.type; s.type = got.type; form.stops = plan.map(x => x.type.id); }
+      alt = got.venue;
+    }
     if (s.venue) sendEvent({ step:'swap', swapped:[s.venue.id], shown:[alt.id] });
     markSeen([alt.id]);
     s.venue = alt;
@@ -783,6 +818,19 @@
     writeHash(true);
     renderPlan(true);
   }
+
+  // ---------- fallbacks: nearest kind of place when one runs out (wine bars, comedy and karaoke are sparse) ----------
+  const FALLBACK = { wine:['cocktail', 'pub'], rooftop:['pub', 'cocktail'], comedy:['live', 'games', 'cocktail'], karaoke:['games', 'dance', 'cocktail'],
+    games:['pub', 'cocktail'], live:['pub', 'cocktail'], latefood:['cheap', 'dinner'], cheap:['dinner', 'latefood'], dance:['cocktail', 'live'],
+    cocktail:['wine', 'pub'], pub:['cocktail', 'wine'], dinner:['cheap'] };
+  function pickVenue(venues, type, from, to, prev, exclude){
+    for (const id of [type.id, ...(FALLBACK[type.id] || [])]) {
+      const v = bestVenue(venues, T[id], from, to, prev, exclude);
+      if (v) return { venue:v, type:T[id] };
+    }
+    return { venue:null, type };
+  }
+  const fallbackNote = (wanted, got) => t('plan.fallback', { wanted:wanted.name.toLowerCase(), got:got.name.toLowerCase() });
 
   // ---------- weather: MET Norway forecast via /api/weather (CC BY 4.0) ----------
   const RAIN_MM = 0.3;                       // mm in an hour that counts as "rain likely"
@@ -830,6 +878,7 @@
   // unless the stop itself changed. The edited shape travels in the link (st=).
   let editing = false;
   function retime(){
+    if (form.times && form.times.length !== plan.length) form.times = null;   // stops added or removed: spread evenly again
     const sl = slots(plan.map(x => x.type));
     plan.forEach((x, i) => { x.from = sl[i].from; x.to = sl[i].to; });
     form.stops = plan.map(x => x.type.id);
@@ -842,7 +891,9 @@
     const x = plan[k];
     const used = new Set(plan.filter((y, i) => i !== k && y.venue).map(y => y.venue.id));
     const prev = plan.slice(0, k).reverse().find(y => y.venue);
-    x.venue = bestVenue(venues, x.type, x.from, x.to, prev && prev.venue, used);
+    const got = pickVenue(venues, x.type, x.from, x.to, prev && prev.venue, used);
+    if (got.venue && got.type !== x.type) { toast(fallbackNote(x.type, got.type)); x.wanted = x.type; x.type = got.type; }
+    x.venue = got.venue;
     x.seen = new Set(x.venue ? [x.venue.id] : []);
     if (x.venue) markSeen([x.venue.id]);
   }
@@ -880,6 +931,42 @@
     if (sheet.showModal) sheet.showModal(); else sheet.setAttribute('open', '');
   }
   $('type-sheet-close').onclick = () => $('type-sheet').close();
+
+  // Times, on the plan itself: start and end move the whole night (stops spread evenly again);
+  // the arrows nudge one stop by 15 minutes, never past its neighbours. Venues stay put, and
+  // any that would be closed at their new time say so on the card.
+  function timesChanged(){ retime(); writeHash(true); renderPlan(true); renderTimes(); track('edit'); }
+  function renderTimes(){
+    $('times-start').innerHTML = STARTS.concat(STARTS.includes(form.start) ? [] : [form.start]).sort((a, b) => a - b)
+      .map(m => '<option value="'+m+'"'+(m === form.start ? ' selected' : '')+'>'+esc(fmt(m))+'</option>').join('');
+    $('times-end').innerHTML = ENDS.filter(m => m - form.start >= MIN_NIGHT).concat(ENDS.includes(form.end) ? [] : [form.end]).sort((a, b) => a - b)
+      .map(m => '<option value="'+m+'"'+(m === form.end ? ' selected' : '')+'>'+esc(short(m))+'</option>').join('');
+    $('times-stops').innerHTML = plan.map((x, k) => {
+      const lo = k ? plan[k - 1].from + 15 : 0, hi = (k + 1 < plan.length ? plan[k + 1].from : form.end) - 15;
+      return '<div class="time-row"><span>' + (k + 1) + ' · ' + esc(x.venue ? x.venue.name : x.type.name) + '</span>' +
+        '<button class="btn" type="button" data-nudge="'+k+'" data-by="-15"'+(x.from - 15 < lo ? ' disabled' : '')+' aria-label="'+esc(t('times.earlier'))+'">−</button>' +
+        '<b>' + clock(x.from) + '</b>' +
+        '<button class="btn" type="button" data-nudge="'+k+'" data-by="15"'+(x.from + 15 > hi ? ' disabled' : '')+' aria-label="'+esc(t('times.later'))+'">+</button></div>';
+    }).join('');
+    $('times-stops').querySelectorAll('[data-nudge]').forEach(b => b.onclick = () => {
+      const k = +b.dataset.nudge;
+      form.times = plan.map(x => x.from);
+      form.times[k] += +b.dataset.by;
+      if (k === 0) form.start = form.times[0];
+      timesChanged();
+    });
+  }
+  $('times-btn').onclick = () => {
+    renderTimes();
+    if ($('times-sheet').showModal) $('times-sheet').showModal(); else $('times-sheet').setAttribute('open', '');
+  };
+  $('times-start').onchange = e => {
+    form.start = +e.target.value; form.times = null;
+    if (form.end - form.start < MIN_NIGHT) form.end = firstEnd(form.start);
+    timesChanged();
+  };
+  $('times-end').onchange = e => { form.end = +e.target.value; form.times = null; timesChanged(); };
+  $('times-done').onclick = () => $('times-sheet').close();
   $('add-stop').onclick = () => pickType(null);
   $('edit-stops').onclick = () => {
     editing = !editing;
@@ -930,7 +1017,8 @@
     const g = await api('/api/plans/' + id + '?device=' + device());
     const area = AREAS.find(a => a.id === g.area);
     if (!area) throw new Error(t('toast.areaGone'));
-    Object.assign(form, { area, start:g.start, end:g.end, stops:g.stops.map(x => x.type), n:g.stops.length, preset:g.title || null });
+    Object.assign(form, { area, start:g.start, end:g.end, stops:g.stops.map(x => x.type), n:g.stops.length, preset:g.title || null,
+      times:g.stops.every(x => Number.isInteger(x.at)) ? g.stops.map(x => x.at) : null });
     form.day = (new Date(g.date + 'T12:00:00Z').getUTCDay() + 6) % 7;
     const venues = await loadAreaWithSignals(area.id);
     plan = slots(stopTypes()).map((x, k) => ({ ...x, venue:venues.find(v => v.id === g.stops[k].venue) || null, seen:new Set() }));
@@ -1002,7 +1090,7 @@
   // Lock the plan on screen into a group plan. Same plan twice reuses the same link.
   let locked = { key:'', id:'' };
   async function lockPlan(){
-    const stops = plan.map(x => ({ type:x.type.id, venue:x.venue ? x.venue.id : null }));
+    const stops = plan.map(x => ({ type:x.type.id, venue:x.venue ? x.venue.id : null, ...(form.times ? { at:x.from } : {}) }));
     const key = JSON.stringify([form.area.id, nightDate(), form.start, form.end, stops]);
     if (locked.key === key) return locked.id;
     const { id } = await api('/api/plans', { area:form.area.id, date:nightDate(), start:form.start, end:form.end, stops,
@@ -1195,6 +1283,7 @@
     q.set('n', form.n); q.set('s', form.start); q.set('e', form.end); q.set('d', form.day);
     if (form.preset) q.set('x', form.preset);
     if (form.stops) q.set('st', form.stops.join(','));
+    if (form.times) q.set('tm', form.times.join(','));
     if (withPlan && plan.length) q.set('p', plan.map(s => s.venue ? s.venue.id : '-').join(','));
     const url = location.href.split('#')[0] + '#' + q.toString();
     if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
@@ -1206,13 +1295,15 @@
     const ts = (q.get('t') || '').split(',').filter(id => T[id]);
     if (ts.length) form.types = ts;
     const n = +q.get('n'); if (n >= 1 && n <= 6) form.n = n;
-    const s = +q.get('s'); if (STARTS.includes(s)) form.start = s;
-    const e = +q.get('e'); if (ENDS.includes(e)) form.end = e;
+    const s = +q.get('s'); if (q.get('s') && s >= 0 && s <= 1440 && s % 15 === 0) form.start = s;
+    const e = +q.get('e'); if (q.get('e') && e > form.start && e <= 36 * 60 && e % 15 === 0) form.end = e;
     const d = q.get('d'); if (d !== null && +d >= 0 && +d <= 6) form.day = +d;
     form.preset = q.get('x') === 'Surprise me' || PRESETS.some(p => p.name === q.get('x')) ? q.get('x') : null;
     const st = (q.get('st') || '').split(',').filter(Boolean);
     form.stops = st.length >= 1 && st.length <= 8 && st.every(id => T[id]) ? st : null;
     if (form.stops) form.n = form.stops.length;
+    const tm = (q.get('tm') || '').split(',').filter(Boolean).map(Number);
+    form.times = tm.length === form.n && tm.every((m, i) => m % 15 === 0 && m >= 0 && m < form.end && (!i || m > tm[i - 1])) ? tm : null;
     return (q.get('p') || '').split(',').filter(Boolean);
   }
   async function loadSharedPlan(ids){
@@ -1277,21 +1368,20 @@
       syncBuilder();
     });
     seg($('stops-n'), [1, 2, 3, 4, 5, 6].map(n => [n, String(n)]), n => { form.n = n; syncBuilder(); });
-    seg($('start'), STARTS.map(m => [m, fmt(m)]), m => {
-      form.start = m;
-      if (form.end - form.start < 120) form.end = ENDS.find(e => e - m >= 120) || ENDS[ENDS.length - 1];
-      syncBuilder();
-    });
-    seg($('end'), ENDS.map(m => [m, short(m)]), m => {
-      if (m - form.start < 120) { toast(t('toast.twoHours')); return; }
+    $('start').innerHTML = STARTS.map(m => '<option value="'+m+'">'+esc(fmt(m))+'</option>').join('');
+    $('end').innerHTML = ENDS.map(m => '<option value="'+m+'">'+esc(short(m))+'</option>').join('');
+    $('start').onchange = e => { form.start = +e.target.value; if (form.end - form.start < MIN_NIGHT) form.end = firstEnd(form.start); syncBuilder(); };
+    $('end').onchange = e => {
+      const m = +e.target.value;
+      if (m - form.start < MIN_NIGHT) { toast(t('toast.twoHours')); $('end').value = form.end; return; }
       form.end = m; syncBuilder();
-    });
+    };
   }
   function syncBuilder(){
     mark($('types'), id => form.types.includes(id));
     mark($('stops-n'), v => +v === form.n);
-    mark($('start'), v => +v === form.start);
-    mark($('end'), v => +v === form.end);
+    $('start').value = form.start;
+    $('end').value = form.end;
     $('stops-hint').textContent = form.types.length > form.n
       ? t('home.hintChoose', { n:form.types.length, stops:stopsText(form.n) }) : '';
     saveHome();
@@ -1388,7 +1478,7 @@
   let planning = false, cameFromHome = false;
   async function go(changes, push = true){
     if (planning) return;
-    if (changes) Object.assign(form, { stops:null }, changes);
+    if (changes) Object.assign(form, { stops:null, times:null }, changes);
     if (!form.types.length) { toast(t('toast.pickOne')); return; }
     planning = true;
     $('go').disabled = true;
@@ -1474,7 +1564,7 @@
   }
   function renderPlan(keepScroll){
     const found = plan.filter(s => s.venue).length;
-    $('plan-kicker').textContent = dayLabel() + ' · ' + fmt(form.start) + '–' + (form.end >= 27 * 60 ? t('time.late') : fmt(form.end));
+    $('plan-kicker').textContent = dayLabel() + ' · ' + fmt(plan.length ? plan[0].from : form.start) + '–' + (form.end >= 27 * 60 ? t('time.late') : fmt(form.end));
     $('plan-area').textContent = form.area.name;
     $('plan-title').textContent = form.preset ? presetLabel(form.preset) : found ? t(found === 1 ? 'plan.walkable.one' : 'plan.walkable', { n:found }) : t('plan.nothingFits');
 
@@ -1489,9 +1579,10 @@
       } else {
         const st = status(v, form.day, s.from, Math.max(s.from, s.to - 30));
         const close = closesAt(v, form.day, s.from);
-        const hoursLine = st === 'open'
+        const hoursLine = (s.wanted ? '<p class="hours unknown">' + esc(fallbackNote(s.wanted, s.type)) + '</p>' : '') + (st === 'open'
           ? '<p class="hours open">' + (hoursOf(v) === 'always' ? t('plan.open24') : close ? t('plan.openTill', { time:fmt(close) }) : t('plan.open')) + '</p>'
-          : '<p class="hours unknown">' + t('plan.hoursNA') + '</p>';
+          : st === 'closed' ? '<p class="hours closed">' + esc(t('plan.closedThen')) + '</p>'
+          : '<p class="hours unknown">' + t('plan.hoursNA') + '</p>');
         const note = v.id in sig.picks ? '<p class="our-pick"><span>' + (sig.guides.has(v.id) ? t('plan.guides') : t('plan.ourPick')) + '</span>' +
           (sig.picks[v.id] ? esc(sig.picks[v.id]) : '') + '</p>' : '';
         const [up, down, closed = 0] = sig.ratings[v.id] || [0, 0, 0];

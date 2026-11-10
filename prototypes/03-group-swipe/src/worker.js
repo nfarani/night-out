@@ -220,7 +220,7 @@ async function planPage(id, request, url, env){
     const stops = JSON.parse(plan.stops), step = (plan.end_min - plan.start_min) / stops.length;
     const lines = stops.map((x, k) => {
       const v = x.venue && venues.find(y => y.id === x.venue);
-      return clock(Math.round(plan.start_min + k * step)) + ' ' + (v ? v.name : tr(lang, 'type.' + x.type).toLowerCase());
+      return clock(Number.isInteger(x.at) ? x.at : Math.round(plan.start_min + k * step)) + ' ' + (v ? v.name : tr(lang, 'type.' + x.type).toLowerCase());
     });
     const day = tr(lang, 'day.' + (new Date(plan.date + 'T12:00:00Z').getUTCDay() + 6) % 7);
     const names = m.results.map(r => r.name);
@@ -288,10 +288,13 @@ async function createPlan(request, url, env){
   const ok = b && await knownArea(env, url, b.area) && /^\d{4}-\d{2}-\d{2}$/.test(b.date || '') && DEVICE.test(b.device || '') &&
     Number.isInteger(b.start) && Number.isInteger(b.end) && b.start >= 0 && b.end > b.start && b.end <= 36 * 60 &&
     Array.isArray(b.stops) && b.stops.length >= 1 && b.stops.length <= 8 &&
-    b.stops.every(x => x && TYPE_IDS.has(x.type) && (x.venue === null || VENUE_ID.test(x.venue || '')));
+    b.stops.every(x => x && TYPE_IDS.has(x.type) && (x.venue === null || VENUE_ID.test(x.venue || '')) &&
+      (x.at === undefined || Number.isInteger(x.at) && x.at >= 0 && x.at < b.end));
   if (!ok) return json({ error:'Bad request' }, 400);
   const city = (await loadAreas(env, url)).get(b.area);
-  const stops = JSON.stringify(b.stops.map(x => ({ type:x.type, venue:x.venue })));
+  // at: a stop's own start time, when the organiser moved stops by hand (all or none).
+  const timed = b.stops.every(x => Number.isInteger(x.at));
+  const stops = JSON.stringify(b.stops.map(x => ({ type:x.type, venue:x.venue, ...(timed ? { at:x.at } : {}) })));
   const title = typeof b.title === 'string' ? b.title.slice(0, 40) : null;
   const lang = I18N[b.lang] ? b.lang : 'en';
   const name = cleanName(b.name);

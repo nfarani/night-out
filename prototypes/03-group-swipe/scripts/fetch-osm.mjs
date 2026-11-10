@@ -45,7 +45,8 @@ function classify(t) {
   const sport = t.sport || '', hours = t.opening_hours || '';
   const v = [];
   // Names are matched in English, French, Spanish, Catalan, Italian, Portuguese, Dutch and German.
-  const wineName = /\bwine|\bvin(o|s|i|ho|hos)?\b|enoteca|vinoteca|\bcave\b|bottle|\bbodega|weinbar|\bwijn|garrafeira|vermut|vermouth/i.test(name);
+  // No "bottle": too many pubs are called "the Something and Bottle".
+  const wineName = /\bwine|\bvin(o|s|i|ho|hos)?\b|enoteca|vinoteca|\bcave\b|\bbodega|weinbar|\bwijn|garrafeira|vermut|vermouth/i.test(name);
   if (a === 'pub' && !chain) v.push('pub');
   if (['bar', 'restaurant', 'pub'].includes(a) && !chain && wineName) v.push('wine');
   if ((a === 'fast_food' && !chain) || a === 'food_court') v.push('cheap');
