@@ -99,7 +99,9 @@ for (const area of areas) {
     // Marked as gone: closed in the name, hours of "closed"/"off", an end date that has passed,
     // or flagged disused. (Most closures aren't marked at all; user reports catch those.)
     const today = new Date().toISOString().slice(0, 10);
-    if (/\b(closed|permanently closed|cerrado|fermé|chiuso|fechado|geschlossen)\b/i.test(t.name) ||
+    // A closed marker only counts when tagged onto the name, "Name (closed)" or "Name – Fechada", so places
+    // simply called La Ferme ("farm") or Cerrado stay.
+    if (/[([\-–—]\s*(permanently closed|closed|cerrad[oa]|fermée?|chius[oa]|fechad[oa]|geschlossen|gesloten)\b/i.test(t.name) ||
         /^\s*(closed|off)\s*$|^\s*mo-su\s+off\s*$/i.test(t.opening_hours || '') ||
         (t.end_date && t.end_date <= today) || t.disused === 'yes' || t.abandoned === 'yes') continue;
     venues.push({
