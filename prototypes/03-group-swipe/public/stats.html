@@ -93,7 +93,8 @@
     const res = await fetch('/api/stats?days=' + $('days').value, { headers:{ Authorization:'Bearer ' + token } });
     const d = await res.json().catch(() => ({}));
     if (!res.ok) { $('status').textContent = res.status === 401 ? 'Wrong password' : (d.error || 'Server error'); $('status').className = 'status err'; return; }
-    $('status').textContent = 'Since ' + d.since;
+    $('status').textContent = 'Since ' + d.since + ' · this browser no longer counts in the numbers';
+    try { localStorage.setItem('no_me', '1'); } catch (e) {}   // the app stops sending events from the owner's browsers
 
     const t = sum(d.byArea);
     const kpi = (v, label, sub) => '<div class="kpi"><b>'+v+'</b><span>'+label+'</span>'+(sub ? '<small>'+sub+'</small>' : '')+'</div>';

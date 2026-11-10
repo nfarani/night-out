@@ -735,8 +735,11 @@
     return signalData[id];
   }
   // Funnel step for the stats page: counts per area and day, nothing about who.
+  // Browsers that unlocked /stats are the owner's: they send nothing, so testing never inflates the numbers.
+  const isOwner = (() => { try { return localStorage.getItem('no_me') === '1'; } catch (e) { return false; } })();
   function track(step){ sendEvent({ step }); }
   function sendEvent(body){
+    if (isOwner) return;
     try { fetch('/api/event', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ area:form.area.id, ...body }), keepalive:true }).catch(() => {}); } catch (e) {}
   }
   async function loadAreaWithSignals(id){
@@ -1272,7 +1275,7 @@
     const first = !group;
     group = g;
     renderPlan(!first);
-    if (first && !organiser) track('open_shared');
+    if (first && !organiser && !g.mine && !g.members.some(m => m.me)) track('open_shared');   // a new person, not the organiser coming back
   }
   function renderGroup(){
     const el = $('group');
@@ -1531,12 +1534,16 @@
     if (form.preset) q.set('x', form.preset);
     if (form.stops) q.set('st', form.stops.join(','));
     if (form.times) q.set('tm', form.times.join(','));
+    if (withPlan && plan.length) rememberMade(plan.map(s => s.venue ? s.venue.id : '-').join(','));
     const pins = plan.map((x, i) => x.pinned ? i : -1).filter(i => i >= 0);
     if (withPlan && pins.length) q.set('pn', pins.join(','));
     if (withPlan && plan.length) q.set('p', plan.map(s => s.venue ? s.venue.id : '-').join(','));
     const url = location.href.split('#')[0] + '#' + q.toString();
     if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
   }
+  // Plans this browser built (their stop ids), so reopening your own isn't counted as a shared link.
+  function madeHere(){ try { return JSON.parse(recall('no_made') || '[]'); } catch (e) { return []; } }
+  function rememberMade(key){ const m = madeHere(); if (!m.includes(key)) remember('no_made', JSON.stringify(m.concat(key).slice(-100))); }
   function readHash(){
     const q = new URLSearchParams(location.hash.slice(1));
     const area = AREAS.find(a => a.id === q.get('a'));
@@ -1563,7 +1570,7 @@
       return { ...s, venue, seen:new Set(venue ? [venue.id] : []), pinned:(form.pins || []).includes(k) };
     });
     renderPlan();
-    track('open_shared');
+    if (!madeHere().includes(ids.join(','))) track('open_shared');
   }
 
   // ---------- HOME ----------
