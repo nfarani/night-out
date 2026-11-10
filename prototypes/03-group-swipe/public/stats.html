@@ -35,6 +35,10 @@
   .status{ color:var(--text-2); }
   .err{ color:var(--red); }
   .note{ color:var(--muted); font-size:13px; margin-top:12px; }
+  .fb{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:0 0 8px; }
+  .fb p{ margin:0; white-space:pre-wrap; }
+  .fb small{ display:block; color:var(--muted); font-size:12px; margin-top:6px; }
+  .fb a{ color:var(--route); }
 </style>
 </head>
 <body>
@@ -55,6 +59,9 @@
 
   <h2>Top areas</h2>
   <div class="scroll"><table id="areas"></table></div>
+
+  <h2>Feedback</h2>
+  <div id="feedback"></div>
 
   <h2>By day</h2>
   <div class="scroll"><table id="byday"></table></div>
@@ -109,6 +116,9 @@
       .map(([c, t]) => line(esc(cityNames[c] || c), t)).join('') || '<tr><td>No data yet</td></tr>';
     $('areas').innerHTML = HEAD + group(d.byArea, 'area').sort((a, b) => b[1].plan - a[1].plan).slice(0, 25)
       .map(([a, t]) => line(esc(areaNames[a] || a), t)).join('') || '<tr><td>No data yet</td></tr>';
+    $('feedback').innerHTML = (d.feedback || []).map(f => '<div class="fb"><p>' + esc(f.message) + '</p><small>' +
+      new Date(f.created_at).toLocaleString('en-GB', { dateStyle:'medium', timeStyle:'short' }) + ' · ' + esc([areaNames[f.area] || f.area, f.screen, f.lang, f.who ? 'person ' + f.who : ''].filter(Boolean).join(' · ')) +
+      (f.contact ? ' · <a href="mailto:' + esc(f.contact) + '">' + esc(f.contact) + '</a>' : '') + '</small></div>').join('') || '<p class="status">No feedback yet</p>';
     $('byday').innerHTML = HEAD + group(d.byDay, 'day').sort((a, b) => b[0].localeCompare(a[0]))
       .map(([day, t]) => line(day, t)).join('') || '<tr><td>No data yet</td></tr>';
   }

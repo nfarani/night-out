@@ -7,6 +7,15 @@ root.LANGS = [['en', 'EN', 'English', '🇬🇧'], ['fr', 'FR', 'Français', '�
 
 root.I18N = {
   en: {
+    'fb.link': "Feedback",
+    'fb.prompt': "Something wrong or missing? Tell us",
+    'fb.title': "Tell us",
+    'fb.sub': "What’s wrong, missing or great? We read every message.",
+    'fb.message': "Your message",
+    'fb.contact': "Your email, if you’d like a reply (optional)",
+    'fb.send': "Send",
+    'fb.thanks': "Thanks, we got it",
+    'fb.empty': "Write a message first",
     'report.title': "Has {name} closed for good?", 'report.sub': "Only say yes if you know it has shut down for good, not just closed tonight. If two people say so, we stop suggesting it to everyone.", 'report.yes': "Yes, it’s closed for good", 'report.no': "No, cancel",
     'plan.editStop': "Edit",
     'plan.reportClosed': "Closed for good?", 'toast.reported': "Thanks. We won’t suggest it again", 'plan.reportedOne': "Someone reported it closed for good, check before you go",
@@ -160,6 +169,15 @@ root.I18N = {
   },
 
   fr: {
+    'fb.link': "Votre avis",
+    'fb.prompt': "Un problème ou une idée ? Dites-le-nous",
+    'fb.title': "Dites-nous",
+    'fb.sub': "Un souci, un manque, un coup de cœur ? On lit tous les messages.",
+    'fb.message': "Votre message",
+    'fb.contact': "Votre e-mail, si vous voulez une réponse (facultatif)",
+    'fb.send': "Envoyer",
+    'fb.thanks': "Merci, bien reçu",
+    'fb.empty': "Écrivez d’abord un message",
     'report.title': "{name} a fermé définitivement ?", 'report.sub': "Répondez oui seulement si vous savez que le lieu a fermé pour de bon, pas juste ce soir. Si deux personnes le signalent, on arrête de le proposer à tout le monde.", 'report.yes': "Oui, fermé définitivement", 'report.no': "Non, annuler",
     'plan.editStop': "Modifier",
     'plan.reportClosed': "Fermé définitivement ?", 'toast.reported': "Merci. On ne le proposera plus", 'plan.reportedOne': "Quelqu’un l’a signalé fermé définitivement, vérifiez avant d’y aller",
@@ -313,6 +331,15 @@ root.I18N = {
   },
 
   es: {
+    'fb.link': "Opinión",
+    'fb.prompt': "¿Algo falla o falta? Cuéntanoslo",
+    'fb.title': "Cuéntanos",
+    'fb.sub': "¿Qué falla, qué falta o qué te encanta? Leemos todos los mensajes.",
+    'fb.message': "Tu mensaje",
+    'fb.contact': "Tu email, si quieres respuesta (opcional)",
+    'fb.send': "Enviar",
+    'fb.thanks': "Gracias, recibido",
+    'fb.empty': "Escribe un mensaje primero",
     'report.title': "¿{name} ha cerrado para siempre?", 'report.sub': "Di que sí solo si sabes que ha cerrado del todo, no solo esta noche. Si dos personas lo avisan, dejamos de proponerlo a todo el mundo.", 'report.yes': "Sí, ha cerrado para siempre", 'report.no': "No, cancelar",
     'plan.editStop': "Editar",
     'plan.reportClosed': "¿Cerrado para siempre?", 'toast.reported': "Gracias. No lo volveremos a proponer", 'plan.reportedOne': "Alguien avisó de que ha cerrado, compruébalo antes de ir",
@@ -466,6 +493,15 @@ root.I18N = {
   },
 
   it: {
+    'fb.link': "Feedback",
+    'fb.prompt': "Qualcosa non va o manca? Diccelo",
+    'fb.title': "Diccelo",
+    'fb.sub': "Cosa non va, cosa manca o cosa ti piace? Leggiamo ogni messaggio.",
+    'fb.message': "Il tuo messaggio",
+    'fb.contact': "La tua email, se vuoi una risposta (facoltativa)",
+    'fb.send': "Invia",
+    'fb.thanks': "Grazie, ricevuto",
+    'fb.empty': "Scrivi prima un messaggio",
     'report.title': "{name} ha chiuso per sempre?", 'report.sub': "Rispondi sì solo se sai che ha chiuso definitivamente, non solo stasera. Se due persone lo segnalano, smettiamo di proporlo a tutti.", 'report.yes': "Sì, ha chiuso per sempre", 'report.no': "No, annulla",
     'plan.editStop': "Modifica",
     'plan.reportClosed': "Chiuso per sempre?", 'toast.reported': "Grazie. Non lo proporremo più", 'plan.reportedOne': "Qualcuno l’ha segnalato come chiuso, controlla prima di andare",
@@ -619,6 +655,15 @@ root.I18N = {
   },
 
   pt: {
+    'fb.link': "Feedback",
+    'fb.prompt': "Algo errado ou faltando? Conta pra gente",
+    'fb.title': "Conta pra gente",
+    'fb.sub': "O que está errado, faltando ou ótimo? A gente lê todas as mensagens.",
+    'fb.message': "Sua mensagem",
+    'fb.contact': "Seu email, se quiser resposta (opcional)",
+    'fb.send': "Enviar",
+    'fb.thanks': "Valeu, recebemos",
+    'fb.empty': "Escreva uma mensagem primeiro",
     'report.title': "{name} fechou de vez?", 'report.sub': "Só diga sim se você sabe que fechou de vez, não só hoje à noite. Se duas pessoas avisarem, paramos de sugerir para todo mundo.", 'report.yes': "Sim, fechou de vez", 'report.no': "Não, cancelar",
     'plan.editStop': "Editar",
     'plan.reportClosed': "Fechou de vez?", 'toast.reported': "Valeu. Não vamos mais sugerir", 'plan.reportedOne': "Alguém avisou que fechou de vez, confira antes de ir",

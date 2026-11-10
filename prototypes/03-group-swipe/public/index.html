@@ -146,6 +146,9 @@
     .lang-pick .globe{ display:none; }
     .lang-pick{ padding:0 8px; }
   }
+  .fb-text{ height:auto; min-height:120px; padding:12px; resize:vertical; line-height:1.4; }
+  .fb-prompt{ margin:16px 0 0; }
+  .fb-prompt button{ background:none; border:none; padding:0; min-height:40px; font:inherit; font-size:14px; color:var(--route); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
   .home-foot{ order:3; grid-column:1 / -1; font-size:12px; color:var(--muted); margin:0; }   /* last on phones (see .ready/.builder order) and on wide screens */
   .home-foot a{ color:var(--text-2); }
   /* City bar: the first choice, above everything else on home. Scrolls sideways on phones. */
@@ -420,7 +423,7 @@
         <div class="section-head"><h2 id="ready-title">Ready-made nights</h2><span data-t="home.readySub">Tap one to plan it</span></div>
         <div class="presets" id="presets"></div>
       </div>
-      <p class="home-foot"><span class="foot-about"><a href="#about" id="foot-about" data-t="nav.about">About</a> · </span><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com" data-t="link.contact">Contact</a></p>
+      <p class="home-foot"><span class="foot-about"><a href="#about" id="foot-about" data-t="nav.about">About</a> · </span><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="#" data-fb data-t="fb.link">Feedback</a></p>
     </div>
   </section>
 
@@ -445,6 +448,7 @@
           <button class="btn" id="add-stop" type="button" data-t="plan.add">+ Add a stop</button>
           <button class="btn" id="times-btn" type="button" data-t="plan.times">Times</button>
         </div>
+        <p class="fb-prompt"><button type="button" data-fb data-t="fb.prompt">Something wrong or missing? Tell us</button></p>
         <p class="credit"><span data-t="link.venueData">Venue data</span> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · <a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com" data-t="link.contact">Contact</a></p>
       </div>
       <div class="bar">
@@ -504,6 +508,7 @@
       </div>
 
       <button class="cta" id="about-go" type="button" data-t="about.cta">Plan a night</button>
+      <p class="fb-prompt"><button type="button" data-fb data-t="fb.prompt">Something wrong or missing? Tell us</button></p>
       <p class="credit"><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com">hello@getowlabout.com</a></p>
     </div>
   </section>
@@ -543,6 +548,18 @@
   <p class="label" data-t="times.each">Each stop</p>
   <div id="times-stops"></div>
   <button class="btn close" type="button" id="times-done" data-t="times.done">Done</button>
+</dialog>
+<dialog class="sheet" id="fb-sheet">
+  <h2 tabindex="-1" data-t="fb.title">Tell us</h2>
+  <p data-t="fb.sub">What’s wrong, missing or great?</p>
+  <label for="fb-message" data-t="fb.message">Your message</label>
+  <textarea class="field-input fb-text" id="fb-message" maxlength="2000" rows="5"></textarea>
+  <label for="fb-contact" style="margin-top:12px" data-t="fb.contact">Your email, if you’d like a reply (optional)</label>
+  <input class="field-input" id="fb-contact" type="email" maxlength="200" autocomplete="email">
+  <div class="sheet-actions">
+    <button class="btn" type="button" id="fb-cancel" data-t="sheet.cancel">Cancel</button>
+    <button class="btn primary" type="button" id="fb-send" data-t="fb.send">Send</button>
+  </div>
 </dialog>
 <dialog class="sheet" id="report-sheet">
   <h2 id="report-title" tabindex="-1">Has this place closed for good?</h2>
@@ -928,6 +945,25 @@
     writeHash(true);
     renderPlan(true);
   }
+
+  // ---------- feedback: a short message, optional email, plus where they were (area, screen, language) ----------
+  function openFeedback(){ openSheet($('fb-sheet')); }
+  document.querySelectorAll('[data-fb]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openFeedback(); }));
+  $('fb-cancel').onclick = () => $('fb-sheet').close();
+  $('fb-send').onclick = async () => {
+    const message = $('fb-message').value.trim();
+    if (!message) { toast(t('fb.empty')); return; }
+    const on = document.querySelector('.screen.on');
+    const screen = group ? 'group' : on ? on.id.replace('s-', '') : '';
+    $('fb-send').disabled = true;
+    try {
+      await api('/api/feedback', { message, contact:$('fb-contact').value.trim() || undefined, area:form.area && form.area.id, screen, lang, device:device() });
+      $('fb-message').value = ''; $('fb-contact').value = '';
+      $('fb-sheet').close();
+      toast(t('fb.thanks'));
+    } catch (e) { toast(e.message); }
+    finally { $('fb-send').disabled = false; }
+  };
 
   // ---------- "closed for good" reports: hidden here at once, for everyone after two reports ----------
   let reportedHere = new Set();

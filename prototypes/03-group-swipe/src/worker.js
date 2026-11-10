@@ -2,6 +2,7 @@
 //
 //   GET  /api/signals?area=soho        public: picks + avoids (yours and research's), and usage stats, for ranking
 //   POST /api/event                     public: { area, step?, shown:[ids], swapped:[ids], kept:[ids] } usage counts
+//   POST /api/feedback                  public: { message, contact?, area?, screen?, lang?, device? } in-app feedback
 //   POST /api/report                    public: { area, venue, device } "closed for good" report, one per browser per venue
 //   GET  /api/weather?area=soho         public: hourly forecast for the area (MET Norway, CC BY 4.0), cached
 //   POST /api/polls                     public: ask the group first { areas[1-3], date, start, device, name?, lang } -> { id }
@@ -64,6 +65,19 @@ export default {
       const route = request.method + ' ' + url.pathname;
       if (route === 'GET /api/signals') return await signals(url, env);
       if (route === 'GET /api/weather') return await weather(url, env, ctx);
+      if (route === 'POST /api/feedback') {
+        if (env.WRITES) {
+          const { success } = await env.WRITES.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
+          if (!success) return json({ error:'Too many requests' }, 429);
+        }
+        const b = await request.json().catch(() => null);
+        const message = b && typeof b.message === 'string' ? b.message.trim().slice(0, 2000) : '';
+        if (!message) return json({ error:'Bad request' }, 400);
+        const str = (x, n) => typeof x === 'string' ? x.trim().slice(0, n) || null : null;
+        await env.DB.prepare('INSERT INTO feedback (created_at, area, screen, lang, device, message, contact) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)')
+          .bind(Date.now(), str(b.area, 40), str(b.screen, 20), str(b.lang, 5), DEVICE.test(b.device || '') ? b.device : null, message, str(b.contact, 200)).run();
+        return json({ ok:true });
+      }
       if (route === 'POST /api/report') {
         if (env.WRITES) {
           const { success } = await env.WRITES.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
@@ -471,11 +485,12 @@ async function planFromPoll(id, request, env){
 async function stats(url, env){
   const days = Math.min(Math.max(parseInt(url.searchParams.get('days'), 10) || 30, 1), 365);
   const since = new Date(Date.now() - (days - 1) * 86400000).toISOString().slice(0, 10);
-  const [byArea, byDay] = await env.DB.batch([
+  const [byArea, byDay, fb] = await env.DB.batch([
     env.DB.prepare('SELECT city, area, step, SUM(n) AS n FROM funnel WHERE day >= ?1 GROUP BY city, area, step').bind(since),
     env.DB.prepare('SELECT day, step, SUM(n) AS n FROM funnel WHERE day >= ?1 GROUP BY day, step ORDER BY day').bind(since),
+    env.DB.prepare('SELECT created_at, area, screen, lang, substr(device, 1, 6) AS who, message, contact FROM feedback ORDER BY created_at DESC LIMIT 200'),
   ]);
-  return json({ since, days, byArea:byArea.results, byDay:byDay.results });
+  return json({ since, days, byArea:byArea.results, byDay:byDay.results, feedback:fb.results });
 }
 
 async function listCuration(url, env){
