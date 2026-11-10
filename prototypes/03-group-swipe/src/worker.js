@@ -27,7 +27,7 @@ const VENUE_ID = /^[nwr]\d{1,12}$/;
 const MAX_IDS = 8;
 
 const STEPS = new Set(['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route', 'lock', 'join', 'rate',
-  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report']);
+  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report', 'sent', 'maps']);
 const TYPE_IDS = new Set(['pub', 'wine', 'rooftop', 'cheap', 'dinner', 'cocktail', 'games', 'live', 'comedy', 'karaoke', 'dance', 'latefood']);
 const DEVICE = /^[a-z0-9]{16,40}$/;
 const PLAN_ID = /^[a-z2-9]{6,10}$/;
@@ -355,6 +355,7 @@ async function getPlan(id, url, env){
     id, area:plan.area, city:plan.city, date:plan.date, start:plan.start_min, end:plan.end_min,
     stops:JSON.parse(plan.stops), title:plan.title, mine:plan.created_by === device,
     members:m.results.map(r => ({ name:r.name, me:r.device === device })),
+    host:(m.results.find(r => r.device === plan.created_by) || {}).name || null,    // the organiser's name, if they gave one
     tallies:Object.fromEntries(t.results.map(r => [r.venue_id, [r.up, r.down, r.closed]])),
     votes:Object.fromEntries(mine.results.map(r => [r.venue_id, r.vote])),
     tags:Object.fromEntries(mine.results.filter(r => r.tags).map(r => [r.venue_id, JSON.parse(r.tags)])),

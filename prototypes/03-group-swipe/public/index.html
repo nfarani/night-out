@@ -289,6 +289,12 @@
   .sheet-actions{ display:flex; gap:8px; margin-top:16px; }
   .sheet-actions .btn{ flex:1; height:44px; font-size:14px; }
   .btn.primary{ background:var(--text); color:var(--bg); border-color:var(--text); font-weight:600; }
+  .join-banner{ margin:16px 0 0; padding:16px; border-radius:14px; background:var(--card); border:1px solid color-mix(in srgb, var(--route) 60%, var(--line)); }
+  .join-banner b{ display:block; font:600 24px/1.1 var(--display); color:var(--text); }
+  .join-banner p{ margin:4px 0 12px; font-size:14px; color:var(--text-2); }
+  .join-banner form{ display:flex; gap:8px; }
+  .join-banner .field-input{ flex:1; min-width:0; }
+  .join-banner .btn{ height:44px; flex:0 0 auto; padding:0 18px; }
   .group{ background:var(--card); border:1px solid var(--line-2); border-radius:14px; padding:16px; margin:0 0 16px; }
   .group-title{ font:600 22px/1.1 var(--display); margin:0 0 4px; }
   .group .who{ font-size:14px; color:var(--text-2); margin:0; }
@@ -436,6 +442,7 @@
         <p class="weather" id="plan-weather" hidden></p>
         <h1 id="plan-area"></h1>
         <span class="hl" id="plan-title"></span>
+        <div class="join-banner" id="join-banner" hidden></div>
       </div>
       <div class="map-wrap">
         <div id="map"></div>
@@ -1315,14 +1322,21 @@
   }
   function renderGroup(){
     const el = $('group');
-    if (!group) { el.hidden = true; return; }
+    if (!group) { el.hidden = true; $('join-banner').hidden = true; return; }
     el.hidden = false;
     const names = group.members.map(m => esc(m.name) + (m.me ? ' ' + t('group.you') : ''));
     const started = nightStarted(group);
     el.innerHTML = '<p class="group-title">' + (started ? (isMember() ? t('group.rate') : t('group.how')) : t('group.plan')) + '</p>' +
       '<p class="who">' + (names.length ? t(names.length === 1 ? 'group.isIn' : 'group.areIn', { names:listText(names) }) : t('group.nobody')) + '</p>' +
-      (isMember() ? '' : '<form id="join-form"><input class="field-input" id="join-name" maxlength="30" autocomplete="given-name" placeholder="' + esc(t('aria.firstName')) + '" value="' +
-        esc(recall('no_name') || '') + '" required aria-label="' + esc(t('aria.firstName')) + '"><button class="btn primary" type="submit">' + (started ? t('group.joinToRate') : t('group.imIn')) + '</button></form>');
+      '';
+    // Not in the group yet: the first thing on the page asks you to join (who invited you, if we know).
+    const banner = $('join-banner');
+    banner.hidden = isMember();
+    banner.innerHTML = isMember() ? '' :
+      '<b>' + esc(group.mine ? t('group.plan') : group.host ? t('join.from', { name:group.host }) : t('join.generic')) + '</b>' +
+      '<p>' + esc(group.mine ? t('join.host') : t('join.ask')) + '</p>' +
+      '<form id="join-form"><input class="field-input" id="join-name" maxlength="30" autocomplete="given-name" placeholder="' + esc(t('aria.firstName')) + '" value="' +
+        esc(recall('no_name') || '') + '" required aria-label="' + esc(t('aria.firstName')) + '"><button class="btn primary" type="submit">' + (started ? t('group.joinToRate') : t('group.imIn')) + '</button></form>';
     const f = $('join-form');
     if (f) f.onsubmit = async e => {
       e.preventDefault();
@@ -1413,15 +1427,15 @@
     const text = shareMode === 'vote' ? t('vote.shareText', { day:dayLabel() }) : shareText();
     const follow = () => shareMode === 'vote' ? goToVote(shareUrl.split('/v/')[1]) : goToGroup(shareUrl.split('/p/')[1]);
     if (navigator.share) {
-      try { await navigator.share({ text, url:shareUrl }); $('share-sheet').close(); follow(); return; }
+      try { await navigator.share({ text, url:shareUrl }); track('sent'); $('share-sheet').close(); follow(); return; }
       catch (e) { if (e.name === 'AbortError') return; }
     }
-    try { await navigator.clipboard.writeText(text + '\n\n' + shareUrl); toast(t('toast.copied')); $('share-sheet').close(); follow(); }
+    try { await navigator.clipboard.writeText(text + '\n\n' + shareUrl); track('sent'); toast(t('toast.copied')); $('share-sheet').close(); follow(); }
     catch (e) { prompt(t('toast.copyPrompt'), shareUrl); }
   };
   $('share-copy').onclick = async () => {
     saveShareName();
-    try { await navigator.clipboard.writeText(shareUrl); toast(t('toast.linkCopied')); } catch (e) { prompt(t('toast.copyPrompt'), shareUrl); }
+    try { await navigator.clipboard.writeText(shareUrl); track('sent'); toast(t('toast.linkCopied')); } catch (e) { prompt(t('toast.copyPrompt'), shareUrl); }
     $('share-sheet').close();
     if (shareMode === 'vote') goToVote(shareUrl.split('/v/')[1]); else goToGroup(shareUrl.split('/p/')[1]);
   };
@@ -1891,7 +1905,7 @@
           (sig.reports[v.id] && !closed ? '<p class="hours unknown">'+esc(t('plan.reportedOne'))+'</p>' : '');
         body = cardTop(s, k) + '<h3>'+esc(v.name)+'</h3>' +
           (v.street ? '<p class="addr">'+esc(v.street)+'</p>' : '') + note + votes + hoursLine +
-          '<div class="actions"><a class="btn" href="'+esc(mapsLink(v))+'" target="_blank" rel="noopener">'+ICON_PIN+esc(t('plan.maps'))+'</a>' +
+          '<div class="actions"><a class="btn" data-maps href="'+esc(mapsLink(v))+'" target="_blank" rel="noopener">'+ICON_PIN+esc(t('plan.maps'))+'</a>' +
           (group ? '' : '<button class="btn" type="button" data-swap="'+k+'"'+(s.pinned ? ' disabled' : '')+'>'+ICON_SWAP+esc(t('plan.swap'))+'</button>' +
             '<button class="btn" type="button" data-menu="'+k+'" aria-label="'+esc(t('stop.options', { n:k + 1 }))+'">'+ICON_EDIT+esc(t('plan.editStop'))+'</button>' +
             (s.history && s.history.length ? '<button class="btn" type="button" data-back="'+k+'" title="'+esc(t('plan.backTitle'))+'">'+ICON_BACK+esc(t('plan.back'))+'</button>' : '')) +
@@ -1904,6 +1918,7 @@
     $('plan').innerHTML = html;
     $('plan').querySelectorAll('[data-swap]').forEach(b => b.onclick = () => swapStop(+b.dataset.swap).catch(e => toast(e.message)));
     $('plan').querySelectorAll('[data-back]').forEach(b => b.onclick = () => goBack(+b.dataset.back));
+    $('plan').querySelectorAll('[data-maps]').forEach(a => a.addEventListener('click', () => track('maps')));   // do people need more before trusting a stop?
     $('plan').querySelectorAll('[data-report]').forEach(b => b.onclick = () => askReport(+b.dataset.report));
     $('plan').querySelectorAll('[data-pin]').forEach(b => b.onclick = () => togglePin(+b.dataset.pin));
     $('plan').querySelectorAll('[data-menu]').forEach(b => b.onclick = () => openStop(+b.dataset.menu));

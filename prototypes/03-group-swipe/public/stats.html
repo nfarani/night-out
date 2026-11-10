@@ -72,7 +72,7 @@
 (() => {
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const STEPS = ['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route'];
+  const STEPS = ['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'sent', 'join', 'route', 'maps'];
   const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '–';
   const num = n => (n || 0).toLocaleString('en-GB');
   let cityNames = {}, areaNames = {};
@@ -88,9 +88,9 @@
     rows.forEach(r => (g[r[key]] = g[r[key]] || []).push(r));
     return Object.entries(g).map(([k, rs]) => [k, sum(rs)]);
   }
-  const HEAD = '<tr><th></th><th>Visits</th><th>New</th><th>Returning</th><th>Plans</th><th>Plans per visit</th><th>Sent to group</th><th>Send rate</th><th>Route opened</th><th>Route rate</th><th>Opened from a shared link</th><th>Swaps per plan</th><th>Edits per plan</th></tr>';
+  const HEAD = '<tr><th></th><th>Visits</th><th>New</th><th>Returning</th><th>Plans</th><th>Plans per visit</th><th>Tapped Send</th><th>Actually sent</th><th>Joined</th><th>Route opened</th><th>Route rate</th><th>Opened from a shared link</th><th>Swaps per plan</th><th>Edits per plan</th></tr>';
   const line = (label, t) => '<tr><td>'+label+'</td><td>'+num(t.visit)+'</td><td>'+num(t.new)+'</td><td>'+num(t.return)+'</td><td>'+num(t.plan)+'</td>' +
-    '<td>'+(t.visit ? (t.plan / t.visit).toFixed(1) : '–')+'</td><td>'+num(t.share)+'</td><td>'+pct(t.share, t.plan)+'</td><td>'+num(t.route)+'</td><td>'+pct(t.route, t.plan)+'</td>' +
+    '<td>'+(t.visit ? (t.plan / t.visit).toFixed(1) : '–')+'</td><td>'+num(t.share)+'</td><td>'+num(t.sent)+'</td><td>'+num(t.join)+'</td><td>'+num(t.route)+'</td><td>'+pct(t.route, t.plan)+'</td>' +
     '<td>'+num(t.open_shared)+'</td><td>'+(t.plan ? (t.swap / t.plan).toFixed(1) : '–')+'</td><td>'+(t.plan ? (t.edit / t.plan).toFixed(1) : '–')+'</td></tr>';
 
   async function load(){
@@ -108,9 +108,11 @@
     $('kpis').innerHTML =
       kpi(num(t.visit), 'Visits', num(t.new) + ' new, ' + num(t.return) + ' returning') +
       kpi(num(t.plan), 'Plans made', t.visit ? (t.plan / t.visit).toFixed(1) + ' per visit' : '') +
-      kpi(pct(t.share, t.plan), 'Plans sent to a group', num(t.share) + (t.share === 1 ? ' send' : ' sends')) +
+      kpi(pct(t.sent, t.plan), 'Plans actually sent', num(t.sent) + ' sent, from ' + num(t.share) + ' taps on Send') +
+      kpi(num(t.join), 'Friends who joined a group', 'by adding their name') +
       kpi(pct(t.route, t.plan), 'Plans with the route opened', num(t.route) + (t.route === 1 ? ' route' : ' routes')) +
-      kpi(num(t.open_shared), 'Opened from a shared link', 'people who got a plan from a friend');
+      kpi(num(t.open_shared), 'Opened from a shared link', 'people who got a plan from a friend') +
+      kpi(t.plan ? (t.maps / t.plan).toFixed(1) : '–', 'Maps taps per plan', 'high means people want more before trusting a stop');
 
     $('cities').innerHTML = HEAD + group(d.byArea, 'city').sort((a, b) => b[1].visit - a[1].visit)
       .map(([c, t]) => line(esc(cityNames[c] || c), t)).join('') || '<tr><td>No data yet</td></tr>';

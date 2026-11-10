@@ -7,6 +7,10 @@ root.LANGS = [['en', 'EN', 'English', '🇬🇧'], ['fr', 'FR', 'Français', '�
 
 root.I18N = {
   en: {
+    'join.from': "{name} invited you to a night out",
+    'join.generic': "You’ve been invited to a night out",
+    'join.ask': "Are you in? Add your name so the group knows.",
+    'join.host': "Add your name so your friends see you’re in.",
     'fb.link': "Feedback",
     'fb.prompt': "Something wrong or missing? Tell us",
     'fb.title': "Tell us",
@@ -169,6 +173,10 @@ root.I18N = {
   },
 
   fr: {
+    'join.from': "{name} vous invite à une soirée",
+    'join.generic': "Vous êtes invité à une soirée",
+    'join.ask': "Vous venez ? Ajoutez votre prénom pour que le groupe le sache.",
+    'join.host': "Ajoutez votre prénom pour que vos amis voient que vous venez.",
     'fb.link': "Votre avis",
     'fb.prompt': "Un problème ou une idée ? Dites-le-nous",
     'fb.title': "Dites-nous",
@@ -331,6 +339,10 @@ root.I18N = {
   },
 
   es: {
+    'join.from': "{name} te ha invitado a salir",
+    'join.generic': "Te han invitado a salir",
+    'join.ask': "¿Te apuntas? Pon tu nombre para que el grupo lo sepa.",
+    'join.host': "Pon tu nombre para que tus amigos vean que vas.",
     'fb.link': "Opinión",
     'fb.prompt': "¿Algo falla o falta? Cuéntanoslo",
     'fb.title': "Cuéntanos",
@@ -493,6 +505,10 @@ root.I18N = {
   },
 
   it: {
+    'join.from': "{name} ti ha invitato a una serata",
+    'join.generic': "Sei invitato a una serata",
+    'join.ask': "Ci sei? Aggiungi il tuo nome così il gruppo lo sa.",
+    'join.host': "Aggiungi il tuo nome così i tuoi amici vedono che ci sei.",
     'fb.link': "Feedback",
     'fb.prompt': "Qualcosa non va o manca? Diccelo",
     'fb.title': "Diccelo",
@@ -655,6 +671,10 @@ root.I18N = {
   },
 
   pt: {
+    'join.from': "{name} te convidou para sair",
+    'join.generic': "Você foi convidado para sair",
+    'join.ask': "Vai? Coloque seu nome para o grupo saber.",
+    'join.host': "Coloque seu nome para seus amigos verem que você vai.",
     'fb.link': "Feedback",
     'fb.prompt': "Algo errado ou faltando? Conta pra gente",
     'fb.title': "Conta pra gente",
