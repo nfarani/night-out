@@ -107,6 +107,22 @@ Idea 10 Nov 2026: don't depend on selling to a publisher; build revenue. The tes
 
 **Suggested order:** now 1 + 2 → next 3 + 4 → later 6, 7, 8 → much later 5 at scale, 9–11. The publisher sale stays as an exit; revenue makes that conversation stronger.
 
+## Data quality and photos
+
+**Closed places** (11 Nov 2026): explicitly closed venues are filtered, and anyone can report "Closed for good?" (hidden for them at once, for everyone after two reports). Next step:
+- [ ] **Cross-check with Overture Maps** (free open places data from Meta, Microsoft, Amazon and others): match our venues by name and distance; drop those Overture marks `permanently_closed` and treat very low "confidence" as a warning. Its `operating_status` field was launched with every place set to "open" and is being filled in over time, so test on London first. Check the data licence before relying on it
+
+**Photos** (idea 11 Nov 2026). Photos help people decide, but patchy photos look worse than none, and Google's photos cost money per view and their terms restrict storing them.
+
+| Step | Source | Coverage | Cost |
+|---|---|---|---|
+| 1 | **Wikimedia Commons** photos of well-known places (via their Wikidata entry), with the required photographer credit | only notable places, roughly the ones with the "well-known" boost | free |
+| 2 | **People's own photos after the night**, added with their rating | grows with use; needs moderation and storage (Cloudflare R2, about free at this scale) | small |
+| 3 | **Venues add their own** photos, as part of venue subscriptions | best quality, only paying venues | they pay you |
+| — | Google Places photos | complete | paid per photo shown; restricted. Only if a backer pays |
+
+Not doing: copying photos from venue websites or Instagram (copyright).
+
 ## Accounts (later, "Plan C")
 
 No accounts yet, deliberately: sign-up kills the group loop, and accounts mean storing emails and naming the operator (you or a company) on the privacy page.
