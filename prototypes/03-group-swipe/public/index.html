@@ -329,7 +329,7 @@
           <button class="btn" id="add-stop" type="button">+ Add a stop</button>
           <button class="btn" id="edit-stops" type="button" aria-pressed="false">Edit stops</button>
         </div>
-        <p class="credit">Venue data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@getowlabout.com">Contact</a></p>
+        <p class="credit">Venue data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · <a href="/neighbourhoods">All neighbourhoods</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@getowlabout.com">Contact</a></p>
       </div>
       <div class="bar">
         <a class="btn" id="route" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5"/></svg>Route</a>
@@ -369,7 +369,7 @@
       </div>
 
       <button class="cta" id="about-go" type="button">Plan a night</button>
-      <p class="credit"><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@getowlabout.com">hello@getowlabout.com</a></p>
+      <p class="credit"><a href="/neighbourhoods">All neighbourhoods</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@getowlabout.com">hello@getowlabout.com</a></p>
     </div>
   </section>
 </div>
@@ -1281,6 +1281,8 @@
     track('visit');
     if (!first) { remember('no_first', today); track('new'); }
     else if (first !== today && lastReturn !== today) { remember('no_return', today); track('return'); }
+    // Offline support: plans you've opened keep working without signal (see sw.js).
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('/sw.js').catch(() => {});
   }).catch(e => { $('s-home').innerHTML = '<p class="home empty">'+esc(e.message)+'</p>'; });
 })();
 </script>

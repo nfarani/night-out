@@ -9,7 +9,8 @@
     "research": "node scripts/research-area.mjs",
     "db:migrate": "wrangler d1 migrations apply night-out --remote",
     "research:all": "node scripts/research-all.mjs",
-    "check-areas": "node scripts/check-areas.mjs"
+    "check-areas": "node scripts/check-areas.mjs",
+    "pages": "node scripts/build-pages.mjs"
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
