@@ -110,6 +110,7 @@
   .pick:hover, .pick:focus-within{ background:var(--card); }
   .pick span{ text-decoration:underline dotted; text-decoration-thickness:.06em; text-underline-offset:.14em; text-decoration-color:color-mix(in srgb, currentColor 50%, transparent); }
   .pick.accent{ color:var(--red); }
+  .city-line{ font:600 28px/1 var(--display); color:var(--text-2); margin:-8px 0 20px; }
   .pick svg{ width:.42em; height:.42em; flex:0 0 .42em; opacity:.75; margin-top:.06em; }
   .pick select{ position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
   .lede{ font-size:15px; line-height:22px; color:var(--text-2); max-width:34rem; margin:0; }
@@ -307,6 +308,7 @@
           <label class="pick"><span id="day-label">Tonight</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="day" aria-label="Change the day" title="Change the day"></select></label>
           <span data-t="home.in">in</span> <label class="pick accent"><span id="area-label">Soho</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="area" aria-label="Change the area" title="Change the area"></select></label>
         </h1>
+        <p class="city-line"><label class="pick"><span id="city-label">London</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="city" aria-label="Change the city" title="Change the city" data-t-aria="aria.city"></select></label></p>
         <p class="lede" data-t="home.lede">A timed night out where every stop is a short walk from the last, checked against opening hours where we have them</p>
       </div>
 
@@ -1290,6 +1292,8 @@
     $('area').innerHTML = groups.map(([label, list]) => '<optgroup label="'+esc(label)+'">' + list.map(opt).join('') + '</optgroup>').join('') +
       '<optgroup label="'+esc(t('home.other'))+'"><option value="@here">'+esc(t('home.nearMe'))+'</option><option value="@new">'+esc(t('home.somewhereNew'))+'</option></optgroup>' +
       '<optgroup label="'+esc(t('home.otherCities'))+'">' + CITIES.filter(c => c.id !== city.id).map(c => '<option value="@city:'+c.id+'">'+esc(cityName(c))+'</option>').join('') + '</optgroup>';
+    $('city-label').textContent = cityName(city);
+    $('city').innerHTML = CITIES.map(c => '<option value="'+c.id+'"'+(c.id === city.id ? ' selected' : '')+'>'+esc(cityName(c))+'</option>').join('');
     $('ready-title').textContent = t('home.readyIn', { area:form.area.name + (city.id === 'london' ? '' : ', ' + cityName(city)) });
 
     const card = (p, i) => '<button type="button" class="preset" data-i="'+i+'">' + miniMap(p.n, p.name, p.start, p.end) +
@@ -1319,6 +1323,10 @@
     if (cityChanged) form.day = todayIdx();          // "tonight" follows the city's time zone
     renderHeader(); saveHome();
   }
+  $('city').onchange = e => {
+    const c = CITIES.find(x => x.id === e.target.value);
+    setArea(AREAS.find(a => a.id === c.default) || AREAS.find(a => (a.city || 'london') === c.id));
+  };
   $('day').onchange = e => { form.day = +e.target.value; renderHeader(); saveHome(); };
   $('area').onchange = e => {
     const v = e.target.value;
@@ -1574,6 +1582,7 @@
     applyStatic();
     $('lang').value = lang;
     $('explorers-p').textContent = t('about.explorersP', { areas:AREAS.length, cities:CITIES.length });
+    if (!/^\/(p|v)\//.test(location.pathname)) document.title = 'Owlabout · ' + t('title.tag');   // plan/vote pages keep their own
   }
   function setLang(l){
     lang = l;

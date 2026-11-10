@@ -6,6 +6,7 @@ root.LANGS = [['en', 'EN', 'English'], ['fr', 'FR', 'Français'], ['es', 'ES', '
 
 root.I18N = {
   en: {
+    'aria.city': "Change the city", 'title.tag': "Shall we go?",
     'vote.wants.one': "{n} wants {type}",
     'vote.ask': "Ask the group first",
     'vote.setupTitle': "Ask the group",
@@ -117,6 +118,7 @@ root.I18N = {
   },
 
   fr: {
+    'aria.city': "Changer de ville", 'title.tag': "On y va ?",
     'vote.wants.one': "{n} veut : {type}",
     'vote.ask': "Demander au groupe d’abord",
     'vote.setupTitle': "Demander au groupe",
@@ -228,6 +230,7 @@ root.I18N = {
   },
 
   es: {
+    'aria.city': "Cambiar de ciudad", 'title.tag': "¿Vamos?",
     'vote.wants.one': "{n} quiere: {type}",
     'vote.ask': "Pregunta al grupo primero",
     'vote.setupTitle': "Pregunta al grupo",
@@ -339,6 +342,7 @@ root.I18N = {
   },
 
   it: {
+    'aria.city': "Cambia città", 'title.tag': "Andiamo?",
     'vote.wants.one': "{n} vuole: {type}",
     'vote.ask': "Chiedi prima al gruppo",
     'vote.setupTitle': "Chiedi al gruppo",
@@ -450,6 +454,7 @@ root.I18N = {
   },
 
   pt: {
+    'aria.city': "Mudar de cidade", 'title.tag': "Bora?",
     'vote.wants.one': "{n} quer: {type}",
     'vote.ask': "Pergunte ao grupo antes",
     'vote.setupTitle': "Pergunte ao grupo",
