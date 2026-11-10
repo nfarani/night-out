@@ -63,19 +63,20 @@
 
   /* ---------- top ---------- */
   .top{ display:flex; align-items:center; justify-content:space-between; gap:16px; height:64px; padding:0 20px; border-bottom:1px solid var(--line); }
-  .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); letter-spacing:.01em; background:none; border:none; padding:0; cursor:pointer; color:var(--text); }
+  .logo{ display:flex; align-items:center; gap:8px; font:600 22px/1 var(--display); letter-spacing:.01em; background:none; border:none; padding:8px 0; min-height:44px; cursor:pointer; color:var(--text); }
   .logo img{ width:28px; height:28px; }
 
   .top-right{ display:flex; align-items:center; gap:16px; }
   .note{ display:none; font-size:12px; color:var(--muted); }
   /* Language: globe + flag + code on the button (the select sits invisibly on top), flags and native names in the menu. */
-  .lang-pick{ position:relative; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 10px; border:1px solid var(--line-2); border-radius:999px;
+  .lang-pick{ position:relative; display:inline-flex; align-items:center; gap:6px; height:40px; padding:0 10px; border:1px solid var(--line-2); border-radius:999px;
     color:var(--text); font-size:13px; font-weight:600; cursor:pointer; transition:border-color .15s var(--ease); }
+  .lang-pick{ white-space:nowrap; flex:0 0 auto; }
   .lang-pick:hover{ border-color:rgba(239,233,222,.24); }
   .lang-pick .globe{ width:16px; height:16px; color:var(--text-2); }
   .lang-pick .chev{ width:12px; height:12px; color:var(--text-2); }
   .lang-pick select{ position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
-  .nav-link{ background:none; border:none; padding:0; font-size:14px; color:var(--text-2); cursor:pointer; transition:color .15s var(--ease); }
+  .nav-link{ display:inline-flex; align-items:center; min-height:44px; background:none; border:none; padding:0 4px; font-size:14px; color:var(--text-2); cursor:pointer; transition:color .15s var(--ease); }
   .nav-link:hover, .nav-link.on{ color:var(--text); }
 
   /* ---------- about ---------- */
@@ -119,6 +120,28 @@
   .area-link{ margin:-8px 0 16px; font-size:15px; font-weight:500; }
   .area-link a{ color:var(--route); text-decoration:none; }
   .area-link a:hover{ text-decoration:underline; }
+  .foot-about{ display:none; }
+  @media (max-width:560px){
+    .top{ gap:8px; padding:0 16px; }
+    .top-right{ gap:8px; }
+    #about-link{ display:none; }
+    .foot-about{ display:inline; }
+    .nav-link{ font-size:13px; }
+  }
+  /* Phones: a narrower time column, card buttons share a row, tools fill the width. */
+  @media (max-width:480px){
+    .stop{ grid-template-columns:44px 22px 1fr; column-gap:8px; }
+    .card{ padding:14px; }
+    .actions .btn{ flex:1 1 auto; padding:0 10px; white-space:nowrap; }
+    .stops .plan-tools{ margin-left:0; }
+    .plan-tools .btn{ flex:1; padding:0 10px; white-space:nowrap; }
+  }
+  @media (max-width:380px){
+    .bar #route{ flex:0 0 44px; padding:0; }
+    .bar #route span{ display:none; }
+    .lang-pick .globe{ display:none; }
+    .lang-pick{ padding:0 8px; }
+  }
   .home-foot{ order:3; grid-column:1 / -1; font-size:12px; color:var(--muted); margin:0; }   /* last on phones (see .ready/.builder order) and on wide screens */
   .home-foot a{ color:var(--text-2); }
   /* City bar: the first choice, above everything else on home. Scrolls sideways on phones. */
@@ -166,7 +189,7 @@
   .chip:hover{ color:var(--text); }
   .chip.on{ background:var(--text); color:var(--bg); border-color:var(--text); }
   .seg{ display:flex; gap:4px; padding:4px; background:var(--bg); border:1px solid var(--line); border-radius:10px; }
-  .seg button{ flex:1; height:32px; border:none; background:none; border-radius:6px; font-size:13px; font-weight:500; color:var(--text-2); cursor:pointer; font-variant-numeric:tabular-nums; transition:background-color .15s var(--ease), color .15s var(--ease); }
+  .seg button{ flex:1; height:40px; border:none; background:none; border-radius:6px; font-size:13px; font-weight:500; color:var(--text-2); cursor:pointer; font-variant-numeric:tabular-nums; transition:background-color .15s var(--ease), color .15s var(--ease); }
   .seg button.on{ background:var(--raised); color:var(--text); box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
   .cta{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; height:48px; border:none; border-radius:10px; background:var(--text); color:var(--bg); font-size:15px; font-weight:600; cursor:pointer; text-decoration:none; transition:background-color .15s var(--ease); }
   .cta:hover{ background:#fff; }
@@ -175,7 +198,7 @@
   /* ---------- plan ---------- */
   .plan{ padding:24px 20px 96px; display:grid; grid-template-columns:minmax(0,1fr); gap:24px; grid-template-areas:"head" "map" "stops" "bar"; }
   .plan-head{ grid-area:head; }
-  .back{ display:inline-flex; align-items:center; gap:8px; background:none; border:none; padding:0; font-size:14px; color:var(--text-2); cursor:pointer; margin:0 0 24px; }
+  .back{ display:inline-flex; align-items:center; gap:8px; background:none; border:none; padding:12px 0; min-height:44px; font-size:14px; color:var(--text-2); cursor:pointer; margin:-12px 0 12px; }
   .back:hover{ color:var(--text); }
   .kicker{ font-size:13px; color:var(--text-2); margin:0 0 8px; font-variant-numeric:tabular-nums; }
   .plan-head h1{ font:600 64px/.95 var(--display); letter-spacing:-.02em; margin:0 0 12px; }
@@ -186,7 +209,7 @@
 
   .stops{ grid-area:stops; }
   .stop{ display:grid; grid-template-columns:48px 24px 1fr; column-gap:12px; }
-  .stop .time{ font:500 20px/24px var(--display); font-variant-numeric:tabular-nums; padding-top:16px; text-align:right; }
+  .stop .time{ font:500 20px/24px var(--display); font-variant-numeric:tabular-nums; }
   .stop .rail{ display:flex; flex-direction:column; align-items:center; padding-top:16px; }
   .pin-n{ width:24px; height:24px; border-radius:50%; background:var(--red); color:#fff; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center; flex:0 0 24px; }
   .pin-n.none{ background:var(--raised); color:var(--muted); }
@@ -203,17 +226,53 @@
   .hours.open{ color:var(--ok); }
   .hours.unknown{ color:var(--warn); }
   .actions{ display:flex; gap:8px; flex-wrap:wrap; }
-  .edit-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
   .btn[disabled]{ opacity:.35; cursor:default; }
   .btn.danger{ color:var(--red); }
   .plan-tools{ display:flex; gap:8px; margin:8px 0 0 84px; }
-  .plan-tools .btn{ height:40px; }
-  .plan-tools .btn.on{ background:var(--text); color:var(--bg); border-color:var(--text); }
-  dialog.sheet{ width:min(28rem, calc(100vw - 32px)); background:var(--card); color:var(--text); border:1px solid var(--line-2); border-radius:16px; padding:20px; }
+  .plan-tools .btn{ height:44px; padding:0 16px; }
+  /* Stop card: kind + pin + options on top, then the place, then actions. Time on the left is a button. */
+  .stop .time{ background:none; border:none; padding:16px 0 0; color:var(--text); text-align:right; cursor:pointer;
+    text-decoration:underline dotted; text-decoration-color:var(--muted); text-underline-offset:4px; min-height:44px; align-self:start; }
+  .stop .time[disabled]{ cursor:default; text-decoration:none; }
+  .card-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin:-6px -6px 2px 0; }
+  .card-top .type{ margin:0; }
+  .card-icons{ display:flex; gap:2px; }
+  .icon-btn{ width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border:none; background:none; border-radius:10px; color:var(--muted); cursor:pointer; }
+  .icon-btn:hover{ background:var(--raised); color:var(--text); }
+  .icon-btn svg{ width:20px; height:20px; }
+  .icon-btn[aria-pressed="true"]{ color:var(--route); }
+  .card.pinned{ border-color:color-mix(in srgb, var(--route) 55%, var(--line)); }
+  .pinned-note{ display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:600; color:var(--route); margin:0 0 8px; }
+  .pinned-note svg{ width:14px; height:14px; }
+  .actions .btn{ height:40px; }
+  /* Sheets: centred dialogs on wide screens, bottom sheets on phones. */
+  dialog.sheet{ width:min(28rem, calc(100vw - 32px)); max-height:min(85vh, 760px); overflow:auto; background:var(--card); color:var(--text); border:1px solid var(--line-2); border-radius:16px; padding:20px; }
+  dialog.sheet h2:focus{ outline:none; }
+  .sheet-list{ display:flex; flex-direction:column; gap:8px; }
+  .sheet-list .btn{ width:100%; height:48px; justify-content:flex-start; font-size:15px; padding:0 16px; }
+  .sheet-row{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .sheet-row .btn{ height:48px; font-size:15px; }
+  .stepper{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; margin:0 0 16px; border:1px solid var(--line-2); border-radius:12px; background:var(--bg); }
+  .stepper b{ font:500 32px/1 var(--display); font-variant-numeric:tabular-nums; }
+  .stepper .btn{ width:48px; height:48px; font-size:22px; padding:0; }
+  .pick-search{ margin:0 0 12px; }
+  .pick-types{ display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin:0 0 12px; scrollbar-width:none; }
+  .pick-types::-webkit-scrollbar{ display:none; }
+  .pick-types .chip{ flex:0 0 auto; }
+  .pick-list{ list-style:none; margin:0; padding:0; }
+  .pick-list button{ display:block; width:100%; text-align:left; padding:12px 4px; background:none; border:none; border-top:1px solid var(--line); color:var(--text); cursor:pointer; }
+  .pick-list button:hover{ background:var(--raised); }
+  .pick-list b{ display:block; font:600 20px/1.2 var(--display); }
+  .pick-list span{ display:block; font-size:13px; color:var(--text-2); margin-top:2px; }
+  .pick-list .here{ color:var(--route); }
+  @media (max-width:640px){
+    dialog.sheet{ width:100%; max-width:none; margin:auto 0 0; border-radius:18px 18px 0 0; border-bottom:none;
+      padding:20px 16px calc(20px + env(safe-area-inset-bottom)); max-height:88vh; }
+  }
   dialog.sheet::backdrop{ background:rgba(0,0,0,.6); }
   dialog.sheet h2{ font:600 26px/1.1 var(--display); margin:0 0 4px; }
   dialog.sheet p{ font-size:14px; color:var(--text-2); margin:0 0 16px; }
-  dialog.sheet .close{ margin-top:16px; width:100%; }
+  dialog.sheet .close{ margin-top:16px; width:100%; height:48px; font-size:15px; }
   dialog.sheet .link{ font-size:14px; color:var(--route); word-break:break-all; margin:0 0 16px; }
   dialog.sheet label{ display:block; font-size:13px; color:var(--text-2); margin:0 0 6px; }
   .field-input{ width:100%; height:44px; padding:0 12px; border:1px solid var(--line-2); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; font-size:16px; }
@@ -260,7 +319,7 @@
   .credit{ font-size:12px; color:var(--muted); margin:16px 0 0; }
 
   .bar{ grid-area:bar; position:sticky; bottom:calc(16px + env(safe-area-inset-bottom)); display:flex; gap:8px; padding:8px; background:rgba(28,26,24,.94); border:1px solid var(--line-2); border-radius:14px; z-index:500; }
-  .bar .btn{ flex:1; height:44px; font-size:14px; }
+  .bar .btn{ flex:1; height:44px; font-size:14px; white-space:nowrap; padding:0 10px; }
   .bar .primary{ flex:1.4; background:var(--text); color:var(--bg); border-color:var(--text); font-weight:600; }
   .bar .primary:hover{ background:#fff; }
   .bar .square{ flex:0 0 44px; padding:0; }
@@ -300,7 +359,7 @@
     .bar{ position:static; background:none; border:none; padding:0; max-width:480px; }
   }
 
-  .toast{ position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom)); transform:translate(-50%, 8px); opacity:0; background:var(--text); color:var(--bg); padding:12px 16px; border-radius:10px; font-size:14px; font-weight:500; transition:opacity .2s var(--ease), transform .2s var(--ease); z-index:1000; max-width:90vw; pointer-events:none; }
+  .toast{ position:fixed; left:50%; top:calc(76px + env(safe-area-inset-top)); max-width:calc(100vw - 32px); width:max-content; text-align:center; z-index:1000; transform:translate(-50%, -8px); opacity:0; background:var(--text); color:var(--bg); padding:12px 16px; border-radius:10px; font-size:14px; font-weight:500; transition:opacity .2s var(--ease), transform .2s var(--ease); z-index:1000; max-width:90vw; pointer-events:none; }
   .toast.show{ transform:translate(-50%, 0); opacity:1; }
 
   .leaflet-container{ background:#191817; font-family:Inter,sans-serif; }
@@ -354,7 +413,7 @@
         <div class="section-head"><h2 id="ready-title">Ready-made nights</h2><span data-t="home.readySub">Tap one to plan it</span></div>
         <div class="presets" id="presets"></div>
       </div>
-      <p class="home-foot"><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com" data-t="link.contact">Contact</a></p>
+      <p class="home-foot"><span class="foot-about"><a href="#about" id="foot-about" data-t="nav.about">About</a> · </span><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com" data-t="link.contact">Contact</a></p>
     </div>
   </section>
 
@@ -377,7 +436,6 @@
         <div id="plan"></div>
         <div class="plan-tools" id="plan-tools">
           <button class="btn" id="add-stop" type="button" data-t="plan.add">+ Add a stop</button>
-          <button class="btn" id="edit-stops" type="button" aria-pressed="false">Edit stops</button>
           <button class="btn" id="times-btn" type="button" data-t="plan.times">Times</button>
         </div>
         <p class="credit"><span data-t="link.venueData">Venue data</span> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · <a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com" data-t="link.contact">Contact</a></p>
@@ -445,7 +503,7 @@
 </div>
 <div class="toast" id="toast"></div>
 <dialog class="sheet" id="share-sheet">
-  <h2 data-t="share.title">Your group link</h2>
+  <h2 tabindex="-1" data-t="share.title">Your group link</h2>
   <p data-t="share.intro">Friends open it, add their name, and everyone sees the same plan. After the night they can say if they'd go back.</p>
   <p class="link" id="share-link"></p>
   <label for="share-name" data-t="share.label">Your name, so the group sees you're in</label>
@@ -457,19 +515,19 @@
   <button class="btn close" type="button" id="share-close" data-t="share.close">Close</button>
 </dialog>
 <dialog class="sheet" id="vote-sheet">
-  <h2 data-t="vote.setupTitle">Ask the group</h2>
+  <h2 tabindex="-1" data-t="vote.setupTitle">Ask the group</h2>
   <p data-t="vote.setupSub">Pick up to three neighbourhoods.</p>
   <p class="label" data-t="vote.areas">Neighbourhoods (up to 3)</p>
   <div class="chips" id="vote-setup-areas"></div>
   <p class="label" style="margin-top:16px" data-t="vote.start">Starting</p>
-  <div class="seg" id="vote-setup-start"></div>
+  <select class="field-input" id="vote-setup-start" aria-label="Starting" data-t-aria="vote.start"></select>
   <div class="sheet-actions">
     <button class="btn" type="button" id="vote-setup-cancel" data-t="sheet.cancel">Cancel</button>
     <button class="btn primary" type="button" id="vote-setup-go" data-t="vote.create">Create the vote</button>
   </div>
 </dialog>
 <dialog class="sheet" id="times-sheet">
-  <h2 data-t="times.title">Change the times</h2>
+  <h2 tabindex="-1" data-t="times.title">Change the times</h2>
   <p data-t="times.sub">Move the whole night, or nudge a single stop</p>
   <div class="times-pair">
     <div><label class="label" for="times-start" data-t="times.start">Starting</label><select class="field-input" id="times-start"></select></div>
@@ -479,8 +537,32 @@
   <div id="times-stops"></div>
   <button class="btn close" type="button" id="times-done" data-t="times.done">Done</button>
 </dialog>
+<dialog class="sheet" id="stop-sheet">
+  <h2 id="stop-sheet-title" tabindex="-1">Stop</h2>
+  <p id="stop-sheet-place"></p>
+  <p class="label" data-t="stop.time">Time</p>
+  <div class="stepper"><button class="btn" type="button" id="stop-earlier-time" data-t-aria="times.earlier">−</button><b id="stop-time">19:00</b><button class="btn" type="button" id="stop-later-time" data-t-aria="times.later">+</button></div>
+  <div class="sheet-list">
+    <button class="btn" type="button" id="stop-choose" data-t="stop.choose">Choose a place</button>
+    <button class="btn" type="button" id="stop-kind" data-t="stop.kind">Change the kind of place</button>
+  </div>
+  <div class="sheet-row">
+    <button class="btn" type="button" id="stop-up" data-t="stop.earlier">Move earlier</button>
+    <button class="btn" type="button" id="stop-down" data-t="stop.later">Move later</button>
+  </div>
+  <div class="sheet-list" style="margin-top:8px"><button class="btn danger" type="button" id="stop-remove" data-t="stop.remove">Remove this stop</button></div>
+  <button class="btn close" type="button" id="stop-close" data-t="times.done">Done</button>
+</dialog>
+<dialog class="sheet" id="pick-sheet">
+  <h2 tabindex="-1" data-t="pick.title">Pick a place</h2>
+  <p id="pick-sub"></p>
+  <div class="pick-types" id="pick-types"></div>
+  <input class="field-input pick-search" id="pick-search" type="search" autocomplete="off" data-t-ph="pick.search" placeholder="Search by name">
+  <ul class="pick-list" id="pick-list"></ul>
+  <button class="btn close" type="button" id="pick-close" data-t="sheet.cancel">Cancel</button>
+</dialog>
 <dialog class="sheet" id="type-sheet">
-  <h2 id="type-sheet-title">Add a stop</h2>
+  <h2 id="type-sheet-title" tabindex="-1">Add a stop</h2>
   <p id="type-sheet-sub">What kind of place?</p>
   <div class="chips" id="type-sheet-chips"></div>
   <button class="btn close" type="button" id="type-sheet-close" data-t="sheet.cancel">Cancel</button>
@@ -762,8 +844,10 @@
   function slots(ts){
     if (form.times && form.times.length === ts.length)
       return ts.map((type, k) => ({ type, from:form.times[k], to:k + 1 < ts.length ? form.times[k + 1] : form.end }));
-    const step = (form.end - form.start) / ts.length;
-    return ts.map((type, k) => ({ type, from: Math.round(form.start + k * step), to: Math.round(form.start + (k + 1) * step) }));
+    // Even spread, rounded to quarter hours so times read like 20:30, not 20:36 (5 minutes if stops are packed tight).
+    const step = (form.end - form.start) / ts.length, unit = step >= 30 ? 15 : 5;
+    const at = k => k === 0 ? form.start : k === ts.length ? form.end : form.start + Math.round(k * step / unit) * unit;
+    return ts.map((type, k) => ({ type, from:at(k), to:at(k + 1) }));
   }
 
   async function buildPlan(push){
@@ -795,8 +879,9 @@
   }
 
   async function swapStop(k){
-    const venues = await loadAreaWithSignals(form.area.id);
     const s = plan[k];
+    if (s.pinned) { toast(t('toast.pinnedSwap')); return; }
+    const venues = await loadAreaWithSignals(form.area.id);
     const used = new Set(plan.filter((x, i) => i !== k && x.venue).map(x => x.venue.id));
     const prev = plan.slice(0, k).reverse().find(x => x.venue);
     let alt = bestVenue(venues, s.type, s.from, s.to, prev && prev.venue, new Set([...used, ...s.seen]));
@@ -813,6 +898,7 @@
     }
     if (s.venue) sendEvent({ step:'swap', swapped:[s.venue.id], shown:[alt.id] });
     markSeen([alt.id]);
+    if (s.venue) s.history = (s.history || []).concat(s.venue);
     s.venue = alt;
     s.seen.add(alt.id);
     writeHash(true);
@@ -873,10 +959,24 @@
     el.hidden = false;
   }
 
-  // ---------- editing a plan: remove, reorder, change a stop's type, add one ----------
-  // Times are spread evenly over the evening again after every edit; venues stay put
-  // unless the stop itself changed. The edited shape travels in the link (st=).
-  let editing = false;
+  // ---------- sheets ----------
+  // Focus goes to the sheet's heading, never its first input (phones would open a dropdown
+  // or keyboard straight away), and the page is put back where it was when the sheet closes.
+  let sheetScroll = 0;
+  function openSheet(el){
+    sheetScroll = window.scrollY;
+    if (el.showModal) el.showModal(); else el.setAttribute('open', '');
+    const h = el.querySelector('h2');
+    if (h) h.focus({ preventScroll:true });
+  }
+  document.querySelectorAll('dialog.sheet').forEach(d => {
+    d.addEventListener('close', () => { if (Math.abs(window.scrollY - sheetScroll) > 2) window.scrollTo(0, sheetScroll); });
+    d.addEventListener('click', e => { if (e.target === d) d.close(); });          // tap outside to close
+  });
+
+  // ---------- editing a plan: each stop has its own controls ----------
+  // Times are spread evenly over the evening again after a stop is added or removed; venues
+  // stay put unless the stop itself changed. The edited shape travels in the link (st=, tm=, pn=).
   function retime(){
     if (form.times && form.times.length !== plan.length) form.times = null;   // stops added or removed: spread evenly again
     const sl = slots(plan.map(x => x.type));
@@ -928,9 +1028,113 @@
       edited();
       if (!plan[k].venue) toast(t('toast.nothingThen', { type:type.name.toLowerCase(), area:form.area.name }));
     });
-    if (sheet.showModal) sheet.showModal(); else sheet.setAttribute('open', '');
+    openSheet(sheet);
   }
   $('type-sheet-close').onclick = () => $('type-sheet').close();
+
+  // ---------- one stop's options: time, pick a place, change kind, move, remove ----------
+  let sheetStop = 0;
+  function nudgeStop(k, by){
+    form.times = plan.map(x => x.from);
+    form.times[k] += by;
+    if (k === 0) form.start = form.times[0];
+    retime(); writeHash(true); renderPlan(true); track('edit');
+  }
+  const stopBounds = k => [k ? plan[k - 1].from + 15 : 0, (k + 1 < plan.length ? plan[k + 1].from : form.end) - 15];
+  function renderStopSheet(){
+    const k = sheetStop, x = plan[k];
+    if (!x) { $('stop-sheet').close(); return; }
+    const [lo, hi] = stopBounds(k);
+    $('stop-sheet-title').textContent = t('stop.title', { n:k + 1, type:x.type.name });
+    $('stop-sheet-place').textContent = x.venue ? x.venue.name : '';
+    $('stop-time').textContent = clock(x.from);
+    $('stop-earlier-time').disabled = x.from - 15 < lo;
+    $('stop-later-time').disabled = x.from + 15 > hi;
+    $('stop-up').disabled = k === 0;
+    $('stop-down').disabled = k === plan.length - 1;
+    $('stop-remove').disabled = plan.length <= 1;
+  }
+  function openStop(k){ sheetStop = k; renderStopSheet(); openSheet($('stop-sheet')); }
+  $('stop-earlier-time').onclick = () => { nudgeStop(sheetStop, -15); renderStopSheet(); };
+  $('stop-later-time').onclick = () => { nudgeStop(sheetStop, 15); renderStopSheet(); };
+  $('stop-up').onclick = () => { moveStop(sheetStop, -1); sheetStop--; renderStopSheet(); };
+  $('stop-down').onclick = () => { moveStop(sheetStop, 1); sheetStop++; renderStopSheet(); };
+  $('stop-remove').onclick = () => { $('stop-sheet').close(); removeStop(sheetStop); };
+  $('stop-kind').onclick = () => { $('stop-sheet').close(); pickType(sheetStop); };
+  $('stop-choose').onclick = () => { $('stop-sheet').close(); openPicker(sheetStop); };
+  $('stop-close').onclick = () => $('stop-sheet').close();
+
+  // ---------- pick a place yourself: every place of that kind in walking range ----------
+  let pickStop = 0, pickType_ = null, pickVenues = [];
+  async function openPicker(k){
+    pickStop = k; pickType_ = plan[k].type;
+    pickVenues = await loadAreaWithSignals(form.area.id);
+    $('pick-search').value = '';
+    renderPicker();
+    openSheet($('pick-sheet'));
+  }
+  function renderPicker(){
+    const k = pickStop, x = plan[k], prev = plan.slice(0, k).reverse().find(y => y.venue);
+    const prevNum = prev ? plan.filter((y, i) => i <= plan.indexOf(prev) && y.venue).length : 0;
+    $('pick-sub').textContent = t('pick.sub', { type:pickType_.name, area:form.area.name });
+    $('pick-types').innerHTML = TYPES.map(ty => '<button type="button" class="chip'+(ty === pickType_ ? ' on' : '')+'" data-pick-type="'+ty.id+'" aria-pressed="'+(ty === pickType_)+'">'+esc(ty.name)+'</button>').join('');
+    $('pick-types').querySelectorAll('[data-pick-type]').forEach(b => b.onclick = () => { pickType_ = T[b.dataset.pickType]; renderPicker(); });
+    const q = $('pick-search').value.trim().toLowerCase();
+    const from = prev ? prev.venue : form.area;
+    const list = pickVenues.filter(v => v.vibes.includes(pickType_.id) && distM(form.area, v) <= RADIUS_M && (!q || v.name.toLowerCase().includes(q)))
+      .map(v => [distM(from, v), v]).sort((a, b) => a[0] - b[0]).slice(0, 120);
+    $('pick-list').innerHTML = list.length ? list.map(([d, v]) => {
+      const st = status(v, form.day, x.from, Math.max(x.from, x.to - 30));
+      const meta = [v.street, prev ? t('pick.walk', { n:Math.max(1, Math.round(d / 80)), k:prevNum }) : null,
+        st === 'open' ? t('plan.open') : st === 'closed' ? t('plan.closedThen').split('.')[0] : null].filter(Boolean).join(' · ');
+      const here = plan.some(y => y.venue && y.venue.id === v.id);
+      return '<li><button type="button" data-pick="'+v.id+'"><b>'+esc(v.name)+'</b><span>'+esc(meta)+'</span>' +
+        (here ? '<span class="here">'+esc(t('pick.current'))+'</span>' : '') + '</button></li>';
+    }).join('') : '<li class="hint">'+esc(t('pick.none'))+'</li>';
+    $('pick-list').querySelectorAll('[data-pick]').forEach(b => b.onclick = () => {
+      const v = pickVenues.find(y => y.id === b.dataset.pick);
+      const stop = plan[pickStop];
+      if (stop.venue && stop.venue.id !== v.id) stop.history = (stop.history || []).concat(stop.venue);
+      if (stop.type !== pickType_) { stop.type = pickType_; stop.wanted = null; form.stops = plan.map(y => y.type.id); }
+      stop.venue = v; stop.seen.add(v.id); stop.pinned = true;
+      $('pick-sheet').close();
+      markSeen([v.id]); writeHash(true); renderPlan(true); track('edit');
+      toast(t('toast.pinned'));
+    });
+  }
+  $('pick-search').addEventListener('input', renderPicker);
+  $('pick-close').onclick = () => $('pick-sheet').close();
+
+  // ---------- pin, back, reshuffle around pins ----------
+  function togglePin(k){
+    const x = plan[k];
+    x.pinned = !x.pinned;
+    writeHash(true); renderPlan(true);
+    toast(t(x.pinned ? 'toast.pinned' : 'toast.unpinned'));
+  }
+  function goBack(k){
+    const x = plan[k];
+    if (!x.history || !x.history.length) return;
+    x.venue = x.history.pop();
+    writeHash(true); renderPlan(true);
+  }
+  // New places for every stop that isn't pinned; pinned ones (and their times) stay.
+  async function reshuffle(){
+    if (!plan.some(x => x.pinned)) return go(null, false);
+    const venues = await loadAreaWithSignals(form.area.id);
+    plan.forEach((x, k) => {
+      if (x.pinned) return;
+      const used = new Set(plan.filter((y, i) => i !== k && y.venue).map(y => y.venue.id));
+      const prev = plan.slice(0, k).reverse().find(y => y.venue);
+      const got = pickVenue(venues, x.wanted || x.type, x.from, x.to, prev && prev.venue, new Set([...used, ...x.seen, ...(x.venue ? [x.venue.id] : [])]));
+      if (!got.venue) return;
+      if (x.venue) x.history = (x.history || []).concat(x.venue);
+      x.venue = got.venue; x.seen.add(got.venue.id);
+    });
+    markSeen(plan.filter(x => x.venue && !x.pinned).map(x => x.venue.id));
+    writeHash(true); renderPlan(true);
+    toast(t('toast.reshuffled'));
+  }
 
   // Times, on the plan itself: start and end move the whole night (stops spread evenly again);
   // the arrows nudge one stop by 15 minutes, never past its neighbours. Venues stay put, and
@@ -958,7 +1162,7 @@
   }
   $('times-btn').onclick = () => {
     renderTimes();
-    if ($('times-sheet').showModal) $('times-sheet').showModal(); else $('times-sheet').setAttribute('open', '');
+    openSheet($('times-sheet'));
   };
   $('times-start').onchange = e => {
     form.start = +e.target.value; form.times = null;
@@ -968,13 +1172,6 @@
   $('times-end').onchange = e => { form.end = +e.target.value; form.times = null; timesChanged(); };
   $('times-done').onclick = () => $('times-sheet').close();
   $('add-stop').onclick = () => pickType(null);
-  $('edit-stops').onclick = () => {
-    editing = !editing;
-    $('edit-stops').classList.toggle('on', editing);
-    $('edit-stops').setAttribute('aria-pressed', editing);
-    $('edit-stops').textContent = editing ? t('plan.done') : t('plan.edit');
-    renderPlan(true);
-  };
 
   // ---------- groups: a locked plan behind /p/<id>, who's in, "would you go again?" ----------
   // No accounts: a person is a random id this browser keeps, plus the name they typed.
@@ -1111,7 +1308,7 @@
     $('share-link').textContent = url.replace(/^https?:\/\//, '');
     $('share-name').value = recall('no_name') || '';
     const sheet = $('share-sheet');
-    if (sheet.showModal) sheet.showModal(); else sheet.setAttribute('open', '');
+    openSheet(sheet);
   }
   // Saving a name here also joins you to the group you're sharing.
   async function saveShareName(){
@@ -1157,9 +1354,9 @@
       mark($('vote-setup-areas'), id => setup.areas.includes(id));
     });
     mark($('vote-setup-areas'), id => setup.areas.includes(id));
-    seg($('vote-setup-start'), STARTS.map(m => [m, fmt(m)]), m => { setup.start = m; mark($('vote-setup-start'), v => +v === m); });
-    mark($('vote-setup-start'), v => +v === setup.start);
-    $('vote-sheet').showModal ? $('vote-sheet').showModal() : $('vote-sheet').setAttribute('open', '');
+    $('vote-setup-start').innerHTML = STARTS.map(m => '<option value="'+m+'"'+(m === setup.start ? ' selected' : '')+'>'+esc(fmt(m))+'</option>').join('');
+    $('vote-setup-start').onchange = e => { setup.start = +e.target.value; };
+    openSheet($('vote-sheet'));
   }
   $('ask').onclick = openVoteSetup;
   $('vote-setup-cancel').onclick = () => $('vote-sheet').close();
@@ -1284,6 +1481,8 @@
     if (form.preset) q.set('x', form.preset);
     if (form.stops) q.set('st', form.stops.join(','));
     if (form.times) q.set('tm', form.times.join(','));
+    const pins = plan.map((x, i) => x.pinned ? i : -1).filter(i => i >= 0);
+    if (withPlan && pins.length) q.set('pn', pins.join(','));
     if (withPlan && plan.length) q.set('p', plan.map(s => s.venue ? s.venue.id : '-').join(','));
     const url = location.href.split('#')[0] + '#' + q.toString();
     if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
@@ -1303,14 +1502,15 @@
     form.stops = st.length >= 1 && st.length <= 8 && st.every(id => T[id]) ? st : null;
     if (form.stops) form.n = form.stops.length;
     const tm = (q.get('tm') || '').split(',').filter(Boolean).map(Number);
-    form.times = tm.length === form.n && tm.every((m, i) => m % 15 === 0 && m >= 0 && m < form.end && (!i || m > tm[i - 1])) ? tm : null;
+    form.times = tm.length === form.n && tm.every((m, i) => m % 5 === 0 && m >= 0 && m < form.end && (!i || m > tm[i - 1])) ? tm : null;
+    form.pins = (q.get('pn') || '').split(',').filter(Boolean).map(Number);
     return (q.get('p') || '').split(',').filter(Boolean);
   }
   async function loadSharedPlan(ids){
     const venues = await loadAreaWithSignals(form.area.id);
     plan = slots(stopTypes()).map((s, k) => {
       const venue = venues.find(v => v.id === ids[k]) || null;
-      return { ...s, venue, seen: new Set(venue ? [venue.id] : []) };
+      return { ...s, venue, seen:new Set(venue ? [venue.id] : []), pinned:(form.pins || []).includes(k) };
     });
     renderPlan();
     track('open_shared');
@@ -1534,6 +1734,7 @@
   }
   window.addEventListener('popstate', route);
   $('about-link').onclick = () => showAbout();
+  $('foot-about').onclick = e => { e.preventDefault(); showAbout(); };
   $('logo').onclick = () => goHome();
   $('about-go').onclick = () => goHome();
 
@@ -1554,13 +1755,16 @@
   const ICON_PIN = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
   const ICON_SWAP = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4M21 7H8M7 21l-4-4 4-4M3 17h13"/></svg>';
 
-  function editRow(k){
-    if (!editing || group) return '';
-    return '<div class="edit-row">' +
-      '<button class="btn" type="button" data-up="'+k+'"'+(k === 0 ? ' disabled' : '')+' aria-label="'+esc(t('aria.earlier'))+'">↑</button>' +
-      '<button class="btn" type="button" data-down="'+k+'"'+(k === plan.length - 1 ? ' disabled' : '')+' aria-label="'+esc(t('aria.later'))+'">↓</button>' +
-      '<button class="btn" type="button" data-change="'+k+'">'+esc(t('plan.changeStop'))+'</button>' +
-      '<button class="btn danger" type="button" data-remove="'+k+'"'+(plan.length <= 1 ? ' disabled' : '')+'>'+esc(t('plan.remove'))+'</button></div>';
+  const ICON_BACK = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>';
+  const ICON_PINNED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3H7l3-3z"/><path d="M12 13v7"/></svg>';
+  const ICON_MORE = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>';
+  // Top of a stop card: the kind of place, then pin and options (not on a locked group plan).
+  function cardTop(s, k){
+    const pinned = !!s.pinned;
+    return '<div class="card-top"><p class="type">'+esc(s.type.name)+'</p>' + (group ? '' : '<div class="card-icons">' +
+      (s.venue ? '<button class="icon-btn" type="button" data-pin="'+k+'" aria-pressed="'+pinned+'" aria-label="'+esc(t(pinned ? 'plan.unpin' : 'plan.pin'))+'" title="'+esc(t(pinned ? 'plan.unpin' : 'plan.pin'))+'">'+ICON_PINNED+'</button>' : '') +
+      '<button class="icon-btn" type="button" data-menu="'+k+'" aria-label="'+esc(t('stop.options', { n:k + 1 }))+'" title="'+esc(t('stop.options', { n:k + 1 }))+'">'+ICON_MORE+'</button></div>') + '</div>' +
+      (pinned && !group ? '<p class="pinned-note">'+ICON_PINNED+esc(t('plan.pinnedTag'))+'</p>' : '');
   }
   function renderPlan(keepScroll){
     const found = plan.filter(s => s.venue).length;
@@ -1575,7 +1779,8 @@
       if (v) { prev = v; num++; }
       let body;
       if (!v) {
-        body = '<p class="type">'+esc(s.type.name)+'</p><p class="empty">'+esc(t('plan.nothingFor', { type:s.type.name.toLowerCase(), time:fmt(s.from), area:form.area.name }))+'</p>' + editRow(k);
+        body = cardTop(s, k) + '<p class="empty">'+esc(t('plan.nothingFor', { type:s.type.name.toLowerCase(), time:fmt(s.from), area:form.area.name }))+'</p>' +
+          (group ? '' : '<div class="actions"><button class="btn" type="button" data-choose="'+k+'">'+esc(t('stop.choose'))+'</button></div>');
       } else {
         const st = status(v, form.day, s.from, Math.max(s.from, s.to - 30));
         const close = closesAt(v, form.day, s.from);
@@ -1589,21 +1794,24 @@
         const votes = (up + down >= 3 && up > down ? '<p class="votes">'+esc(t('plan.wouldGoAgain', { up, total:up + down }))+'</p>' : '') +
           tagSummary(v.id) +
           (closed ? '<p class="hours unknown">'+esc(closed === 1 ? t('plan.closedOne') : t('plan.closedMany', { n:closed }))+'</p>' : '');
-        body = '<p class="type">'+esc(s.type.name)+'</p><h3>'+esc(v.name)+'</h3>' +
+        body = cardTop(s, k) + '<h3>'+esc(v.name)+'</h3>' +
           (v.street ? '<p class="addr">'+esc(v.street)+'</p>' : '') + note + votes + hoursLine +
           '<div class="actions"><a class="btn" href="'+esc(mapsLink(v))+'" target="_blank" rel="noopener">'+ICON_PIN+esc(t('plan.maps'))+'</a>' +
-          (group ? '' : '<button class="btn" type="button" data-swap="'+k+'">'+ICON_SWAP+esc(t('plan.swap'))+'</button>') + '</div>' + editRow(k) + rateRow(v);
+          (group ? '' : '<button class="btn" type="button" data-swap="'+k+'"'+(s.pinned ? ' disabled' : '')+'>'+ICON_SWAP+esc(t('plan.swap'))+'</button>' +
+            (s.history && s.history.length ? '<button class="btn" type="button" data-back="'+k+'" title="'+esc(t('plan.backTitle'))+'">'+ICON_BACK+esc(t('plan.back'))+'</button>' : '')) +
+          '</div>' + rateRow(v);
       }
-      html += '<div class="stop"><div class="time">'+clock(s.from)+'</div>' +
+      html += '<div class="stop"><button class="time" type="button" data-time="'+k+'"'+(group ? ' disabled' : ' aria-label="'+esc(t('stop.timeTap', { n:k + 1 }))+'"')+'>'+clock(s.from)+'</button>' +
         '<div class="rail"><span class="pin-n'+(v ? '' : ' none')+'">'+(v ? num : '–')+'</span></div>' +
-        '<div>'+walk+'<article class="card">'+body+'</article></div></div>';
+        '<div>'+walk+'<article class="card'+(s.pinned ? ' pinned' : '')+'">'+body+'</article></div></div>';
     });
     $('plan').innerHTML = html;
     $('plan').querySelectorAll('[data-swap]').forEach(b => b.onclick = () => swapStop(+b.dataset.swap).catch(e => toast(e.message)));
-    $('plan').querySelectorAll('[data-up]').forEach(b => b.onclick = () => moveStop(+b.dataset.up, -1));
-    $('plan').querySelectorAll('[data-down]').forEach(b => b.onclick = () => moveStop(+b.dataset.down, 1));
-    $('plan').querySelectorAll('[data-change]').forEach(b => b.onclick = () => pickType(+b.dataset.change));
-    $('plan').querySelectorAll('[data-remove]').forEach(b => b.onclick = () => removeStop(+b.dataset.remove));
+    $('plan').querySelectorAll('[data-back]').forEach(b => b.onclick = () => goBack(+b.dataset.back));
+    $('plan').querySelectorAll('[data-pin]').forEach(b => b.onclick = () => togglePin(+b.dataset.pin));
+    $('plan').querySelectorAll('[data-menu]').forEach(b => b.onclick = () => openStop(+b.dataset.menu));
+    $('plan').querySelectorAll('[data-time]:not([disabled])').forEach(b => b.onclick = () => openStop(+b.dataset.time));
+    $('plan').querySelectorAll('[data-choose]').forEach(b => b.onclick = () => openPicker(+b.dataset.choose).catch(e => toast(e.message)));
     $('plan').querySelectorAll('[data-rate]').forEach(b => b.onclick = () => rate(b.dataset.rate, +b.dataset.vote).catch(e => toast(e.message)));
     $('plan').querySelectorAll('[data-tag]').forEach(b => b.onclick = () => toggleTag(b.dataset.venue, b.dataset.tag).catch(e => toast(e.message)));
     renderGroup();
@@ -1612,7 +1820,6 @@
     $('reshuffle').style.display = group ? 'none' : '';
     $('share').textContent = group ? t('plan.shareLink') : t('plan.send');
     $('edit').lastChild.textContent = group ? t('plan.own') : t('plan.change');
-    $('edit-stops').textContent = editing ? t('plan.done') : t('plan.edit');
     $('route').href = routeUrl();
     $('route').style.display = found ? '' : 'none';
     $('share').style.display = found ? '' : 'none';
@@ -1665,7 +1872,7 @@
   }
 
   $('edit').onclick = () => { if (group) return ownVersion(); if (cameFromHome) history.back(); else goHome(); };
-  $('reshuffle').onclick = () => { track('reshuffle'); go(null, false); };
+  $('reshuffle').onclick = () => { track('reshuffle'); reshuffle().catch(e => toast(e.message)); };
   // A venue still in the plan when it's shared or routed counts as kept, once per plan.
   let keptFor = '';
   function markKept(){
