@@ -68,7 +68,13 @@
 
   .top-right{ display:flex; align-items:center; gap:16px; }
   .note{ display:none; font-size:12px; color:var(--muted); }
-  .lang{ height:32px; padding:0 6px; border:1px solid var(--line-2); border-radius:8px; background:var(--bg); color:var(--text-2); font:inherit; font-size:13px; }
+  /* Language: globe + flag + code on the button (the select sits invisibly on top), flags and native names in the menu. */
+  .lang-pick{ position:relative; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 10px; border:1px solid var(--line-2); border-radius:999px;
+    color:var(--text); font-size:13px; font-weight:600; cursor:pointer; transition:border-color .15s var(--ease); }
+  .lang-pick:hover{ border-color:rgba(239,233,222,.24); }
+  .lang-pick .globe{ width:16px; height:16px; color:var(--text-2); }
+  .lang-pick .chev{ width:12px; height:12px; color:var(--text-2); }
+  .lang-pick select{ position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
   .nav-link{ background:none; border:none; padding:0; font-size:14px; color:var(--text-2); cursor:pointer; transition:color .15s var(--ease); }
   .nav-link:hover, .nav-link.on{ color:var(--text); }
 
@@ -298,7 +304,7 @@
     <button class="logo" id="logo" type="button"><img src="/icon.svg" alt="">Owlabout</button>
     <div class="top-right">
       <button class="nav-link" id="about-link" type="button" data-t="nav.about">About</button>
-      <select class="lang" id="lang" aria-label="Language" data-t-aria="nav.lang"></select>
+      <label class="lang-pick"><svg class="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span id="lang-label">EN</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><select id="lang" aria-label="Language" data-t-aria="nav.lang"></select></label>
       <div class="view" id="view" role="group" aria-label="Preview" data-t-aria="aria.preview">
         <button type="button" data-view="desktop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><span data-t="view.desktop">Desktop</span></button>
         <button type="button" data-view="phone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg><span data-t="view.phone">Phone</span></button>
@@ -1590,6 +1596,8 @@
     relabel();
     applyStatic();
     $('lang').value = lang;
+    const L = LANGS.find(x => x[0] === lang);
+    $('lang-label').textContent = L[3] + ' ' + L[1];
     $('explorers-p').textContent = t('about.explorersP', { areas:AREAS.length, cities:CITIES.length });
     if (!/^\/(p|v)\//.test(location.pathname)) document.title = 'Owlabout · ' + t('title.tag');   // plan/vote pages keep their own
   }
@@ -1601,7 +1609,7 @@
     renderHeader();
     if ($('s-plan').classList.contains('on')) renderPlan(true);
   }
-  $('lang').innerHTML = LANGS.map(([id, short, name]) => '<option value="'+id+'" title="'+esc(name)+'">'+short+'</option>').join('');
+  $('lang').innerHTML = LANGS.map(([id, short, name, flag]) => '<option value="'+id+'">'+flag+' '+esc(name)+'</option>').join('');
   $('lang').onchange = e => setLang(e.target.value);
 
   // ---------- boot ----------

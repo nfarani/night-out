@@ -2,7 +2,8 @@
 // {name} placeholders are filled in by t(key, { name }). Missing keys fall back to English.
 // Add a language: copy the en block, translate, add it to LANGS, and get a native speaker to read it.
 (root => {
-root.LANGS = [['en', 'EN', 'English'], ['fr', 'FR', 'Français'], ['es', 'ES', 'Español'], ['it', 'IT', 'Italiano'], ['pt', 'PT', 'Português']];
+// [id, short label, native name, flag]. Portuguese is Brazilian, so the Brazilian flag.
+root.LANGS = [['en', 'EN', 'English', '🇬🇧'], ['fr', 'FR', 'Français', '🇫🇷'], ['es', 'ES', 'Español', '🇪🇸'], ['it', 'IT', 'Italiano', '🇮🇹'], ['pt', 'PT', 'Português', '🇧🇷']];
 
 root.I18N = {
   en: {
