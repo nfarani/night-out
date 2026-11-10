@@ -215,6 +215,16 @@
   .tag-row .chip{ height:32px; font-size:13px; }
   .tag-sum{ font-size:13px; color:var(--text-2); margin:0 0 8px; }
   .weather{ font-size:14px; color:var(--text-2); margin:0 0 12px; }
+  .ask{ width:100%; height:44px; margin-top:8px; }
+  .vote{ max-width:40rem; }
+  .vote h1{ max-width:none; }
+  .vote .group{ margin:24px 0; }
+  .vote .tally{ list-style:none; padding:0; margin:12px 0 0; font-size:14px; color:var(--text); }
+  .vote .tally li{ padding:2px 0; }
+  .vote form{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; }
+  .vote form .cta{ margin-top:8px; }
+  .vote-admin{ display:flex; flex-direction:column; gap:8px; margin-top:24px; }
+  .vote-admin .btn{ height:48px; font-size:15px; }
   .weather a{ color:var(--muted); font-size:12px; margin-left:6px; }
   .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; height:36px; padding:0 12px; border:1px solid var(--line-2); background:var(--raised); border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; text-decoration:none; transition:background-color .15s var(--ease), border-color .15s var(--ease); }
   .btn:hover{ border-color:rgba(239,233,222,.24); }
@@ -307,6 +317,7 @@
         <div class="field"><p class="label" data-t="home.start">Starting</p><div class="seg" id="start"></div></div>
         <div class="field"><p class="label" data-t="home.until">Until</p><div class="seg" id="end"></div></div>
         <button class="cta" id="go" type="button" data-t="home.go">Plan the night</button>
+        <button class="btn ask" id="ask" type="button" data-t="vote.ask">Ask the group first</button>
       </aside>
 
       <div class="ready">
@@ -344,6 +355,25 @@
         <button class="btn primary" id="share" type="button">Send to the group</button>
         <button class="btn square" id="reshuffle" type="button" aria-label="Reshuffle" title="Reshuffle" data-t-aria="aria.reshuffle"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
       </div>
+    </div>
+  </section>
+
+  <!-- GROUP VOTE: /v/<id> -->
+  <section class="screen" id="s-vote">
+    <div class="about vote">
+      <button class="back" id="vote-home" type="button"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Owlabout</button>
+      <p class="kicker" id="vote-kicker"></p>
+      <h1 data-t="vote.h1">What are you up for?</h1>
+      <p class="lede" id="vote-where"></p>
+      <div class="group" id="vote-who"></div>
+      <form id="vote-form">
+        <div class="field"><label class="label" for="vote-name" data-t="vote.yourName">Your name</label><input class="field-input" id="vote-name" maxlength="30" autocomplete="given-name" required></div>
+        <div class="field" id="vote-areas-field"><p class="label" data-t="vote.which">Which neighbourhood?</p><div class="chips" id="vote-pick-areas"></div></div>
+        <div class="field"><p class="label" data-t="vote.what">What are you up for?</p><div class="chips" id="vote-pick-types"></div></div>
+        <div class="field"><p class="label" data-t="vote.until">Until</p><div class="seg" id="vote-pick-end"></div></div>
+        <button class="cta" type="submit" id="vote-save">Save my vote</button>
+      </form>
+      <div class="vote-admin" id="vote-admin"></div>
     </div>
   </section>
 
@@ -393,6 +423,18 @@
     <button class="btn primary" type="button" id="share-send" data-t="share.send">Send</button>
   </div>
   <button class="btn close" type="button" id="share-close" data-t="share.close">Close</button>
+</dialog>
+<dialog class="sheet" id="vote-sheet">
+  <h2 data-t="vote.setupTitle">Ask the group</h2>
+  <p data-t="vote.setupSub">Pick up to three neighbourhoods.</p>
+  <p class="label" data-t="vote.areas">Neighbourhoods (up to 3)</p>
+  <div class="chips" id="vote-setup-areas"></div>
+  <p class="label" style="margin-top:16px" data-t="vote.start">Starting</p>
+  <div class="seg" id="vote-setup-start"></div>
+  <div class="sheet-actions">
+    <button class="btn" type="button" id="vote-setup-cancel" data-t="sheet.cancel">Cancel</button>
+    <button class="btn primary" type="button" id="vote-setup-go" data-t="vote.create">Create the vote</button>
+  </div>
 </dialog>
 <dialog class="sheet" id="type-sheet">
   <h2 id="type-sheet-title">Add a stop</h2>
@@ -946,9 +988,11 @@
     const lines = plan.filter(x => x.venue).map(x => clock(x.from) + '  ' + x.venue.name + ' (' + x.type.name.toLowerCase() + ')');
     return t('plan.shareText', { day:dayLabel(), area:form.area.name }) + '\n' + lines.join('\n');
   }
-  let shareUrl = '';
-  function openShareSheet(url){
-    shareUrl = url;
+  let shareUrl = '', shareMode = 'plan';             // 'plan' (/p/) or 'vote' (/v/)
+  function openShareSheet(url, mode = 'plan'){
+    shareUrl = url; shareMode = mode;
+    $('share-sheet').querySelector('h2').textContent = t(mode === 'vote' ? 'vote.shareTitle' : 'share.title');
+    $('share-sheet').querySelector('[data-t="share.intro"]').textContent = t(mode === 'vote' ? 'vote.shareIntro' : 'share.intro');
     $('share-link').textContent = url.replace(/^https?:\/\//, '');
     $('share-name').value = recall('no_name') || '';
     const sheet = $('share-sheet');
@@ -959,26 +1003,161 @@
     const name = $('share-name').value.trim();
     if (!name || name === recall('no_name') && (!group || isMember())) return;
     remember('no_name', name);
+    if (shareMode === 'vote') return;
     const id = shareUrl.split('/p/')[1];
     try { await api('/api/plans/' + id + '/join', { device:device(), name }); if (group) await openGroup(group.id); } catch (e) {}
   }
   $('share-send').onclick = async () => {
     saveShareName();
-    const text = shareText();
+    const text = shareMode === 'vote' ? t('vote.shareText', { day:dayLabel() }) : shareText();
+    const follow = () => shareMode === 'vote' ? goToVote(shareUrl.split('/v/')[1]) : goToGroup(shareUrl.split('/p/')[1]);
     if (navigator.share) {
-      try { await navigator.share({ text, url:shareUrl }); $('share-sheet').close(); goToGroup(shareUrl.split('/p/')[1]); return; }
+      try { await navigator.share({ text, url:shareUrl }); $('share-sheet').close(); follow(); return; }
       catch (e) { if (e.name === 'AbortError') return; }
     }
-    try { await navigator.clipboard.writeText(text + '\n\n' + shareUrl); toast(t('toast.copied')); $('share-sheet').close(); goToGroup(shareUrl.split('/p/')[1]); }
+    try { await navigator.clipboard.writeText(text + '\n\n' + shareUrl); toast(t('toast.copied')); $('share-sheet').close(); follow(); }
     catch (e) { prompt(t('toast.copyPrompt'), shareUrl); }
   };
   $('share-copy').onclick = async () => {
     saveShareName();
     try { await navigator.clipboard.writeText(shareUrl); toast(t('toast.linkCopied')); } catch (e) { prompt(t('toast.copyPrompt'), shareUrl); }
     $('share-sheet').close();
-    goToGroup(shareUrl.split('/p/')[1]);
+    if (shareMode === 'vote') goToVote(shareUrl.split('/v/')[1]); else goToGroup(shareUrl.split('/p/')[1]);
   };
   $('share-close').onclick = () => { saveShareName(); $('share-sheet').close(); };
+
+  // ---------- group vote: ask what everyone's up for, build the plan from the overlap ----------
+  let poll = null;                             // the /api/polls/<id> response on a vote page
+  let setup = null, draft = null;
+  function openVoteSetup(){
+    const city = form.area.city || 'london';
+    const near = AREAS.filter(a => (a.city || 'london') === city).map(a => [distM(form.area, a), a]).sort((x, y) => x[0] - y[0]).slice(0, 10).map(x => x[1]);
+    setup = { areas:[form.area.id], start:form.start };
+    $('vote-setup-areas').innerHTML = near.map(a => '<button type="button" class="chip" data-id="'+a.id+'">'+esc(a.name)+'</button>').join('');
+    $('vote-setup-areas').querySelectorAll('.chip').forEach(b => b.onclick = () => {
+      const i = setup.areas.indexOf(b.dataset.id);
+      if (i >= 0) { if (setup.areas.length > 1) setup.areas.splice(i, 1); }
+      else if (setup.areas.length >= 3) toast(t('vote.maxAreas'));
+      else setup.areas.push(b.dataset.id);
+      mark($('vote-setup-areas'), id => setup.areas.includes(id));
+    });
+    mark($('vote-setup-areas'), id => setup.areas.includes(id));
+    seg($('vote-setup-start'), STARTS.map(m => [m, fmt(m)]), m => { setup.start = m; mark($('vote-setup-start'), v => +v === m); });
+    mark($('vote-setup-start'), v => +v === setup.start);
+    $('vote-sheet').showModal ? $('vote-sheet').showModal() : $('vote-sheet').setAttribute('open', '');
+  }
+  $('ask').onclick = openVoteSetup;
+  $('vote-setup-cancel').onclick = () => $('vote-sheet').close();
+  $('vote-setup-go').onclick = async () => {
+    $('vote-setup-go').disabled = true;
+    try {
+      const { id } = await api('/api/polls', { areas:setup.areas, date:nightDate(), start:setup.start, device:device(), lang });
+      track('poll_create');
+      $('vote-sheet').close();
+      openShareSheet(location.origin + '/v/' + id, 'vote');
+    } catch (e) { toast(e.message); }
+    finally { $('vote-setup-go').disabled = false; }
+  };
+
+  function goToVote(id){
+    if (poll && poll.id === id) return;
+    history.pushState(null, '', '/v/' + id);
+    openVote(id, true).catch(e => toast(e.message));
+  }
+  async function openVote(id, organiser){
+    const p = await api('/api/polls/' + id + '?device=' + device());
+    if (p.plan) { history.replaceState(null, '', '/p/' + p.plan); return openGroup(p.plan); }
+    const first = !poll;
+    poll = p;
+    form.area = AREAS.find(a => a.id === p.areas[0]) || form.area;
+    form.day = (new Date(p.date + 'T12:00:00Z').getUTCDay() + 6) % 7;
+    const mine = p.votes.find(v => v.me);
+    draft = mine ? { areas:[...mine.areas], types:[...mine.types], end:mine.end } : { areas:[...p.areas], types:[], end:24 * 60 };
+    renderVote();
+    show('s-vote');
+    if (first && !organiser) track('poll_open');
+  }
+  // What the votes add up to: the most-wanted area, the kinds of place at least half want
+  // (or the top three), and the time most people can stay until.
+  function fromVotes(p){
+    const vs = p.votes, half = Math.ceil(vs.length / 2);
+    const area = p.areas.map(a => [a, vs.filter(v => v.areas.includes(a)).length]).sort((x, y) => y[1] - x[1])[0][0];
+    const counts = TYPES.map(x => [x.id, vs.filter(v => v.types.includes(x.id)).length]).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]);
+    let types = counts.filter(x => x[1] >= half).map(x => x[0]);
+    if (types.length < 2) types = counts.slice(0, 3).map(x => x[0]);
+    types = types.slice(0, 5);
+    const ends = vs.map(v => v.end).sort((a, b) => a - b);
+    const end = Math.max(ends[Math.floor((ends.length - 1) / 2)], p.start + 120);
+    return { area, types, counts, end, n:types.length >= 2 ? types.length : 3 };
+  }
+  function renderVote(){
+    const p = poll, areaName = id => (AREAS.find(a => a.id === id) || { name:id }).name;
+    $('vote-kicker').textContent = t('vote.kicker', { day:dayLabel(), time:fmt(p.start) });
+    $('vote-where').textContent = t('vote.in', { areas:p.areas.map(areaName).join(' ' + t('vote.or') + ' ') });
+    const n = p.votes.length;
+    let who = '<p class="group-title">' + esc(t(n === 1 ? 'vote.count.one' : 'vote.count', { n })) + '</p>';
+    if (!n) who += '<p class="who">' + esc(t('vote.nobody')) + '</p>';
+    else {
+      const r = fromVotes(p);
+      who += '<p class="who">' + esc(listText(p.votes.map(v => v.name + (v.me ? ' ' + t('group.you') : '')))) + '</p>' +
+        '<ul class="tally">' + (p.areas.length > 1 ? '<li>' + esc(areaName(r.area)) + ' · ' + p.votes.filter(v => v.areas.includes(r.area)).length + '/' + n + '</li>' : '') +
+        r.counts.slice(0, 5).map(([id, c]) => '<li>' + esc(t(c === 1 ? 'vote.wants.one' : 'vote.wants', { n:c, type:T[id].name.toLowerCase() })) + '</li>').join('') +
+        '<li>' + esc(t('vote.untilVotes', { time:fmt(r.end) })) + '</li></ul>';
+    }
+    $('vote-who').innerHTML = who;
+    const mine = p.votes.find(v => v.me);
+    $('vote-name').value = mine ? mine.name : (recall('no_name') || '');
+    $('vote-save').textContent = t(mine ? 'vote.update' : 'vote.save');
+    $('vote-areas-field').hidden = p.areas.length < 2;
+    $('vote-pick-areas').innerHTML = p.areas.map(id => '<button type="button" class="chip" data-id="'+id+'">'+esc(areaName(id))+'</button>').join('');
+    $('vote-pick-areas').querySelectorAll('.chip').forEach(b => b.onclick = () => {
+      const i = draft.areas.indexOf(b.dataset.id);
+      if (i >= 0) { if (draft.areas.length > 1) draft.areas.splice(i, 1); } else draft.areas.push(b.dataset.id);
+      mark($('vote-pick-areas'), id => draft.areas.includes(id));
+    });
+    mark($('vote-pick-areas'), id => draft.areas.includes(id));
+    $('vote-pick-types').innerHTML = TYPES.map(x => '<button type="button" class="chip" data-id="'+x.id+'">'+esc(x.name)+'</button>').join('');
+    $('vote-pick-types').querySelectorAll('.chip').forEach(b => b.onclick = () => {
+      const i = draft.types.indexOf(b.dataset.id);
+      if (i >= 0) draft.types.splice(i, 1); else draft.types.push(b.dataset.id);
+      mark($('vote-pick-types'), id => draft.types.includes(id));
+    });
+    mark($('vote-pick-types'), id => draft.types.includes(id));
+    seg($('vote-pick-end'), ENDS.map(m => [m, short(m)]), m => { draft.end = m; mark($('vote-pick-end'), v => +v === m); });
+    mark($('vote-pick-end'), v => +v === draft.end);
+    $('vote-admin').innerHTML = p.mine
+      ? (n ? '<button class="btn primary" type="button" id="vote-make">' + esc(t(n === 1 ? 'vote.make.one' : 'vote.make', { n })) + '</button>' : '') +
+        '<button class="btn" type="button" id="vote-share">' + esc(t('vote.share')) + '</button>'
+      : '<p class="hint">' + esc(t('vote.waiting')) + '</p>';
+    if ($('vote-make')) $('vote-make').onclick = () => makeFromVotes().catch(e => toast(e.message));
+    if ($('vote-share')) $('vote-share').onclick = () => openShareSheet(location.origin + '/v/' + p.id, 'vote');
+  }
+  $('vote-form').onsubmit = async e => {
+    e.preventDefault();
+    const name = $('vote-name').value.trim();
+    if (!name) { toast(t('vote.needName')); return; }
+    if (!draft.types.length) { toast(t('toast.pickOne')); return; }
+    remember('no_name', name);
+    await api('/api/polls/' + poll.id + '/vote', { device:device(), name, areas:draft.areas, types:draft.types, end:draft.end })
+      .then(() => { track('poll_vote'); toast(t('vote.saved')); return openVote(poll.id); })
+      .catch(err => toast(err.message));
+  };
+  // Organiser: build the plan with the normal engine, lock it as a group plan, link it to the
+  // vote so everyone who voted is already in, then go to the group plan.
+  async function makeFromVotes(){
+    const p = poll, r = fromVotes(p);
+    form.area = AREAS.find(a => a.id === r.area) || form.area;
+    const pollId = p.id;
+    poll = null;
+    await go({ types:r.types, n:r.n, start:p.start, end:r.end, preset:null });
+    const planId = await lockPlan();
+    await api('/api/polls/' + pollId + '/plan', { device:device(), plan:planId });
+    track('poll_plan');
+    toast(t('vote.made'));
+    history.replaceState(null, '', '/p/' + planId);
+    await openGroup(planId, true);
+  }
+  $('vote-home').onclick = () => { location.href = '/'; };
 
   // ---------- URL state ----------
   // #a=soho&t=pub,dinner,cocktail&n=3&s=1140&e=1440&d=4&p=n123,w456,-
@@ -1209,13 +1388,15 @@
     if (push) history.pushState(null, '', location.href.split('#')[0] + '#about');
   }
   function goHome(push = true){
-    if (group) { location.href = '/'; return; }
+    if (group || poll) { location.href = '/'; return; }
     $('about-link').classList.remove('on');
     renderHome();
     show('s-home');
     writeHash(false, push);
   }
   function route(){
+    const vm = location.pathname.match(/^\/v\/([a-z2-9]{6,10})\/?$/);
+    if (vm) return openVote(vm[1]).catch(e => { toast(e.message); setTimeout(() => { location.href = '/'; }, 2500); });
     const gm = location.pathname.match(/^\/p\/([a-z2-9]{6,10})\/?$/);
     if (gm) return openGroup(gm[1]).catch(e => { toast(e.message); setTimeout(() => { location.href = '/'; }, 2500); });
     const ids = readHash();

@@ -4,244 +4,744 @@
     "name": "Soho",
     "lat": 51.5136,
     "lng": -0.1337,
-    "region": "Central"
+    "region": "Central",
+    "city": "london"
   },
   {
     "id": "covent",
     "name": "Covent Garden",
     "lat": 51.5117,
     "lng": -0.124,
-    "region": "Central"
+    "region": "Central",
+    "city": "london"
   },
   {
     "id": "shoreditch",
     "name": "Shoreditch",
     "lat": 51.5246,
     "lng": -0.0786,
-    "region": "East"
+    "region": "East",
+    "city": "london"
   },
   {
     "id": "dalston",
     "name": "Dalston",
     "lat": 51.5462,
     "lng": -0.075,
-    "region": "East"
+    "region": "East",
+    "city": "london"
   },
   {
     "id": "hackney",
     "name": "Hackney Central",
     "lat": 51.5466,
     "lng": -0.0558,
-    "region": "East"
+    "region": "East",
+    "city": "london"
   },
   {
     "id": "hwick",
     "name": "Hackney Wick",
     "lat": 51.5436,
     "lng": -0.0244,
-    "region": "East"
+    "region": "East",
+    "city": "london"
   },
   {
     "id": "bethnal",
     "name": "Bethnal Green",
     "lat": 51.527,
     "lng": -0.0549,
-    "region": "East"
+    "region": "East",
+    "city": "london"
   },
   {
     "id": "stokey",
     "name": "Stoke Newington",
     "lat": 51.5617,
     "lng": -0.0772,
-    "region": "North"
+    "region": "North",
+    "city": "london"
   },
   {
     "id": "camden",
     "name": "Camden",
     "lat": 51.539,
     "lng": -0.1426,
-    "region": "North"
+    "region": "North",
+    "city": "london"
   },
   {
     "id": "kingsx",
     "name": "King’s Cross",
     "lat": 51.5352,
     "lng": -0.124,
-    "region": "North"
+    "region": "North",
+    "city": "london"
   },
   {
     "id": "angel",
     "name": "Angel",
     "lat": 51.537,
     "lng": -0.104,
-    "region": "North"
+    "region": "North",
+    "city": "london"
   },
   {
     "id": "peckham",
     "name": "Peckham",
     "lat": 51.4703,
     "lng": -0.069,
-    "region": "South"
+    "region": "South",
+    "city": "london"
   },
   {
     "id": "brixton",
     "name": "Brixton",
     "lat": 51.4625,
     "lng": -0.1146,
-    "region": "South"
+    "region": "South",
+    "city": "london"
   },
   {
     "id": "clapham",
     "name": "Clapham",
     "lat": 51.4627,
     "lng": -0.1378,
-    "region": "South"
+    "region": "South",
+    "city": "london"
   },
   {
     "id": "deptford",
     "name": "Deptford",
     "lat": 51.479,
     "lng": -0.0262,
-    "region": "South"
+    "region": "South",
+    "city": "london"
   },
   {
     "id": "bermondsey",
     "name": "Bermondsey",
     "lat": 51.4985,
     "lng": -0.081,
-    "region": "South"
+    "region": "South",
+    "city": "london"
   },
   {
     "id": "notting",
     "name": "Notting Hill",
     "lat": 51.514,
     "lng": -0.201,
-    "region": "West"
+    "region": "West",
+    "city": "london"
   },
   {
     "id": "farringdon",
     "name": "Farringdon & Clerkenwell",
     "lat": 51.5225,
     "lng": -0.105,
-    "region": "Central"
+    "region": "Central",
+    "city": "london"
   },
   {
     "id": "londonbridge",
     "name": "London Bridge & Borough",
     "lat": 51.505,
     "lng": -0.0905,
-    "region": "Central"
+    "region": "Central",
+    "city": "london"
   },
   {
     "id": "southbank",
     "name": "Waterloo & South Bank",
     "lat": 51.504,
     "lng": -0.113,
-    "region": "Central"
+    "region": "Central",
+    "city": "london"
   },
   {
     "id": "marylebone",
     "name": "Marylebone",
     "lat": 51.519,
     "lng": -0.152,
-    "region": "Central"
+    "region": "Central",
+    "city": "london"
   },
   {
     "id": "fitzrovia",
     "name": "Fitzrovia",
     "lat": 51.519,
     "lng": -0.137,
-    "region": "Central"
+    "region": "Central",
+    "city": "london"
   },
   {
     "id": "mayfair",
     "name": "Mayfair",
     "lat": 51.51,
     "lng": -0.147,
-    "region": "Central"
+    "region": "Central",
+    "city": "london"
   },
   {
     "id": "chelsea",
     "name": "Chelsea (King's Road)",
     "lat": 51.4875,
     "lng": -0.1687,
-    "region": "West"
+    "region": "West",
+    "city": "london"
   },
   {
     "id": "southken",
     "name": "South Kensington",
     "lat": 51.4941,
     "lng": -0.1738,
-    "region": "West"
+    "region": "West",
+    "city": "london"
   },
   {
     "id": "highstken",
     "name": "High Street Kensington",
     "lat": 51.5009,
     "lng": -0.1925,
-    "region": "West"
+    "region": "West",
+    "city": "london"
   },
   {
     "id": "fulham",
     "name": "Fulham",
     "lat": 51.479,
     "lng": -0.199,
-    "region": "West"
+    "region": "West",
+    "city": "london"
   },
   {
     "id": "hammersmith",
     "name": "Hammersmith",
     "lat": 51.4927,
     "lng": -0.224,
-    "region": "West"
+    "region": "West",
+    "city": "london"
   },
   {
     "id": "shepherds",
     "name": "Shepherd's Bush",
     "lat": 51.5045,
     "lng": -0.218,
-    "region": "West"
+    "region": "West",
+    "city": "london"
   },
   {
     "id": "battersea",
     "name": "Battersea",
     "lat": 51.4818,
     "lng": -0.1445,
-    "region": "South"
+    "region": "South",
+    "city": "london"
   },
   {
     "id": "vauxhall",
     "name": "Vauxhall",
     "lat": 51.486,
     "lng": -0.123,
-    "region": "South"
+    "region": "South",
+    "city": "london"
   },
   {
     "id": "kentish",
     "name": "Kentish Town",
     "lat": 51.55,
     "lng": -0.141,
-    "region": "North"
+    "region": "North",
+    "city": "london"
   },
   {
     "id": "hernehill",
     "name": "Herne Hill",
     "lat": 51.453,
     "lng": -0.102,
-    "region": "South"
+    "region": "South",
+    "city": "london"
   },
   {
     "id": "walthamstow",
     "name": "Walthamstow",
     "lat": 51.583,
     "lng": -0.02,
-    "region": "East"
+    "region": "East",
+    "city": "london"
   },
   {
     "id": "greenwich",
     "name": "Greenwich",
     "lat": 51.481,
     "lng": -0.009,
+    "region": "South",
+    "city": "london"
+  },
+  {
+    "id": "islington",
+    "name": "Highbury & Islington",
+    "lat": 51.5461,
+    "lng": -0.1028,
+    "city": "london",
+    "region": "North"
+  },
+  {
+    "id": "whitechapel",
+    "name": "Whitechapel",
+    "lat": 51.5175,
+    "lng": -0.066,
+    "city": "london",
+    "region": "East"
+  },
+  {
+    "id": "canarywharf",
+    "name": "Canary Wharf",
+    "lat": 51.5049,
+    "lng": -0.019,
+    "city": "london",
+    "region": "East"
+  },
+  {
+    "id": "primrose",
+    "name": "Primrose Hill",
+    "lat": 51.539,
+    "lng": -0.1625,
+    "city": "london",
+    "region": "North"
+  },
+  {
+    "id": "balham",
+    "name": "Balham",
+    "lat": 51.4429,
+    "lng": -0.1517,
+    "city": "london",
+    "region": "South"
+  },
+  {
+    "id": "stockwell",
+    "name": "Stockwell",
+    "lat": 51.4722,
+    "lng": -0.1225,
+    "city": "london",
+    "region": "South"
+  },
+  {
+    "id": "clapton",
+    "name": "Clapton",
+    "lat": 51.5547,
+    "lng": -0.0551,
+    "city": "london",
+    "region": "East"
+  },
+  {
+    "id": "crouchend",
+    "name": "Crouch End",
+    "lat": 51.5797,
+    "lng": -0.1237,
+    "city": "london",
+    "region": "North"
+  },
+  {
+    "id": "richmond",
+    "name": "Richmond",
+    "lat": 51.4635,
+    "lng": -0.302,
+    "city": "london",
+    "region": "West"
+  },
+  {
+    "id": "paris-marais",
+    "name": "Le Marais",
+    "lat": 48.8604,
+    "lng": 2.3607,
+    "city": "paris"
+  },
+  {
+    "id": "paris-pigalle",
+    "name": "Pigalle",
+    "lat": 48.8823,
+    "lng": 2.3381,
+    "city": "paris"
+  },
+  {
+    "id": "paris-oberkampf",
+    "name": "Oberkampf",
+    "lat": 48.8632,
+    "lng": 2.3687,
+    "city": "paris"
+  },
+  {
+    "id": "paris-canal",
+    "name": "Canal Saint-Martin",
+    "lat": 48.869,
+    "lng": 2.3672,
+    "city": "paris"
+  },
+  {
+    "id": "paris-stgermain",
+    "name": "Saint-Germain",
+    "lat": 48.8544,
+    "lng": 2.3337,
+    "city": "paris"
+  },
+  {
+    "id": "paris-bastille",
+    "name": "Bastille",
+    "lat": 48.8527,
+    "lng": 2.3688,
+    "city": "paris"
+  },
+  {
+    "id": "paris-montmartre",
+    "name": "Montmartre",
+    "lat": 48.8855,
+    "lng": 2.3392,
+    "city": "paris"
+  },
+  {
+    "id": "paris-belleville",
+    "name": "Belleville",
+    "lat": 48.8717,
+    "lng": 2.3851,
+    "city": "paris"
+  },
+  {
+    "id": "paris-latin",
+    "name": "Latin Quarter",
+    "lat": 48.8486,
+    "lng": 2.3425,
+    "city": "paris"
+  },
+  {
+    "id": "paris-batignolles",
+    "name": "Batignolles",
+    "lat": 48.8864,
+    "lng": 2.3215,
+    "city": "paris"
+  },
+  {
+    "id": "madrid-malasana",
+    "name": "Malasaña",
+    "lat": 40.4267,
+    "lng": -3.7042,
+    "city": "madrid"
+  },
+  {
+    "id": "madrid-chueca",
+    "name": "Chueca",
+    "lat": 40.4227,
+    "lng": -3.6993,
+    "city": "madrid"
+  },
+  {
+    "id": "madrid-latina",
+    "name": "La Latina",
+    "lat": 40.4113,
+    "lng": -3.7083,
+    "city": "madrid"
+  },
+  {
+    "id": "madrid-lavapies",
+    "name": "Lavapiés",
+    "lat": 40.4085,
+    "lng": -3.7007,
+    "city": "madrid"
+  },
+  {
+    "id": "madrid-huertas",
+    "name": "Huertas",
+    "lat": 40.4153,
+    "lng": -3.7009,
+    "city": "madrid"
+  },
+  {
+    "id": "madrid-salamanca",
+    "name": "Salamanca",
+    "lat": 40.4364,
+    "lng": -3.6857,
+    "city": "madrid"
+  },
+  {
+    "id": "madrid-chamberi",
+    "name": "Chamberí",
+    "lat": 40.4328,
+    "lng": -3.701,
+    "city": "madrid"
+  },
+  {
+    "id": "madrid-sol",
+    "name": "Sol",
+    "lat": 40.4169,
+    "lng": -3.7039,
+    "city": "madrid"
+  },
+  {
+    "id": "bcn-born",
+    "name": "El Born",
+    "lat": 41.3848,
+    "lng": 2.1829,
+    "city": "barcelona"
+  },
+  {
+    "id": "bcn-gracia",
+    "name": "Gràcia",
+    "lat": 41.4016,
+    "lng": 2.1567,
+    "city": "barcelona"
+  },
+  {
+    "id": "bcn-gotic",
+    "name": "Gothic Quarter",
+    "lat": 41.3838,
+    "lng": 2.1745,
+    "city": "barcelona"
+  },
+  {
+    "id": "bcn-raval",
+    "name": "El Raval",
+    "lat": 41.3798,
+    "lng": 2.1687,
+    "city": "barcelona"
+  },
+  {
+    "id": "bcn-poblesec",
+    "name": "Poble-sec",
+    "lat": 41.3729,
+    "lng": 2.1666,
+    "city": "barcelona"
+  },
+  {
+    "id": "bcn-santantoni",
+    "name": "Sant Antoni",
+    "lat": 41.3786,
+    "lng": 2.162,
+    "city": "barcelona"
+  },
+  {
+    "id": "bcn-eixample",
+    "name": "Eixample",
+    "lat": 41.3882,
+    "lng": 2.1542,
+    "city": "barcelona"
+  },
+  {
+    "id": "bcn-barceloneta",
+    "name": "Barceloneta",
+    "lat": 41.3807,
+    "lng": 2.1899,
+    "city": "barcelona"
+  },
+  {
+    "id": "rome-trastevere",
+    "name": "Trastevere",
+    "lat": 41.8912,
+    "lng": 12.4668,
+    "city": "rome"
+  },
+  {
+    "id": "rome-monti",
+    "name": "Monti",
+    "lat": 41.8948,
+    "lng": 12.4929,
+    "city": "rome"
+  },
+  {
+    "id": "rome-testaccio",
+    "name": "Testaccio",
+    "lat": 41.8795,
+    "lng": 12.4745,
+    "city": "rome"
+  },
+  {
+    "id": "rome-pigneto",
+    "name": "Pigneto",
+    "lat": 41.8885,
+    "lng": 12.5282,
+    "city": "rome"
+  },
+  {
+    "id": "rome-sanlorenzo",
+    "name": "San Lorenzo",
+    "lat": 41.8975,
+    "lng": 12.5155,
+    "city": "rome"
+  },
+  {
+    "id": "rome-campo",
+    "name": "Campo de' Fiori",
+    "lat": 41.8956,
+    "lng": 12.4722,
+    "city": "rome"
+  },
+  {
+    "id": "rome-prati",
+    "name": "Prati",
+    "lat": 41.9081,
+    "lng": 12.4645,
+    "city": "rome"
+  },
+  {
+    "id": "lis-bairroalto",
+    "name": "Bairro Alto",
+    "lat": 38.7134,
+    "lng": -9.1456,
+    "city": "lisbon"
+  },
+  {
+    "id": "lis-caisdosodre",
+    "name": "Cais do Sodré",
+    "lat": 38.7062,
+    "lng": -9.1468,
+    "city": "lisbon"
+  },
+  {
+    "id": "lis-principereal",
+    "name": "Príncipe Real",
+    "lat": 38.7166,
+    "lng": -9.1481,
+    "city": "lisbon"
+  },
+  {
+    "id": "lis-alfama",
+    "name": "Alfama",
+    "lat": 38.7118,
+    "lng": -9.1284,
+    "city": "lisbon"
+  },
+  {
+    "id": "lis-chiado",
+    "name": "Chiado",
+    "lat": 38.7103,
+    "lng": -9.1405,
+    "city": "lisbon"
+  },
+  {
+    "id": "lis-intendente",
+    "name": "Intendente",
+    "lat": 38.7208,
+    "lng": -9.1349,
+    "city": "lisbon"
+  },
+  {
+    "id": "lis-santos",
+    "name": "Santos",
+    "lat": 38.7075,
+    "lng": -9.157,
+    "city": "lisbon"
+  },
+  {
+    "id": "ams-jordaan",
+    "name": "Jordaan",
+    "lat": 52.3754,
+    "lng": 4.8811,
+    "city": "amsterdam"
+  },
+  {
+    "id": "ams-pijp",
+    "name": "De Pijp",
+    "lat": 52.3533,
+    "lng": 4.897,
+    "city": "amsterdam"
+  },
+  {
+    "id": "ams-leidseplein",
+    "name": "Leidseplein",
+    "lat": 52.364,
+    "lng": 4.8828,
+    "city": "amsterdam"
+  },
+  {
+    "id": "ams-oudwest",
+    "name": "Oud-West",
+    "lat": 52.3648,
+    "lng": 4.8698,
+    "city": "amsterdam"
+  },
+  {
+    "id": "ams-nieuwmarkt",
+    "name": "Nieuwmarkt",
+    "lat": 52.3726,
+    "lng": 4.9003,
+    "city": "amsterdam"
+  },
+  {
+    "id": "ams-rembrandtplein",
+    "name": "Rembrandtplein",
+    "lat": 52.366,
+    "lng": 4.8966,
+    "city": "amsterdam"
+  },
+  {
+    "id": "ams-oost",
+    "name": "Oost",
+    "lat": 52.3618,
+    "lng": 4.9274,
+    "city": "amsterdam"
+  },
+  {
+    "id": "ber-kreuzberg",
+    "name": "Kreuzberg (Kotti)",
+    "lat": 52.499,
+    "lng": 13.4183,
+    "city": "berlin"
+  },
+  {
+    "id": "ber-neukolln",
+    "name": "Neukölln",
+    "lat": 52.484,
+    "lng": 13.4394,
+    "city": "berlin"
+  },
+  {
+    "id": "ber-friedrichshain",
+    "name": "Friedrichshain",
+    "lat": 52.5104,
+    "lng": 13.4564,
+    "city": "berlin"
+  },
+  {
+    "id": "ber-prenzlauer",
+    "name": "Prenzlauer Berg",
+    "lat": 52.5361,
+    "lng": 13.417,
+    "city": "berlin"
+  },
+  {
+    "id": "ber-mitte",
+    "name": "Mitte",
+    "lat": 52.5299,
+    "lng": 13.4011,
+    "city": "berlin"
+  },
+  {
+    "id": "ber-schoneberg",
+    "name": "Schöneberg",
+    "lat": 52.4996,
+    "lng": 13.3537,
+    "city": "berlin"
+  },
+  {
+    "id": "ber-bergmann",
+    "name": "Bergmannkiez",
+    "lat": 52.4891,
+    "lng": 13.3943,
+    "city": "berlin"
+  },
+  {
+    "id": "ber-wedding",
+    "name": "Wedding",
+    "lat": 52.5464,
+    "lng": 13.3592,
+    "city": "berlin"
+  },
+  {
+    "id": "elephant",
+    "name": "Elephant & Castle",
+    "lat": 51.495,
+    "lng": -0.1003,
+    "city": "london",
     "region": "South"
   }
 ]

@@ -3,6 +3,10 @@
 //   GET  /api/signals?area=soho        public: picks + avoids (yours and research's), and usage stats, for ranking
 //   POST /api/event                     public: { area, step?, shown:[ids], swapped:[ids], kept:[ids] } usage counts
 //   GET  /api/weather?area=soho         public: hourly forecast for the area (MET Norway, CC BY 4.0), cached
+//   POST /api/polls                     public: ask the group first { areas[1-3], date, start, device, name?, lang } -> { id }
+//   GET  /api/polls/<id>?device=…       public: the vote so far (everyone's picks, yours marked)
+//   POST /api/polls/<id>/vote           public: { device, name, areas, types, end }
+//   POST /api/polls/<id>/plan           creator: { device, plan } link the plan made from it; voters join that plan
 //   GET  /api/stats?days=30             curator: funnel counts per city and area
 //   POST /api/plans                     public: lock a plan for a group { area, date, start, end, stops, title?, device, name? } -> { id }
 //   GET  /api/plans/<id>?device=…       public: the plan, who joined, vote tallies, your own votes
@@ -20,7 +24,8 @@ import '../public/i18n.js';                     // sets globalThis.I18N, shared 
 const VENUE_ID = /^[nwr]\d{1,12}$/;
 const MAX_IDS = 8;
 
-const STEPS = new Set(['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route', 'lock', 'join', 'rate']);
+const STEPS = new Set(['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route', 'lock', 'join', 'rate',
+  'poll_create', 'poll_open', 'poll_vote', 'poll_plan']);
 const TYPE_IDS = new Set(['pub', 'wine', 'rooftop', 'cheap', 'dinner', 'cocktail', 'games', 'live', 'comedy', 'karaoke', 'dance', 'latefood']);
 const DEVICE = /^[a-z0-9]{16,40}$/;
 const PLAN_ID = /^[a-z2-9]{6,10}$/;
@@ -47,6 +52,8 @@ export default {
     // title and link-preview tags are rewritten for this plan, so WhatsApp shows its stops.
     const gp = url.pathname.match(/^\/p\/([a-z2-9]{6,10})\/?$/);
     if (gp) return await planPage(gp[1], request, url, env);
+    const vp = url.pathname.match(/^\/v\/([a-z2-9]{6,10})\/?$/);
+    if (vp) return await votePage(vp[1], request, url, env);
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
 
     const origin = request.headers.get('Origin');
@@ -67,6 +74,17 @@ export default {
         if (pm[1] && !pm[2] && request.method === 'GET') return await getPlan(pm[1], url, env);
         if (pm[2] === 'join' && request.method === 'POST') return await joinPlan(pm[1], request, env);
         if (pm[2] === 'rate' && request.method === 'POST') return await ratePlan(pm[1], request, env);
+      }
+      const vm = url.pathname.match(/^\/api\/polls(?:\/([a-z2-9]{6,10})(?:\/(vote|plan))?)?$/);
+      if (vm) {
+        if (request.method === 'POST' && env.LIMITER) {
+          const { success } = await env.LIMITER.limit({ key:request.headers.get('CF-Connecting-IP') || 'local' });
+          if (!success) return json({ error:'Too many requests' }, 429);
+        }
+        if (route === 'POST /api/polls') return await createPoll(request, url, env);
+        if (vm[1] && !vm[2] && request.method === 'GET') return await getPoll(vm[1], url, env);
+        if (vm[2] === 'vote' && request.method === 'POST') return await votePoll(vm[1], request, env);
+        if (vm[2] === 'plan' && request.method === 'POST') return await planFromPoll(vm[1], request, env);
       }
       if (route === 'GET /api/stats') {
         if (!(await authed(request, env))) return json({ error:'Wrong curator password' }, 401);
@@ -225,6 +243,38 @@ async function planPage(id, request, url, env){
     .transform(page);
 }
 
+async function votePage(id, request, url, env){
+  const page = await env.ASSETS.fetch(new Request(new URL('/', url), request));
+  let title, desc;
+  try {
+    const [p, v] = await env.DB.batch([
+      env.DB.prepare('SELECT areas, date, start_min, lang FROM polls WHERE id = ?1').bind(id),
+      env.DB.prepare('SELECT name FROM poll_votes WHERE poll_id = ?1 ORDER BY updated_at LIMIT 6').bind(id),
+    ]);
+    const poll = p.results[0];
+    if (!poll) return page;
+    const lang = poll.lang || 'en';
+    await loadAreas(env, url);
+    const names = JSON.parse(poll.areas).map(a => (areaById.get(a) || { name:a }).name);
+    const day = tr(lang, 'day.' + (new Date(poll.date + 'T12:00:00Z').getUTCDay() + 6) % 7);
+    const voters = v.results.map(r => r.name);
+    title = tr(lang, 'vote.shareText', { day });
+    desc = tr(lang, 'vote.in', { areas:names.join(' ' + tr(lang, 'vote.or') + ' ') }) + ' · ' + clock(poll.start_min) +
+      (voters.length ? '. ' + tr(lang, voters.length === 1 ? 'vote.count.one' : 'vote.count', { n:voters.length }) + ': ' + voters.join(', ') : '') + '.';
+  } catch (e) {
+    return page;
+  }
+  const set = content => ({ element(el){ el.setAttribute('content', content); } });
+  return new HTMLRewriter()
+    .on('title', { element(el){ el.setInnerContent(title + ' · Owlabout'); } })
+    .on('meta[name="description"]', set(desc))
+    .on('meta[property="og:title"]', set(title))
+    .on('meta[property="og:description"]', set(desc))
+    .on('meta[property="og:url"]', set(url.origin + '/v/' + id))
+    .on('link[rel="canonical"]', { element(el){ el.setAttribute('href', url.origin + '/v/' + id); } })
+    .transform(page);
+}
+
 // ---------- group plans ----------
 const ID_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789';
 function newId(){
@@ -316,6 +366,87 @@ async function ratePlan(id, request, env){
        ON CONFLICT (plan_id, venue_id, device) DO UPDATE SET vote = ?5, tags = ?6, updated_at = ?7`)
       .bind(id, plan.area, b.venue, b.device, b.vote, tags.length ? JSON.stringify(tags) : null, Date.now()).run();
   }
+  return json({ ok:true });
+}
+
+// ---------- group votes ----------
+async function createPoll(request, url, env){
+  const b = await request.json().catch(() => null);
+  if (!b || !Array.isArray(b.areas) || b.areas.length < 1 || b.areas.length > 3 || !DEVICE.test(b.device || '') ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(b.date || '') || !Number.isInteger(b.start) || b.start < 0 || b.start > 1440) return json({ error:'Bad request' }, 400);
+  const map = await loadAreas(env, url);
+  const areas = [...new Set(b.areas)];
+  if (!areas.every(a => map.has(a)) || new Set(areas.map(a => map.get(a))).size !== 1) return json({ error:'Areas must be in one city' }, 400);
+  const lang = I18N[b.lang] ? b.lang : 'en';
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const id = newId();
+    const res = await env.DB.prepare(
+      `INSERT INTO polls (id, city, areas, date, start_min, lang, created_by, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+       ON CONFLICT (id) DO NOTHING`).bind(id, map.get(areas[0]), JSON.stringify(areas), b.date, b.start, lang, b.device, Date.now()).run();
+    if (res.meta.changes) return json({ id });
+  }
+  return json({ error:'Try again' }, 503);
+}
+
+async function getPoll(id, url, env){
+  const device = url.searchParams.get('device') || '';
+  const [p, v] = await env.DB.batch([
+    env.DB.prepare('SELECT * FROM polls WHERE id = ?1').bind(id),
+    env.DB.prepare('SELECT device, name, areas, types, end_min FROM poll_votes WHERE poll_id = ?1 ORDER BY updated_at').bind(id),
+  ]);
+  const poll = p.results[0];
+  if (!poll) return json({ error:'Vote not found' }, 404);
+  return json({
+    id, city:poll.city, areas:JSON.parse(poll.areas), date:poll.date, start:poll.start_min, lang:poll.lang, plan:poll.plan_id,
+    mine:poll.created_by === device,
+    votes:v.results.map(r => ({ name:r.name, me:r.device === device, areas:JSON.parse(r.areas), types:JSON.parse(r.types), end:r.end_min })),
+  });
+}
+
+async function votePoll(id, request, env){
+  const b = await request.json().catch(() => null);
+  const name = b && cleanName(b.name);
+  if (!b || !DEVICE.test(b.device || '') || !name || !Array.isArray(b.areas) || !Array.isArray(b.types) ||
+      !Number.isInteger(b.end) || b.end < 0 || b.end > 36 * 60) return json({ error:'Bad request' }, 400);
+  const [p, n] = await env.DB.batch([
+    env.DB.prepare('SELECT areas, plan_id FROM polls WHERE id = ?1').bind(id),
+    env.DB.prepare('SELECT COUNT(*) AS n FROM poll_votes WHERE poll_id = ?1 AND device != ?2').bind(id, b.device),
+  ]);
+  const poll = p.results[0];
+  if (!poll) return json({ error:'Vote not found' }, 404);
+  if (poll.plan_id) return json({ error:'The plan’s already made', plan:poll.plan_id }, 409);
+  if (n.results[0].n >= MAX_MEMBERS) return json({ error:'This group is full' }, 409);
+  const allowed = JSON.parse(poll.areas);
+  const areas = [...new Set(b.areas.filter(a => allowed.includes(a)))];
+  const types = [...new Set(b.types.filter(t => TYPE_IDS.has(t)))].slice(0, 12);
+  if (!types.length) return json({ error:'Pick at least one thing' }, 400);
+  await env.DB.prepare(
+    `INSERT INTO poll_votes (poll_id, device, name, areas, types, end_min, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+     ON CONFLICT (poll_id, device) DO UPDATE SET name = ?3, areas = ?4, types = ?5, end_min = ?6, updated_at = ?7`)
+    .bind(id, b.device, name, JSON.stringify(areas.length ? areas : allowed), JSON.stringify(types), b.end, Date.now()).run();
+  return json({ ok:true });
+}
+
+// The organiser made the plan in the app (same engine as any plan) and locked it as a group
+// plan; link it here, and everyone who voted joins it under the name they voted with.
+async function planFromPoll(id, request, env){
+  const b = await request.json().catch(() => null);
+  if (!b || !DEVICE.test(b.device || '') || !PLAN_ID.test(b.plan || '')) return json({ error:'Bad request' }, 400);
+  const [p, pl] = await env.DB.batch([
+    env.DB.prepare('SELECT created_by, plan_id FROM polls WHERE id = ?1').bind(id),
+    env.DB.prepare('SELECT id FROM plans WHERE id = ?1').bind(b.plan),
+  ]);
+  const poll = p.results[0];
+  if (!poll) return json({ error:'Vote not found' }, 404);
+  if (poll.created_by !== b.device) return json({ error:'Only the person who started the vote can make the plan' }, 403);
+  if (!pl.results[0]) return json({ error:'Plan not found' }, 404);
+  await env.DB.batch([
+    env.DB.prepare('UPDATE polls SET plan_id = ?2 WHERE id = ?1').bind(id, b.plan),
+    env.DB.prepare(
+      `INSERT INTO members (plan_id, device, name, joined_at)
+       SELECT ?2, device, name, updated_at FROM poll_votes WHERE poll_id = ?1
+       ON CONFLICT (plan_id, device) DO NOTHING`).bind(id, b.plan),
+  ]);
   return json({ ok:true });
 }
 
