@@ -83,6 +83,15 @@
   .lang-pick select{ position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
   .nav-link{ display:inline-flex; align-items:center; min-height:44px; background:none; border:none; padding:0 4px; font-size:14px; color:var(--text-2); cursor:pointer; transition:color .15s var(--ease); }
   .nav-link:hover, .nav-link.on{ color:var(--text); }
+  /* How it works: always in the top bar (the home strip is only for first visits). Phones get the play icon alone. */
+  .how-link{ gap:6px; }
+  .how-link svg{ width:20px; height:20px; flex:0 0 20px; color:var(--route); }
+  @media (max-width:640px){ .how-link{ width:40px; justify-content:center; padding:0; } .how-link span{ display:none; } .how-link svg{ width:26px; height:26px; flex-basis:26px; } }
+  /* Making room in a phone's top bar: the language button sheds its globe, then its arrow (flag and code stay);
+     on the very narrowest phones the Neighbourhoods link steps out (it's on the page and in the footer). */
+  @media (max-width:480px){ .lang-pick .globe{ display:none; } .lang-pick{ padding:0 10px; } }
+  @media (max-width:420px){ .lang-pick .chev{ display:none; } }
+  @media (max-width:340px){ .top-right a.nav-link[href="/neighbourhoods"]{ display:none; } }
 
   /* ---------- about ---------- */
   .about{ padding:48px 20px 80px; }
@@ -474,6 +483,7 @@
   <header class="top">
     <button class="logo" id="logo" type="button"><img src="/icon.svg" alt="">Owlabout</button>
     <div class="top-right">
+      <button class="nav-link how-link" id="how-link" type="button" aria-label="How it works" title="How it works" data-t-aria="how.title"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".16"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg><span data-t="how.title">How it works</span></button>
       <a class="nav-link" href="/neighbourhoods" data-t="nav.areas">Neighbourhoods</a>
       <button class="nav-link" id="about-link" type="button" data-t="nav.about">About</button>
       <label class="lang-pick"><svg class="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span id="lang-label">EN</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><select id="lang" aria-label="Language" data-t-aria="nav.lang"></select></label>
@@ -2157,13 +2167,15 @@
   function hideGuide(){ remember('no_guide', '1'); $('guide').hidden = true; }
   function showGuide(){ $('guide').hidden = standalone || !!recall('no_guide'); showApp(); }
   $('guide-x').onclick = hideGuide;
-  $('guide-open').onclick = () => {
+  function openHow(){
     const v = $('how-video');
     if (!v.src) v.src = '/media/how-it-works.mp4';
     openSheet($('how-sheet'));
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { v.currentTime = 0; v.play().catch(() => {}); } else v.controls = true;
     track('guide');
-  };
+  }
+  $('guide-open').onclick = openHow;
+  $('how-link').onclick = openHow;
   $('how-done').onclick = () => $('how-sheet').close();
   $('how-sheet').addEventListener('close', () => { $('how-video').pause(); hideGuide(); });
 

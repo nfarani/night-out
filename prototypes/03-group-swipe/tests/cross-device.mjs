@@ -70,6 +70,11 @@ async function runDevice([name, engine, dev]) {
     ok(await page.evaluate(() => document.getElementById('how-video').currentTime > 0.3), 'the clip plays in the sheet');
     await tap('#how-done'); await wait(300);
     ok(!(await page.locator('#how-sheet[open]').count()) && !(await page.locator('#guide').isVisible()), 'closing the sheet also retires the strip');
+    ok(await page.locator('#how-link').isVisible(), '"How it works" stays in the top bar after Got it');
+    await tap('#how-link'); await page.waitForSelector('#how-sheet[open]', { timeout:3000 }).catch(() => {});
+    ok(await page.locator('#how-sheet[open]').count(), 'the top-bar link reopens the guide');
+    await tap('#how-done'); await wait(300);
+    ok(await page.locator('.top').evaluate(e => e.scrollWidth <= e.clientWidth + 1), 'top bar fits the screen', await page.locator('.top').evaluate(e => e.scrollWidth - e.clientWidth) + 'px over');
 
     // home preview: a real plan on the first screen
     await page.waitForSelector('#preview-stops li', { timeout:15000 });
