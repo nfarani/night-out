@@ -61,11 +61,15 @@ async function runDevice([name, engine, dev]) {
     await page.waitForSelector('#stops-n button', { timeout:15000 });
     ok(await page.locator('#s-home.on').count(), 'home shows on load');
     ok(!/ref=/.test(page.url()), 'source tag is removed from the address', page.url());
-    ok(await page.locator('#guide').isVisible(), 'first visit shows the how-it-works guide');
-    await page.waitForFunction(() => document.getElementById('guide-video').currentTime > 0.3, null, { timeout:8000 }).catch(() => {});
-    ok(await page.evaluate(() => document.getElementById('guide-video').currentTime > 0.3), 'guide video plays');
-    await tap('#guide-ok');
-    ok(!(await page.locator('#guide').isVisible()), '"Got it" hides the guide');
+    ok(await page.locator('#guide').isVisible(), 'first visit shows the slim "see how it works" strip');
+    const stripH = (await page.locator('#guide').boundingBox()).height;
+    ok(stripH <= 64, 'the strip stays slim', Math.round(stripH) + 'px');
+    await tap('#guide-open'); await page.waitForSelector('#how-sheet[open]');
+    ok(await visibleSheetFits('#how-sheet') === 'ok', 'how-it-works sheet fits screen', await visibleSheetFits('#how-sheet'));
+    await page.waitForFunction(() => document.getElementById('how-video').currentTime > 0.3, null, { timeout:8000 }).catch(() => {});
+    ok(await page.evaluate(() => document.getElementById('how-video').currentTime > 0.3), 'the clip plays in the sheet');
+    await tap('#how-done'); await wait(300);
+    ok(!(await page.locator('#how-sheet[open]').count()) && !(await page.locator('#guide').isVisible()), 'closing the sheet also retires the strip');
 
     // home preview: a real plan on the first screen
     await page.waitForSelector('#preview-stops li', { timeout:15000 });
@@ -118,6 +122,7 @@ async function runDevice([name, engine, dev]) {
     ok(await overflow() <= 0, 'plan: no sideways scroll', await overflow() + 'px');
     ok(await page.locator('#plan .empty').count() === 0, 'plan: no empty stops in Soho');
     ok(!(await page.locator('#rate-banner').isVisible()), 'no "rate the places" banner on a solo plan');
+    if (/iPhone|iPad/.test(name)) ok(await page.locator('#app-row').isVisible() && /Home Screen/.test(await page.textContent('#app-row')), 'iPhone: "Add to Home Screen" tip on the plan');
     ok(await page.$eval('#route', a => a.href.startsWith('https://www.google.com/maps/')), 'route link is Google Maps');
     ok(await page.locator('#map .leaflet-marker-icon').count() === 4, 'map shows 4 pins', await page.locator('#map .leaflet-marker-icon').count());
 

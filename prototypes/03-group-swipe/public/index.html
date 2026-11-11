@@ -351,18 +351,31 @@
   .group-cta b{ display:block; font:600 24px/1.05 var(--display); }
   .group-cta small{ display:block; font-size:13px; line-height:18px; opacity:.88; margin-top:2px; }
   /* First visit: three steps, then out of the way for good. */
-  .guide{ display:flex; gap:14px; align-items:center; max-width:34rem; margin:0 0 24px; padding:12px; background:var(--card); border:1px solid var(--line-2); border-radius:14px; }
-  .guide-video{ flex:0 0 92px; width:92px; aspect-ratio:360/780; border-radius:12px; border:1px solid var(--line-2); background:var(--deep); object-fit:cover; }
-  .guide-body{ flex:1; min-width:0; }
-  @media (max-width:340px){ .guide-video{ flex-basis:72px; width:72px; } }
-  .guide-title{ margin:0 0 8px; font:600 18px/1 var(--display); }
-  .guide ol{ margin:0; padding:0; list-style:none; counter-reset:g; display:grid; gap:5px; }
-  .guide li{ counter-increment:g; display:flex; gap:8px; align-items:flex-start; font-size:13px; line-height:18px; color:var(--text-2); }
-  .guide li::before{ content:counter(g); flex:0 0 18px; height:18px; border-radius:50%; background:var(--red); color:#fff; font-size:11px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; }
-  .guide-app{ margin:8px 0 0; font-size:12px; line-height:16px; color:var(--route); }
-  .guide-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
-  .guide-actions .btn{ height:36px; }
-  @container app (min-width: 900px){ .guide{ margin:0 0 32px; } .guide-video{ flex-basis:104px; width:104px; } }
+  /* New here: one slim line on home; the clip and the steps open in a sheet on tap. */
+  .guide-strip{ display:flex; align-items:center; max-width:34rem; margin:0 0 20px; background:var(--card); border:1px solid var(--line-2); border-radius:12px; }
+  .guide-open{ flex:1; display:flex; align-items:center; gap:12px; min-height:52px; padding:8px 12px; background:none; border:none; color:var(--text); text-align:left; cursor:pointer; border-radius:12px; }
+  .guide-open:hover b{ text-decoration:underline; text-underline-offset:3px; }
+  .guide-open .play{ flex:0 0 32px; height:32px; border-radius:50%; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; }
+  .guide-open .play svg{ width:14px; height:14px; margin-left:2px; }
+  .guide-open > span:last-child{ min-width:0; }
+  .guide-open b{ display:block; font-size:14px; line-height:18px; font-weight:600; }
+  .guide-open small{ display:block; font-size:12px; color:var(--muted); }
+  /* Narrowest phones: the sentence gets two lines and "8 seconds" steps aside, same height, nothing cut off. */
+  @media (max-width:360px){ .guide-open{ gap:10px; padding:8px 4px 8px 10px; } .guide-open b{ font-size:13px; line-height:17px; white-space:normal; } .guide-open small{ display:none; } .guide-x{ flex-basis:40px; } }
+  .guide-x{ flex:0 0 44px; height:44px; margin-right:4px; background:none; border:none; border-radius:8px; color:var(--muted); font-size:22px; line-height:1; cursor:pointer; }
+  .guide-x:hover{ color:var(--text); background:var(--raised); }
+  .how-sheet h2{ margin-bottom:16px; }
+  .how-video{ display:block; height:min(420px, 46vh); height:min(420px, 46dvh); width:auto; aspect-ratio:360/780; margin:0 auto 20px; object-fit:contain; border-radius:18px; border:1px solid var(--line-2); background:var(--deep); }
+  .how-steps{ margin:0 0 4px; padding:0; list-style:none; counter-reset:g; display:grid; gap:10px; }
+  .how-steps li{ counter-increment:g; display:flex; gap:10px; align-items:flex-start; font-size:15px; line-height:20px; color:var(--text-2); }
+  .how-steps li::before{ content:counter(g); flex:0 0 20px; height:20px; border-radius:50%; background:var(--red); color:#fff; font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; }
+  .how-sheet .cta{ margin-top:20px; }
+  /* Add to home screen: offered on the plan, once there's something worth keeping. */
+  .app-row{ display:flex; align-items:center; gap:10px; margin:20px 0 0; padding:8px 4px 8px 14px; background:var(--card); border:1px solid var(--line-2); border-radius:12px; font-size:14px; color:var(--text-2); }
+  .app-row > svg{ flex:0 0 20px; width:20px; height:20px; color:var(--route); }
+  .app-row > span{ flex:1; min-width:0; }
+  .app-row .btn{ flex:0 0 auto; height:36px; }
+  .app-row .guide-x{ margin:0; }
   /* After the night: ask the group to rate, and let people leave a word for each other. */
   .rate-banner{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0 0; padding:12px 14px; background:#2a2412; border:1px solid #5a4a1c; border-radius:12px; font-size:14px; color:var(--text); }
   .rate-banner .btn{ flex:0 0 auto; }
@@ -476,15 +489,13 @@
     <nav class="cities" id="cities" aria-label="City" data-t-aria="aria.city"></nav>
     <div class="home">
       <div class="intro">
-        <aside class="guide" id="guide" hidden>
-          <video class="guide-video" id="guide-video" muted loop playsinline preload="none" poster="/media/how-it-works.jpg" aria-hidden="true"></video>
-          <div class="guide-body">
-          <p class="guide-title" data-t="guide.title">New here? How it works</p>
-          <ol><li data-t="guide.s1">Pick a neighbourhood and a day</li><li data-t="guide.s2">Plan it yourself, or ask your group what they’re up for</li><li data-t="guide.s3">Send one link. Everyone sees the same plan, map and times</li></ol>
-          <p class="guide-app" id="guide-app" hidden></p>
-          <div class="guide-actions"><button class="btn" type="button" id="install" hidden data-t="app.install">Install the app</button><button class="btn" type="button" id="guide-ok" data-t="guide.ok">Got it</button></div>
-          </div>
-        </aside>
+        <div class="guide-strip" id="guide" hidden>
+          <button class="guide-open" type="button" id="guide-open">
+            <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span>
+            <span><b data-t="guide.title">New here? See how it works</b><small data-t="guide.len">8 seconds</small></span>
+          </button>
+          <button class="guide-x" type="button" id="guide-x" aria-label="Close" data-t-aria="share.close">×</button>
+        </div>
         <h1 class="hero">
           <label class="pick"><span id="day-label">Tonight</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="day" aria-label="Change the day" title="Change the day"></select></label>
           <span data-t="home.in">in</span> <label class="pick accent"><span id="area-label">Soho</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="area" aria-label="Change the area" title="Change the area"></select></label>
@@ -545,6 +556,12 @@
         <div class="plan-tools" id="plan-tools">
           <button class="btn" id="add-stop" type="button" data-t="plan.add">+ Add a stop</button>
           <button class="btn" id="times-btn" type="button" data-t="plan.times">Times</button>
+        </div>
+        <div class="app-row" id="app-row" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+          <span id="app-text"></span>
+          <button class="btn primary" type="button" id="install" data-t="app.add">Add</button>
+          <button class="guide-x" type="button" id="app-x" aria-label="Close" data-t-aria="share.close">×</button>
         </div>
         <p class="fb-prompt"><button type="button" data-fb data-t="fb.prompt">Something wrong or missing? Tell us</button></p>
         <p class="credit"><span data-t="link.venueData">Venue data</span> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · <a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="mailto:hello@getowlabout.com" data-t="link.contact">Contact</a></p>
@@ -617,6 +634,12 @@
   </section>
 </div>
 <div class="toast" id="toast"></div>
+<dialog class="sheet how-sheet" id="how-sheet">
+  <h2 tabindex="-1" data-t="how.title">How it works</h2>
+  <video class="how-video" id="how-video" muted loop playsinline preload="none" poster="/media/how-it-works.jpg" aria-hidden="true"></video>
+  <ol class="how-steps"><li data-t="guide.s1">Pick a neighbourhood and a day</li><li data-t="guide.s2">Plan it yourself, or ask your group what they’re up for</li><li data-t="guide.s3">Send one link. Everyone sees the same plan, map and times</li></ol>
+  <button class="cta" type="button" id="how-done" data-t="guide.ok">Got it</button>
+</dialog>
 <dialog class="sheet" id="share-sheet">
   <h2 tabindex="-1" data-t="share.title">Your group link</h2>
   <p data-t="share.intro">Friends open it, add their name, and everyone sees the same plan. After the night they can say if they'd go back.</p>
@@ -1063,7 +1086,7 @@
     sendEvent({ step:'plan', shown:plan.filter(x => x.venue).map(x => x.venue.id) });
     markSeen(plan.filter(x => x.venue).map(x => x.venue.id));
     if (!plannedThisVisit) { plannedThisVisit = true; track('plan_' + SOURCE); }
-    remember('no_guide', '1'); $('guide').hidden = true; $('guide-video').pause();
+    hideGuide();
   }
 
   async function swapStop(k){
@@ -2114,11 +2137,13 @@
   let installPrompt = null;                     // Chrome and Android offer their own install dialog; iPhone needs Share → Add to Home Screen
   addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showApp(); });
   addEventListener('appinstalled', () => { track('install'); installPrompt = null; showApp(); });
+  // The plan's "keep it on your home screen" row, and the footer link. iPhone gets the steps instead of a button.
   function showApp(){
-    $('install').hidden = standalone || !installPrompt;
-    $('guide-app').hidden = standalone || !isIOS;
-    $('guide-app').textContent = t('app.ios');
-    $('get-app-wrap').hidden = standalone || !(installPrompt || isIOS);
+    const can = !standalone && (!!installPrompt || isIOS);
+    $('get-app-wrap').hidden = !can;
+    $('app-row').hidden = !can || !plan.some(x => x.venue) || !!recall('no_app');
+    $('app-text').textContent = installPrompt ? t('app.pitch') : t('app.ios');
+    $('install').hidden = !installPrompt;
   }
   async function install(){
     if (!installPrompt) { toast(t('app.ios')); return; }
@@ -2127,17 +2152,20 @@
     installPrompt = null; showApp();
   }
   $('install').onclick = install;
+  $('app-x').onclick = () => { remember('no_app', '1'); showApp(); };
   $('get-app').onclick = e => { e.preventDefault(); install(); };
-  $('guide-ok').onclick = () => { remember('no_guide', '1'); $('guide').hidden = true; $('guide-video').pause(); };
-  function showGuide(){
-    $('guide').hidden = standalone || !!recall('no_guide');
-    showApp();
-    const v = $('guide-video');
-    if ($('guide').hidden || v.src) return;
-    v.src = '/media/how-it-works.mp4';
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) v.play().catch(() => {});
-    else v.controls = true;
-  }
+  function hideGuide(){ remember('no_guide', '1'); $('guide').hidden = true; }
+  function showGuide(){ $('guide').hidden = standalone || !!recall('no_guide'); showApp(); }
+  $('guide-x').onclick = hideGuide;
+  $('guide-open').onclick = () => {
+    const v = $('how-video');
+    if (!v.src) v.src = '/media/how-it-works.mp4';
+    openSheet($('how-sheet'));
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { v.currentTime = 0; v.play().catch(() => {}); } else v.controls = true;
+    track('guide');
+  };
+  $('how-done').onclick = () => $('how-sheet').close();
+  $('how-sheet').addEventListener('close', () => { $('how-video').pause(); hideGuide(); });
 
   // ---------- navigation: real history entries, so the phone's back button works ----------
   function showAbout(push = true){
@@ -2266,6 +2294,7 @@
     $('plan').querySelectorAll('[data-note]').forEach(f => f.onsubmit = e => { e.preventDefault(); saveNote(f.dataset.note, f.querySelector('input').value).catch(err => toast(err.message)); });
     renderGroup();
     renderWeather();
+    showApp();
     $('plan-tools').hidden = !!group;
     $('reshuffle').style.display = group ? 'none' : '';
     $('share').textContent = group ? t('plan.shareLink') : t('plan.send');
