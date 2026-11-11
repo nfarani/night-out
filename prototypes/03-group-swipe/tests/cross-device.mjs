@@ -139,6 +139,18 @@ async function runDevice([name, engine, dev]) {
       ok(small.length === 0, 'plan: tap targets ≥ 32px', small.join(' | '));
     }
 
+    // reorder with the arrows on the cards
+    const order0 = await page.$$eval('#plan h3', hs => hs.map(h => h.textContent));
+    ok(!(await page.locator('[data-move="0"][data-dir="-1"]').count()) && !(await page.locator('[data-move="'+(order0.length - 1)+'"][data-dir="1"]').count()), 'no ↑ on the first stop, no ↓ on the last');
+    await tap('[data-move="0"][data-dir="1"]'); await wait(300);
+    const order1 = await page.$$eval('#plan h3', hs => hs.map(h => h.textContent));
+    ok(order1[0] === order0[1] && order1[1] === order0[0], '↓ swaps a stop with the next one', order1.slice(0, 2).join(' / '));
+    const times1 = await page.$$eval('#plan .time', bs => bs.map(b => b.textContent));
+    ok(times1.every((x, i) => !i || x > times1[i - 1] || x < '06'), 'times stay in order after moving', times1.join(' '));
+    await tap('[data-move="1"][data-dir="-1"]'); await wait(300);
+    ok(JSON.stringify(await page.$$eval('#plan h3', hs => hs.map(h => h.textContent))) === JSON.stringify(order0), '↑ moves it back');
+    await wait(400);
+
     // swap on a lower stop keeps scroll
     const swaps = page.locator('[data-swap]');
     await page.evaluate(() => document.querySelectorAll('[data-swap]')[2].scrollIntoView({ block:'center' }));

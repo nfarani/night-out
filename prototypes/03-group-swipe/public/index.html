@@ -2228,11 +2228,16 @@
 
   const ICON_BACK = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>';
   const ICON_PINNED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3H7l3-3z"/><path d="M12 13v7"/></svg>';
+  const ICON_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
+  const ICON_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
   const ICON_EDIT = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
   // Top of a stop card: the kind of place, then pin and options (not on a locked group plan).
   function cardTop(s, k){
     const pinned = !!s.pinned;
     return '<div class="card-top"><p class="type">'+esc(s.type.name)+'</p>' + (group ? '' : '<div class="card-icons">' +
+      // Reorder right on the card: ↑ moves the stop earlier in the night, ↓ later.
+      (k > 0 ? '<button class="icon-btn" type="button" data-move="'+k+'" data-dir="-1" aria-label="'+esc(t('stop.earlier'))+'" title="'+esc(t('stop.earlier'))+'">'+ICON_UP+'</button>' : '') +
+      (k < plan.length - 1 ? '<button class="icon-btn" type="button" data-move="'+k+'" data-dir="1" aria-label="'+esc(t('stop.later'))+'" title="'+esc(t('stop.later'))+'">'+ICON_DOWN+'</button>' : '') +
       (s.venue ? '<button class="icon-btn" type="button" data-pin="'+k+'" aria-pressed="'+pinned+'" aria-label="'+esc(t(pinned ? 'plan.unpin' : 'plan.pin'))+'" title="'+esc(t(pinned ? 'plan.unpin' : 'plan.pin'))+'">'+ICON_PINNED+'</button>' : '') +
       '</div>') + '</div>' +
       (pinned && !group ? '<p class="pinned-note">'+ICON_PINNED+esc(t('plan.pinnedTag'))+'</p>' : '');
@@ -2241,11 +2246,13 @@
   // up the page; Chrome compensates. So redraws that should stay put note the position first and
   // put it back right after, again on the next frame and once more shortly after (map and weather
   // finish later). Stops early if the person scrolls themselves.
+  // A newer hold replaces an older one, and any touch, tap, wheel or key from the person ends it.
+  let holdStop = () => {};
   function holdScroll(y){
+    holdStop();
     let mine = true;
-    const stop = () => { mine = false; };
-    addEventListener('touchmove', stop, { once:true, passive:true });
-    addEventListener('wheel', stop, { once:true, passive:true });
+    const stop = holdStop = () => { mine = false; };
+    for (const ev of ['touchmove', 'wheel', 'pointerdown', 'keydown']) addEventListener(ev, stop, { once:true, passive:true });
     const fix = () => { if (mine && Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); };
     fix(); requestAnimationFrame(fix); setTimeout(fix, 80); setTimeout(() => { fix(); stop(); }, 350);
   }
@@ -2298,6 +2305,7 @@
     $('plan').querySelectorAll('[data-maps]').forEach(a => a.addEventListener('click', () => track('maps')));   // do people need more before trusting a stop?
     $('plan').querySelectorAll('[data-report]').forEach(b => b.onclick = () => askReport(+b.dataset.report));
     $('plan').querySelectorAll('[data-pin]').forEach(b => b.onclick = () => togglePin(+b.dataset.pin));
+    $('plan').querySelectorAll('[data-move]').forEach(b => b.onclick = () => moveStop(+b.dataset.move, +b.dataset.dir));
     $('plan').querySelectorAll('[data-menu]').forEach(b => b.onclick = () => openStop(+b.dataset.menu));
     $('plan').querySelectorAll('[data-time]:not([disabled])').forEach(b => b.onclick = () => openStop(+b.dataset.time));
     $('plan').querySelectorAll('[data-choose]').forEach(b => b.onclick = () => openPicker(+b.dataset.choose).catch(e => toast(e.message)));
