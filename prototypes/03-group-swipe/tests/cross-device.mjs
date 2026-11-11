@@ -280,7 +280,8 @@ async function runDevice([name, engine, dev]) {
 
     // ---------- ask the group (vote) ----------
     await page.goto(BASE + '/'); await page.waitForSelector('#stops-n button');
-    await tap('#ask'); await page.waitForSelector('#vote-sheet[open]');
+    ok(await page.locator('#group-go').isVisible(), 'big "Plan it with your group" button on home');
+    await tap('#group-go'); await page.waitForSelector('#vote-sheet[open]');
     ok(await visibleSheetFits('#vote-sheet') === 'ok', 'vote setup sheet fits screen', await visibleSheetFits('#vote-sheet'));
     await tap('#vote-setup-areas .chip:not(.on)');
     await tap('#vote-setup-go'); await page.waitForSelector('#share-sheet[open]', { timeout:8000 }).catch(() => {});
@@ -292,10 +293,20 @@ async function runDevice([name, engine, dev]) {
     const voteUrl = page.url();
     await page.fill('#vote-name', 'Alex');
     await tap('#vote-pick-types .chip[data-id="pub"]'); await tap('#vote-pick-types .chip[data-id="cocktail"]');
+    const ends = await page.$$eval('#vote-pick-end button', bs => bs.map(b => b.textContent));
+    ok(ends.length && !ends.includes('1pm'), 'vote "until" only offers times after the start', ends.join(' '));
+    await tap('#vote-pick-style button[data-v="gems"]');
+    ok(await page.locator('#vote-pick-style button[data-v="gems"].on').count(), 'vote: hidden gems selected');
+    await page.fill('#vote-love-search', 'the'); await page.waitForSelector('#vote-love-list [data-love]', { timeout:8000 });
+    const loved = (await page.locator('#vote-love-list [data-love] b').first().textContent()).trim();
+    await tap(page.locator('#vote-love-list [data-love]').first());
+    ok((await page.textContent('#vote-loved')).includes(loved), 'vote: a loved place is added', loved);
     await page.evaluate(() => document.getElementById('vote-save').scrollIntoView({ block:'center' })); await wait(100);
     y1 = await y();
     await tap('#vote-save'); await wait(1200);
     ok((await page.textContent('#vote-who')).includes('Alex'), 'vote saved and counted', await page.textContent('#vote-who'));
+    await page.waitForFunction(n => document.getElementById('vote-who').textContent.includes(n), loved, { timeout:8000 }).catch(() => {});
+    ok((await page.textContent('#vote-who')).includes('Hidden gems') && (await page.textContent('#vote-who')).includes(loved), 'tally shows style and loved place', await page.textContent('#vote-who'));
     ok(Math.abs(await y() - y1) < 40, 'saving a vote keeps your place', `${y1} → ${await y()}`);
     // friend votes
     const ctx3 = await browser.newContext(opts); const g = await ctx3.newPage();
@@ -311,6 +322,8 @@ async function runDevice([name, engine, dev]) {
     await tap('#vote-make'); await page.waitForURL(/\/p\//, { timeout:15000 }).catch(() => {});
     await wait(1000);
     ok(/\/p\//.test(page.url()) && await page.locator('#plan h3').count() >= 2, 'make plan from votes → group plan', page.url());
+    const planNames = await page.$$eval('#plan h3', hs => hs.map(h => h.textContent.trim()));
+    ok(planNames.includes(loved), 'the loved place is in the plan', loved + ' vs ' + planNames.join(', '));
     ok(/Sam/.test(await page.textContent('#group')) && /Alex/.test(await page.textContent('#group')), 'voters are already in the group', await page.textContent('#group'));
     await g.reload(); await wait(2000);
     ok(/\/p\//.test(g.url()), 'vote link now opens the group plan for friends', g.url());

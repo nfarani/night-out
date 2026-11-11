@@ -7,7 +7,7 @@
 //   GET  /api/weather?area=soho         public: hourly forecast for the area (MET Norway, CC BY 4.0), cached
 //   POST /api/polls                     public: ask the group first { areas[1-3], date, start, device, name?, lang } -> { id }
 //   GET  /api/polls/<id>?device=…       public: the vote so far (everyone's picks, yours marked)
-//   POST /api/polls/<id>/vote           public: { device, name, areas, types, end }
+//   POST /api/polls/<id>/vote           public: { device, name, areas, types, end, venues?[≤3], style?: classic|gems }
 //   POST /api/polls/<id>/plan           creator: { device, plan } link the plan made from it; voters join that plan
 //   GET  /api/stats?days=30             curator: funnel counts per city and area
 //   POST /api/plans                     public: lock a plan for a group { area, date, start, end, stops, title?, device, name? } -> { id }
@@ -27,7 +27,7 @@ const VENUE_ID = /^[nwr]\d{1,12}$/;
 const MAX_IDS = 8;
 
 const STEPS = new Set(['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route', 'lock', 'join', 'rate',
-  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report', 'sent', 'maps', 'preview',
+  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report', 'sent', 'maps', 'preview', 'group_tap',
   // where a visit came from (in_), and whether that visit went on to make a plan (plan_)
   ...['reddit', 'tiktok', 'instagram', 'facebook', 'x', 'linkedin', 'whatsapp', 'google', 'search', 'site', 'direct', 'other'].flatMap(s => ['in_' + s, 'plan_' + s])]);
 const TYPE_IDS = new Set(['pub', 'wine', 'rooftop', 'cheap', 'dinner', 'cocktail', 'games', 'live', 'comedy', 'karaoke', 'dance', 'latefood']);
@@ -427,14 +427,15 @@ async function getPoll(id, url, env){
   const device = url.searchParams.get('device') || '';
   const [p, v] = await env.DB.batch([
     env.DB.prepare('SELECT * FROM polls WHERE id = ?1').bind(id),
-    env.DB.prepare('SELECT device, name, areas, types, end_min FROM poll_votes WHERE poll_id = ?1 ORDER BY updated_at').bind(id),
+    env.DB.prepare('SELECT device, name, areas, types, end_min, venues, style FROM poll_votes WHERE poll_id = ?1 ORDER BY updated_at').bind(id),
   ]);
   const poll = p.results[0];
   if (!poll) return json({ error:'Vote not found' }, 404);
   return json({
     id, city:poll.city, areas:JSON.parse(poll.areas), date:poll.date, start:poll.start_min, lang:poll.lang, plan:poll.plan_id,
     mine:poll.created_by === device,
-    votes:v.results.map(r => ({ name:r.name, me:r.device === device, areas:JSON.parse(r.areas), types:JSON.parse(r.types), end:r.end_min })),
+    votes:v.results.map(r => ({ name:r.name, me:r.device === device, areas:JSON.parse(r.areas), types:JSON.parse(r.types), end:r.end_min,
+      venues:r.venues ? JSON.parse(r.venues) : [], style:r.style || null })),
   });
 }
 
@@ -455,10 +456,13 @@ async function votePoll(id, request, env){
   const areas = [...new Set(b.areas.filter(a => allowed.includes(a)))];
   const types = [...new Set(b.types.filter(t => TYPE_IDS.has(t)))].slice(0, 12);
   if (!types.length) return json({ error:'Pick at least one thing' }, 400);
+  const venues = [...new Set((Array.isArray(b.venues) ? b.venues : []).filter(v => VENUE_ID.test(v)))].slice(0, 3);
+  const style = ['classic', 'gems'].includes(b.style) ? b.style : null;
   await env.DB.prepare(
-    `INSERT INTO poll_votes (poll_id, device, name, areas, types, end_min, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-     ON CONFLICT (poll_id, device) DO UPDATE SET name = ?3, areas = ?4, types = ?5, end_min = ?6, updated_at = ?7`)
-    .bind(id, b.device, name, JSON.stringify(areas.length ? areas : allowed), JSON.stringify(types), b.end, Date.now()).run();
+    `INSERT INTO poll_votes (poll_id, device, name, areas, types, end_min, venues, style, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+     ON CONFLICT (poll_id, device) DO UPDATE SET name = ?3, areas = ?4, types = ?5, end_min = ?6, venues = ?7, style = ?8, updated_at = ?9`)
+    .bind(id, b.device, name, JSON.stringify(areas.length ? areas : allowed), JSON.stringify(types), b.end,
+      venues.length ? JSON.stringify(venues) : null, style, Date.now()).run();
   return json({ ok:true });
 }
 

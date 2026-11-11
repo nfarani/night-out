@@ -31,11 +31,16 @@ function query(lat, lng) {
   nwr${around}[amenity~"^(pub|bar|restaurant|fast_food|food_court|nightclub|music_venue|karaoke_box|theatre|arts_centre|events_venue)$"][name];
   nwr${around}[leisure~"^(bowling_alley|amusement_arcade)$"][name];
   nwr${around}[sport~"billiards|darts|shuffleboard"][name];
+  nwr${around}[shop=mall][name~"${FOOD_HALL.source}",i];
+  nwr${around}[amenity=marketplace][name~"${FOOD_HALL.source}",i];
 );
 out center tags;`;
 }
 
 const DRINKS = ['bar', 'pub', 'restaurant'];
+// Food halls and street-food markets (Boxpark, Mercado de San Miguel, Time Out Market…) are often
+// tagged as a mall or marketplace; only names like these count, so shopping centres and flea markets stay out.
+const FOOD_HALL = /food ?(hall|market|court)|street ?food|boxpark|market ?hall|time out market|mercado|mercato|markthal|markthalle|march[eé] couvert/;
 const late = h => /24\/7/.test(h) || /-\s*(0[0-5]|2[4-9])(:\d\d)?\b/.test(h);
 
 // Which of the 12 vibes a venue can stand in for. Chains (brand tag) are dropped
@@ -49,13 +54,16 @@ function classify(t) {
   const wineName = /\bwine|\bvin(o|s|i|ho|hos)?\b|enoteca|vinoteca|\bcave\b|\bbodega|weinbar|\bwijn|garrafeira|vermut|vermouth/i.test(name);
   if (a === 'pub' && !chain) v.push('pub');
   if (['bar', 'restaurant', 'pub'].includes(a) && !chain && wineName) v.push('wine');
-  if ((a === 'fast_food' && !chain) || a === 'food_court') v.push('cheap');
+  if ((a === 'fast_food' && !chain) || a === 'food_court' || ((t.shop === 'mall' || a === 'marketplace') && FOOD_HALL.test(name.toLowerCase()))) v.push('cheap');
   if (a === 'restaurant' && !chain) v.push('dinner');
   if (DRINKS.includes(a) && !chain &&
       (/roof|terrace|garden|\bsky|terrasse|terraza|terrat|terrazza|terra[çc]o|dachterrasse|dakterras|biergarten|giardino|jard[ií]n|jardim/i.test(name) || t.rooftop === 'yes' || t.beer_garden === 'yes' ||
        (t.outdoor_seating === 'yes' && a !== 'restaurant'))) v.push('rooftop');
   if (a === 'bar' && !chain && !wineName) v.push('cocktail');
-  if (a === 'music_venue' || t.live_music === 'yes' || (a === 'nightclub' && /jazz|live/i.test(name))) v.push('live');
+  // A bar, pub or club with live music, or a music venue. Arts centres, theatres and cinemas that sometimes
+  // host gigs don't count: as a night's live-music stop they get swapped away (Rich Mix in Shoreditch).
+  if (a === 'music_venue' || (t.live_music === 'yes' && ['bar', 'pub', 'nightclub', 'restaurant'].includes(a)) ||
+      (a === 'nightclub' && /jazz|live/i.test(name))) v.push('live');
   if (/billiards|darts|shuffleboard|10pin/.test(sport) || t.leisure === 'bowling_alley' ||
       (['bar', 'pub'].includes(a) && /\bpool\b|darts|shuffle|bowl|ping ?pong|games|billar|biliardo|billard|bolera|kicker|futbol[ií]n/i.test(name))) v.push('games');
   if ((a === 'theatre' && /comedy/i.test(t['theatre:genre'] || '')) || /comedy|\blaugh|com[ée]die|stand.?up|cabaret|kabarett/i.test(name)) v.push('comedy');
