@@ -83,15 +83,21 @@
   .lang-pick select{ position:absolute; inset:0; opacity:0; cursor:pointer; font-size:16px; }
   .nav-link{ display:inline-flex; align-items:center; min-height:44px; background:none; border:none; padding:0 4px; font-size:14px; color:var(--text-2); cursor:pointer; transition:color .15s var(--ease); }
   .nav-link:hover, .nav-link.on{ color:var(--text); }
-  /* How it works: always in the top bar (the home strip is only for first visits). Phones get the play icon alone. */
-  .how-link{ gap:6px; }
-  .how-link svg{ width:20px; height:20px; flex:0 0 20px; color:var(--route); }
-  @media (max-width:640px){ .how-link{ width:40px; justify-content:center; padding:0; } .how-link span{ display:none; } .how-link svg{ width:26px; height:26px; flex-basis:26px; } }
-  /* Making room in a phone's top bar: the language button sheds its globe, then its arrow (flag and code stay);
-     on the very narrowest phones the Neighbourhoods link steps out (it's on the page and in the footer). */
-  @media (max-width:480px){ .lang-pick .globe{ display:none; } .lang-pick{ padding:0 10px; } }
-  @media (max-width:420px){ .lang-pick .chev{ display:none; } }
-  @media (max-width:340px){ .top-right a.nav-link[href="/neighbourhoods"]{ display:none; } }
+  /* Help: How it works and Get the app, as words. In the top bar on wide screens; a slim row under it on phones. */
+  .help-link{ display:inline-flex; align-items:center; gap:6px; }
+  .help-link svg{ width:18px; height:18px; flex:0 0 18px; color:var(--route); }
+  .subnav{ display:none; }
+  @media (max-width:640px){
+    .wide-only{ display:none!important; }
+    .subnav{ display:flex; gap:8px; padding:8px 16px; border-bottom:1px solid var(--line); }
+    .subnav .help-link{ flex:1; justify-content:center; height:40px; padding:0 10px; border:1px solid var(--line-2); border-radius:999px; background:none; color:var(--text); font-size:14px; font-weight:500; cursor:pointer; white-space:nowrap; }
+    .subnav .help-link:hover{ background:var(--card); }
+  }
+  @media (max-width:400px){ .lang-pick .chev{ display:none; } }
+  @media (max-width:360px){ .subnav .help-link{ padding:0 6px; font-size:13px; } .subnav .help-link svg{ display:none; } }       /* the language button keeps flag and code on small phones */
+  .app-ways{ display:grid; gap:16px; margin-top:4px; }
+  .app-ways h3{ margin:0 0 8px; font:600 18px/1 var(--display); }
+  #app-now{ margin:0 0 16px; }
 
   /* ---------- about ---------- */
   .about{ padding:48px 20px 80px; }
@@ -483,7 +489,8 @@
   <header class="top">
     <button class="logo" id="logo" type="button"><img src="/icon.svg" alt="">Owlabout</button>
     <div class="top-right">
-      <button class="nav-link how-link" id="how-link" type="button" aria-label="How it works" title="How it works" data-t-aria="how.title"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".16"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg><span data-t="how.title">How it works</span></button>
+      <button class="nav-link help-link js-how wide-only" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".16"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg><span data-t="how.title">How it works</span></button>
+      <button class="nav-link help-link js-app wide-only" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg><span data-t="app.get">Get the app</span></button>
       <a class="nav-link" href="/neighbourhoods" data-t="nav.areas">Neighbourhoods</a>
       <button class="nav-link" id="about-link" type="button" data-t="nav.about">About</button>
       <label class="lang-pick"><svg class="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span id="lang-label">EN</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><select id="lang" aria-label="Language" data-t-aria="nav.lang"></select></label>
@@ -493,6 +500,10 @@
       </div>
     </div>
   </header>
+  <nav class="subnav" aria-label="Help">
+    <button class="help-link js-how" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".16"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg><span data-t="how.title">How it works</span></button>
+    <button class="help-link js-app" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg><span data-t="app.get">Get the app</span></button>
+  </nav>
 
   <!-- HOME -->
   <section class="screen on" id="s-home">
@@ -540,7 +551,7 @@
         <div class="section-head"><h2 id="ready-title">Ready-made nights</h2><span data-t="home.readySub">Tap one to plan it</span></div>
         <div class="presets" id="presets"></div>
       </div>
-      <p class="home-foot"><span class="foot-about"><a href="#about" id="foot-about" data-t="nav.about">About</a> · </span><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="#" data-fb data-t="fb.link">Feedback</a><span id="get-app-wrap" hidden> · <a href="#" id="get-app" data-t="app.get">Get the app</a></span></p>
+      <p class="home-foot"><span class="foot-about"><a href="#about" id="foot-about" data-t="nav.about">About</a> · </span><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="#" data-fb data-t="fb.link">Feedback</a></p>
     </div>
   </section>
 
@@ -649,6 +660,13 @@
   <video class="how-video" id="how-video" muted loop playsinline preload="none" poster="/media/how-it-works.jpg" aria-hidden="true"></video>
   <ol class="how-steps"><li data-t="guide.s1">Pick a neighbourhood and a day</li><li data-t="guide.s2">Plan it yourself, or ask your group what they’re up for</li><li data-t="guide.s3">Send one link. Everyone sees the same plan, map and times</li></ol>
   <button class="cta" type="button" id="how-done" data-t="guide.ok">Got it</button>
+</dialog>
+<dialog class="sheet" id="app-sheet">
+  <h2 tabindex="-1" data-t="app.get">Get the app</h2>
+  <p data-t="app.sub">Free, with no app store or sign-up</p>
+  <button class="cta" type="button" id="app-now" hidden data-t="app.now">Install now</button>
+  <div class="app-ways" id="app-ways"></div>
+  <button class="btn close" type="button" id="app-close" data-t="app.close">Close</button>
 </dialog>
 <dialog class="sheet" id="share-sheet">
   <h2 tabindex="-1" data-t="share.title">Your group link</h2>
@@ -2150,7 +2168,7 @@
   // The plan's "keep it on your home screen" row, and the footer link. iPhone gets the steps instead of a button.
   function showApp(){
     const can = !standalone && (!!installPrompt || isIOS);
-    $('get-app-wrap').hidden = !can;
+    document.querySelectorAll('.js-app').forEach(b => { b.hidden = standalone; });     // already using it as an app
     $('app-row').hidden = !can || !plan.some(x => x.venue) || !!recall('no_app');
     $('app-text').textContent = installPrompt ? t('app.pitch') : t('app.ios');
     $('install').hidden = !installPrompt;
@@ -2163,7 +2181,6 @@
   }
   $('install').onclick = install;
   $('app-x').onclick = () => { remember('no_app', '1'); showApp(); };
-  $('get-app').onclick = e => { e.preventDefault(); install(); };
   function hideGuide(){ remember('no_guide', '1'); $('guide').hidden = true; }
   function showGuide(){ $('guide').hidden = standalone || !!recall('no_guide'); showApp(); }
   $('guide-x').onclick = hideGuide;
@@ -2175,7 +2192,20 @@
     track('guide');
   }
   $('guide-open').onclick = openHow;
-  $('how-link').onclick = openHow;
+  document.querySelectorAll('.js-how').forEach(b => b.onclick = openHow);
+  // Get the app: Chrome/Android's own install when it's offered, otherwise the steps for this phone (both on a computer).
+  const isAndroid = /Android/.test(navigator.userAgent);
+  function openAppSheet(){
+    track('get_app');
+    const way = (k, keys) => '<div><h3>' + esc(t('app.' + k)) + '</h3><ol class="how-steps">' + keys.map(x => '<li>' + esc(t(x)) + '</li>').join('') + '</ol></div>';
+    const ios = way('iphone', ['app.i1', 'app.i2', 'app.i3']), android = way('android', ['app.a1', 'app.a2', 'app.a3']);
+    $('app-ways').innerHTML = isIOS ? ios : isAndroid ? android : ios + android;
+    $('app-now').hidden = !installPrompt;
+    openSheet($('app-sheet'));
+  }
+  document.querySelectorAll('.js-app').forEach(b => b.onclick = openAppSheet);
+  $('app-now').onclick = () => { $('app-sheet').close(); install(); };
+  $('app-close').onclick = () => $('app-sheet').close();
   $('how-done').onclick = () => $('how-sheet').close();
   $('how-sheet').addEventListener('close', () => { $('how-video').pause(); hideGuide(); });
 

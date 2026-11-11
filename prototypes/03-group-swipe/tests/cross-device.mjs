@@ -70,11 +70,19 @@ async function runDevice([name, engine, dev]) {
     ok(await page.evaluate(() => document.getElementById('how-video').currentTime > 0.3), 'the clip plays in the sheet');
     await tap('#how-done'); await wait(300);
     ok(!(await page.locator('#how-sheet[open]').count()) && !(await page.locator('#guide').isVisible()), 'closing the sheet also retires the strip');
-    ok(await page.locator('#how-link').isVisible(), '"How it works" stays in the top bar after Got it');
-    await tap('#how-link'); await page.waitForSelector('#how-sheet[open]', { timeout:3000 }).catch(() => {});
+    const howBtn = page.locator('.js-how >> visible=true');
+    ok(await howBtn.count() === 1 && /How it works/.test(await howBtn.textContent()), '"How it works" stays, as words, after Got it');
+    await tap(howBtn); await page.waitForSelector('#how-sheet[open]', { timeout:3000 }).catch(() => {});
     ok(await page.locator('#how-sheet[open]').count(), 'the top-bar link reopens the guide');
     await tap('#how-done'); await wait(300);
     ok(await page.locator('.top').evaluate(e => e.scrollWidth <= e.clientWidth + 1), 'top bar fits the screen', await page.locator('.top').evaluate(e => e.scrollWidth - e.clientWidth) + 'px over');
+    const appBtn = page.locator('.js-app >> visible=true');
+    ok(await appBtn.count() === 1, '"Get the app" is next to "How it works"');
+    await tap(appBtn); await page.waitForSelector('#app-sheet[open]', { timeout:3000 }).catch(() => {});
+    const appText = await page.textContent('#app-sheet');
+    ok(/iPhone|iPad/.test(name) ? /Safari/.test(appText) && !/Chrome/.test(appText) : /Safari/.test(appText) || /Chrome/.test(appText), 'Get the app shows the steps for this device', appText.slice(0, 80));
+    ok(await visibleSheetFits('#app-sheet') === 'ok', 'Get the app sheet fits screen', await visibleSheetFits('#app-sheet'));
+    await tap('#app-close'); await wait(300);
 
     // home preview: a real plan on the first screen
     await page.waitForSelector('#preview-stops li', { timeout:15000 });
