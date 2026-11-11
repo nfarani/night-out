@@ -351,18 +351,18 @@
   .group-cta b{ display:block; font:600 24px/1.05 var(--display); }
   .group-cta small{ display:block; font-size:13px; line-height:18px; opacity:.88; margin-top:2px; }
   /* First visit: three steps, then out of the way for good. */
-  .guide{ display:flex; gap:12px; align-items:flex-start; margin:12px 20px 0; padding:12px; background:var(--card); border:1px solid var(--line-2); border-radius:14px; }
-  .guide-video{ flex:0 0 88px; width:88px; aspect-ratio:360/780; border-radius:12px; border:1px solid var(--line-2); background:var(--deep); object-fit:cover; }
+  .guide{ display:flex; gap:14px; align-items:center; max-width:34rem; margin:0 0 24px; padding:12px; background:var(--card); border:1px solid var(--line-2); border-radius:14px; }
+  .guide-video{ flex:0 0 92px; width:92px; aspect-ratio:360/780; border-radius:12px; border:1px solid var(--line-2); background:var(--deep); object-fit:cover; }
   .guide-body{ flex:1; min-width:0; }
   @media (max-width:340px){ .guide-video{ flex-basis:72px; width:72px; } }
   .guide-title{ margin:0 0 8px; font:600 18px/1 var(--display); }
   .guide ol{ margin:0; padding:0; list-style:none; counter-reset:g; display:grid; gap:5px; }
-  .guide li{ counter-increment:g; display:flex; gap:8px; align-items:baseline; font-size:13px; line-height:18px; color:var(--text-2); }
-  .guide li::before{ content:counter(g); flex:0 0 18px; height:18px; font-size:11px!important; border-radius:50%; background:var(--red); color:#fff; font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; transform:translateY(4px); }
+  .guide li{ counter-increment:g; display:flex; gap:8px; align-items:flex-start; font-size:13px; line-height:18px; color:var(--text-2); }
+  .guide li::before{ content:counter(g); flex:0 0 18px; height:18px; border-radius:50%; background:var(--red); color:#fff; font-size:11px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; }
   .guide-app{ margin:8px 0 0; font-size:12px; line-height:16px; color:var(--route); }
   .guide-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
   .guide-actions .btn{ height:36px; }
-  @container app (min-width: 900px){ .guide{ margin:24px 32px 0; } .guide-video{ flex-basis:132px; width:132px; } }
+  @container app (min-width: 900px){ .guide{ margin:0 0 32px; } .guide-video{ flex-basis:104px; width:104px; } }
   /* After the night: ask the group to rate, and let people leave a word for each other. */
   .rate-banner{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0 0; padding:12px 14px; background:#2a2412; border:1px solid #5a4a1c; border-radius:12px; font-size:14px; color:var(--text); }
   .rate-banner .btn{ flex:0 0 auto; }
@@ -474,17 +474,17 @@
   <!-- HOME -->
   <section class="screen on" id="s-home">
     <nav class="cities" id="cities" aria-label="City" data-t-aria="aria.city"></nav>
-    <aside class="guide" id="guide" hidden>
-      <video class="guide-video" id="guide-video" muted loop playsinline preload="none" poster="/media/how-it-works.jpg" aria-hidden="true"></video>
-      <div class="guide-body">
-      <p class="guide-title" data-t="guide.title">New here? How it works</p>
-      <ol><li data-t="guide.s1">Pick a neighbourhood and a day</li><li data-t="guide.s2">Plan it yourself, or ask your group what they’re up for</li><li data-t="guide.s3">Send one link. Everyone sees the same plan, map and times</li></ol>
-      <p class="guide-app" id="guide-app" hidden></p>
-      <div class="guide-actions"><button class="btn" type="button" id="install" hidden data-t="app.install">Install the app</button><button class="btn" type="button" id="guide-ok" data-t="guide.ok">Got it</button></div>
-      </div>
-    </aside>
     <div class="home">
       <div class="intro">
+        <aside class="guide" id="guide" hidden>
+          <video class="guide-video" id="guide-video" muted loop playsinline preload="none" poster="/media/how-it-works.jpg" aria-hidden="true"></video>
+          <div class="guide-body">
+          <p class="guide-title" data-t="guide.title">New here? How it works</p>
+          <ol><li data-t="guide.s1">Pick a neighbourhood and a day</li><li data-t="guide.s2">Plan it yourself, or ask your group what they’re up for</li><li data-t="guide.s3">Send one link. Everyone sees the same plan, map and times</li></ol>
+          <p class="guide-app" id="guide-app" hidden></p>
+          <div class="guide-actions"><button class="btn" type="button" id="install" hidden data-t="app.install">Install the app</button><button class="btn" type="button" id="guide-ok" data-t="guide.ok">Got it</button></div>
+          </div>
+        </aside>
         <h1 class="hero">
           <label class="pick"><span id="day-label">Tonight</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="day" aria-label="Change the day" title="Change the day"></select></label>
           <span data-t="home.in">in</span> <label class="pick accent"><span id="area-label">Soho</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></svg><select id="area" aria-label="Change the area" title="Change the area"></select></label>

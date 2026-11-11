@@ -12,6 +12,7 @@ import { readFile, writeFile, access } from 'node:fs/promises';
 const ENDPOINTS = [                                // public mirrors, tried in turn when one is busy
   'https://overpass-api.de/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
 ];
 const UA = 'Owlabout/0.2 (https://getowlabout.com; night-out planner; occasional area snapshot)';
 const RADIUS_M = 1200;
@@ -120,9 +121,12 @@ for (const a of todo) {
   if (missingOnly && await exists(new URL(`areas/${a.id}.json`, root))) continue;
   (byCity[a.city || 'london'] = byCity[a.city || 'london'] || []).push(a);
 }
+// Batches of up to 6 neighbourhoods: small enough that a busy server answers, few enough requests to be polite.
+const BATCH = 6, batches = [];
+for (const [city, list] of Object.entries(byCity)) for (let i = 0; i < list.length; i += BATCH) batches.push([city, list.slice(i, i + BATCH)]);
 
-for (const [city, cityAreas] of Object.entries(byCity)) {
-  process.stdout.write(`${city} (${cityAreas.length} areas)… `);
+for (const [city, cityAreas] of batches) {
+  process.stdout.write(`${city}: ${cityAreas.map(a => a.name).join(', ')}… `);
   let res;
   for (let attempt = 0; attempt < 6; attempt++) {
     try {

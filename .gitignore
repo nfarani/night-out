@@ -21,3 +21,4 @@ __pycache__/
 *.mov
 *.mkv
 *.webm
+!prototypes/03-group-swipe/public/media/*.mp4
