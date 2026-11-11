@@ -27,7 +27,7 @@ const VENUE_ID = /^[nwr]\d{1,12}$/;
 const MAX_IDS = 8;
 
 const STEPS = new Set(['visit', 'new', 'return', 'plan', 'open_shared', 'swap', 'reshuffle', 'edit', 'share', 'route', 'lock', 'join', 'rate',
-  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report', 'sent', 'maps', 'preview', 'group_tap',
+  'poll_create', 'poll_open', 'poll_vote', 'poll_plan', 'report', 'sent', 'maps', 'preview', 'group_tap', 'install', 'app_open',
   // where a visit came from (in_), and whether that visit went on to make a plan (plan_)
   ...['reddit', 'tiktok', 'instagram', 'facebook', 'x', 'linkedin', 'whatsapp', 'google', 'search', 'site', 'direct', 'other'].flatMap(s => ['in_' + s, 'plan_' + s])]);
 const TYPE_IDS = new Set(['pub', 'wine', 'rooftop', 'cheap', 'dinner', 'cocktail', 'games', 'live', 'comedy', 'karaoke', 'dance', 'latefood']);
@@ -345,11 +345,13 @@ async function createPlan(request, url, env){
 
 async function getPlan(id, url, env){
   const device = url.searchParams.get('device') || '';
-  const [p, m, t, mine] = await env.DB.batch([
+  const [p, m, t, mine, notes] = await env.DB.batch([
     env.DB.prepare('SELECT * FROM plans WHERE id = ?1').bind(id),
     env.DB.prepare('SELECT device, name FROM members WHERE plan_id = ?1 ORDER BY joined_at').bind(id),
     env.DB.prepare('SELECT venue_id, SUM(vote = 1) AS up, SUM(vote = -1) AS down, SUM(vote = -2) AS closed FROM ratings WHERE plan_id = ?1 GROUP BY venue_id').bind(id),
-    env.DB.prepare('SELECT venue_id, vote, tags FROM ratings WHERE plan_id = ?1 AND device = ?2').bind(id, device),
+    env.DB.prepare('SELECT venue_id, vote, tags, comment FROM ratings WHERE plan_id = ?1 AND device = ?2').bind(id, device),
+    env.DB.prepare(`SELECT r.venue_id, m.name, r.comment, r.device = ?2 AS me FROM ratings r JOIN members m ON m.plan_id = r.plan_id AND m.device = r.device
+      WHERE r.plan_id = ?1 AND r.comment IS NOT NULL ORDER BY r.updated_at`).bind(id, device),
   ]);
   const plan = p.results[0];
   if (!plan) return json({ error:'Plan not found' }, 404);
@@ -361,6 +363,8 @@ async function getPlan(id, url, env){
     tallies:Object.fromEntries(t.results.map(r => [r.venue_id, [r.up, r.down, r.closed]])),
     votes:Object.fromEntries(mine.results.map(r => [r.venue_id, r.vote])),
     tags:Object.fromEntries(mine.results.filter(r => r.tags).map(r => [r.venue_id, JSON.parse(r.tags)])),
+    // What the group said about each place, for this group's eyes only.
+    comments:notes.results.map(r => ({ venue:r.venue_id, name:r.name, text:r.comment, me:!!r.me })),
   });
 }
 
@@ -396,10 +400,13 @@ async function ratePlan(id, request, env){
   if (b.vote === 0) await env.DB.prepare('DELETE FROM ratings WHERE plan_id = ?1 AND venue_id = ?2 AND device = ?3').bind(id, b.venue, b.device).run();
   else {
     const tags = b.vote !== -2 && Array.isArray(b.tags) ? [...new Set(b.tags.filter(t => TAGS.has(t)))] : [];
+    // comment: a string replaces it ('' clears it); left out, the one already there stays.
+    const comment = b.vote === -2 ? '' : typeof b.comment === 'string' ? b.comment.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 280) : null;
     await env.DB.prepare(
-      `INSERT INTO ratings (plan_id, area, venue_id, device, vote, tags, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-       ON CONFLICT (plan_id, venue_id, device) DO UPDATE SET vote = ?5, tags = ?6, updated_at = ?7`)
-      .bind(id, plan.area, b.venue, b.device, b.vote, tags.length ? JSON.stringify(tags) : null, Date.now()).run();
+      `INSERT INTO ratings (plan_id, area, venue_id, device, vote, tags, comment, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, NULLIF(?8, ''), ?7)
+       ON CONFLICT (plan_id, venue_id, device) DO UPDATE SET vote = ?5, tags = ?6, updated_at = ?7,
+         comment = CASE WHEN ?8 IS NULL THEN comment ELSE NULLIF(?8, '') END`)
+      .bind(id, plan.area, b.venue, b.device, b.vote, tags.length ? JSON.stringify(tags) : null, Date.now(), comment).run();
   }
   return json({ ok:true });
 }

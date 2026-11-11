@@ -6,7 +6,7 @@
 //   everything else, and all POSTs    straight to the network, never cached
 // Bump VERSION to drop every saved copy.
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = 'owlabout-shell-' + VERSION, DATA = 'owlabout-data-' + VERSION, LIBS = 'owlabout-libs-' + VERSION;
 const PRECACHE = ['/', '/icon.svg', '/favicon.ico', '/manifest.webmanifest', '/data/areas.json', '/data/cities.json'];
 const LIB_HOSTS = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];

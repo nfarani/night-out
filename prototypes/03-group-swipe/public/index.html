@@ -10,6 +10,10 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Owlabout">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:site_name" content="Owlabout">
 <meta property="og:title" content="Owlabout · Shall we go?">
@@ -47,6 +51,7 @@
     --ease:cubic-bezier(0.22, 1, 0.36, 1);
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  [hidden]{ display:none!important; }           /* hidden wins over any display rule (banners, pills, the guide) */
   html,body{ margin:0; padding:0; }
   body{ background:var(--deep); color:var(--text); font:400 15px/1.45 Inter,sans-serif; -webkit-font-smoothing:antialiased; }
   button{ font:inherit; color:inherit; }
@@ -345,6 +350,28 @@
   .group-cta svg{ width:30px; height:30px; flex:0 0 30px; }
   .group-cta b{ display:block; font:600 24px/1.05 var(--display); }
   .group-cta small{ display:block; font-size:13px; line-height:18px; opacity:.88; margin-top:2px; }
+  /* First visit: three steps, then out of the way for good. */
+  .guide{ display:flex; gap:12px; align-items:flex-start; margin:12px 20px 0; padding:12px; background:var(--card); border:1px solid var(--line-2); border-radius:14px; }
+  .guide-video{ flex:0 0 88px; width:88px; aspect-ratio:360/780; border-radius:12px; border:1px solid var(--line-2); background:var(--deep); object-fit:cover; }
+  .guide-body{ flex:1; min-width:0; }
+  @media (max-width:340px){ .guide-video{ flex-basis:72px; width:72px; } }
+  .guide-title{ margin:0 0 8px; font:600 18px/1 var(--display); }
+  .guide ol{ margin:0; padding:0; list-style:none; counter-reset:g; display:grid; gap:5px; }
+  .guide li{ counter-increment:g; display:flex; gap:8px; align-items:baseline; font-size:13px; line-height:18px; color:var(--text-2); }
+  .guide li::before{ content:counter(g); flex:0 0 18px; height:18px; font-size:11px!important; border-radius:50%; background:var(--red); color:#fff; font-size:12px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; transform:translateY(4px); }
+  .guide-app{ margin:8px 0 0; font-size:12px; line-height:16px; color:var(--route); }
+  .guide-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
+  .guide-actions .btn{ height:36px; }
+  @container app (min-width: 900px){ .guide{ margin:24px 32px 0; } .guide-video{ flex-basis:132px; width:132px; } }
+  /* After the night: ask the group to rate, and let people leave a word for each other. */
+  .rate-banner{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0 0; padding:12px 14px; background:#2a2412; border:1px solid #5a4a1c; border-radius:12px; font-size:14px; color:var(--text); }
+  .rate-banner .btn{ flex:0 0 auto; }
+  .note-form{ display:flex; gap:8px; margin:8px 0 0; }
+  .note-form .field-input{ height:40px; font-size:16px; }
+  .note-form .btn{ height:40px; flex:0 0 auto; }
+  .notes{ list-style:none; margin:10px 0 0; padding:0; display:grid; gap:6px; }
+  .notes li{ font-size:14px; line-height:20px; color:var(--text-2); }
+  .notes b{ color:var(--text); font-weight:600; }
   .love-list{ margin-top:4px; max-height:260px; overflow:auto; }
   .love-list:empty{ display:none; }
   #vote-loved:not(:empty){ margin-bottom:8px; }
@@ -447,6 +474,15 @@
   <!-- HOME -->
   <section class="screen on" id="s-home">
     <nav class="cities" id="cities" aria-label="City" data-t-aria="aria.city"></nav>
+    <aside class="guide" id="guide" hidden>
+      <video class="guide-video" id="guide-video" muted loop playsinline preload="none" poster="/media/how-it-works.jpg" aria-hidden="true"></video>
+      <div class="guide-body">
+      <p class="guide-title" data-t="guide.title">New here? How it works</p>
+      <ol><li data-t="guide.s1">Pick a neighbourhood and a day</li><li data-t="guide.s2">Plan it yourself, or ask your group what they’re up for</li><li data-t="guide.s3">Send one link. Everyone sees the same plan, map and times</li></ol>
+      <p class="guide-app" id="guide-app" hidden></p>
+      <div class="guide-actions"><button class="btn" type="button" id="install" hidden data-t="app.install">Install the app</button><button class="btn" type="button" id="guide-ok" data-t="guide.ok">Got it</button></div>
+      </div>
+    </aside>
     <div class="home">
       <div class="intro">
         <h1 class="hero">
@@ -483,7 +519,7 @@
         <div class="section-head"><h2 id="ready-title">Ready-made nights</h2><span data-t="home.readySub">Tap one to plan it</span></div>
         <div class="presets" id="presets"></div>
       </div>
-      <p class="home-foot"><span class="foot-about"><a href="#about" id="foot-about" data-t="nav.about">About</a> · </span><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="#" data-fb data-t="fb.link">Feedback</a></p>
+      <p class="home-foot"><span class="foot-about"><a href="#about" id="foot-about" data-t="nav.about">About</a> · </span><a href="/neighbourhoods" data-t="link.all">All neighbourhoods</a> · <a href="/privacy" data-t="link.privacy">Privacy</a> · <a href="/terms" data-t="link.terms">Terms</a> · <a href="#" data-fb data-t="fb.link">Feedback</a><span id="get-app-wrap" hidden> · <a href="#" id="get-app" data-t="app.get">Get the app</a></span></p>
     </div>
   </section>
 
@@ -497,6 +533,7 @@
         <h1 id="plan-area"></h1>
         <span class="hl" id="plan-title"></span>
         <div class="join-banner" id="join-banner" hidden></div>
+        <div class="rate-banner" id="rate-banner" hidden><span data-t="rate.banner">How was it? Rate the places: it makes the next plans better</span><button class="btn primary" type="button" id="rate-go" data-t="rate.now">Rate them</button></div>
       </div>
       <div class="map-wrap">
         <div id="map"></div>
@@ -1026,6 +1063,7 @@
     sendEvent({ step:'plan', shown:plan.filter(x => x.venue).map(x => x.venue.id) });
     markSeen(plan.filter(x => x.venue).map(x => x.venue.id));
     if (!plannedThisVisit) { plannedThisVisit = true; track('plan_' + SOURCE); }
+    remember('no_guide', '1'); $('guide').hidden = true; $('guide-video').pause();
   }
 
   async function swapStop(k){
@@ -1441,6 +1479,7 @@
   }
   function renderGroup(){
     const el = $('group');
+    $('rate-banner').hidden = !(group && isMember() && nightStarted(group) && plan.some(x => x.venue && !group.votes[x.venue.id]));
     if (!group) { el.hidden = true; $('join-banner').hidden = true; return; }
     el.hidden = false;
     const names = group.members.map(m => esc(m.name) + (m.me ? ' ' + t('group.you') : ''));
@@ -1476,7 +1515,19 @@
       (mine === 1 || mine === -1 ? '<div class="tag-row">' + TAGS.map(tag => {
         const on = (group.tags[v.id] || []).includes(tag);
         return '<button type="button" class="chip'+(on ? ' on' : '')+'" data-tag="'+tag+'" data-venue="'+v.id+'" aria-pressed="'+on+'">'+esc(t('tag.' + tag))+'</button>';
-      }).join('') + '</div>' : '');
+      }).join('') + '</div>' +
+      '<form class="note-form" data-note="'+v.id+'"><input class="field-input" maxlength="280" aria-label="'+esc(t('rate.comment'))+'" placeholder="'+esc(t('rate.comment'))+'" value="'+
+        esc(((group.comments || []).find(c => c.venue === v.id && c.me) || {}).text || '')+'"><button class="btn" type="submit">'+esc(t('rate.save'))+'</button></form>' : '');
+  }
+  // What the group said about a place, on the group's own plan only.
+  function notesHtml(v){
+    const said = group ? (group.comments || []).filter(c => c.venue === v.id) : [];
+    return said.length ? '<ul class="notes">' + said.map(c => '<li><b>' + esc(c.name) + '</b> ' + esc(c.text) + '</li>').join('') + '</ul>' : '';
+  }
+  async function saveNote(venue, text){
+    await api('/api/plans/' + group.id + '/rate', { device:device(), venue, vote:group.votes[venue], tags:group.tags[venue] || [], comment:text });
+    await openGroup(group.id);
+    toast(t('rate.saved'));
   }
   const TAGS = ['vibe', 'value', 'groups', 'date', 'busy', 'pricey'];
   // What people said about a place, shown once at least two agree.
@@ -1497,6 +1548,7 @@
     track('rate');
     await openGroup(group.id);
   }
+  $('rate-go').onclick = () => { const r = document.querySelector('#plan .rate'); if (r) r.scrollIntoView({ block:'center', behavior:'smooth' }); };
   // Leave the fixed group plan and keep a copy you can change.
   function ownVersion(){
     group = null;
@@ -2056,6 +2108,37 @@
     planMade();
   };
 
+  // ---------- first-visit guide, and using it as an app (add to home screen) ----------
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let installPrompt = null;                     // Chrome and Android offer their own install dialog; iPhone needs Share → Add to Home Screen
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showApp(); });
+  addEventListener('appinstalled', () => { track('install'); installPrompt = null; showApp(); });
+  function showApp(){
+    $('install').hidden = standalone || !installPrompt;
+    $('guide-app').hidden = standalone || !isIOS;
+    $('guide-app').textContent = t('app.ios');
+    $('get-app-wrap').hidden = standalone || !(installPrompt || isIOS);
+  }
+  async function install(){
+    if (!installPrompt) { toast(t('app.ios')); return; }
+    installPrompt.prompt();
+    await installPrompt.userChoice.catch(() => null);
+    installPrompt = null; showApp();
+  }
+  $('install').onclick = install;
+  $('get-app').onclick = e => { e.preventDefault(); install(); };
+  $('guide-ok').onclick = () => { remember('no_guide', '1'); $('guide').hidden = true; $('guide-video').pause(); };
+  function showGuide(){
+    $('guide').hidden = standalone || !!recall('no_guide');
+    showApp();
+    const v = $('guide-video');
+    if ($('guide').hidden || v.src) return;
+    v.src = '/media/how-it-works.mp4';
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) v.play().catch(() => {});
+    else v.controls = true;
+  }
+
   // ---------- navigation: real history entries, so the phone's back button works ----------
   function showAbout(push = true){
     show('s-about');
@@ -2076,6 +2159,7 @@
     if (gm) return openGroup(gm[1]).catch(e => { toast(e.message); setTimeout(() => { location.href = '/'; }, 2500); });
     const ids = readHash();
     if (location.hash === '#about') return showAbout(false);
+    if (location.hash === '#group') { goHome(false); return openVoteSetup(); }      // the app icon's "Plan it with your group" shortcut
     if (ids.length) return loadSharedPlan(ids).catch(e => toast(e.message));
     goHome(false);
   }
@@ -2162,7 +2246,7 @@
           (group ? '' : '<button class="btn" type="button" data-swap="'+k+'"'+(s.pinned ? ' disabled' : '')+'>'+ICON_SWAP+esc(t('plan.swap'))+'</button>' +
             '<button class="btn" type="button" data-menu="'+k+'" aria-label="'+esc(t('stop.options', { n:k + 1 }))+'">'+ICON_EDIT+esc(t('plan.editStop'))+'</button>' +
             (s.history && s.history.length ? '<button class="btn" type="button" data-back="'+k+'" title="'+esc(t('plan.backTitle'))+'">'+ICON_BACK+esc(t('plan.back'))+'</button>' : '')) +
-          '</div>' + (reportedHere.has(v.id) ? '' : '<button class="report" type="button" data-report="'+k+'">'+esc(t('plan.reportClosed'))+'</button>') + rateRow(v);
+          '</div>' + (reportedHere.has(v.id) ? '' : '<button class="report" type="button" data-report="'+k+'">'+esc(t('plan.reportClosed'))+'</button>') + rateRow(v) + notesHtml(v);
       }
       html += '<div class="stop"><button class="time" type="button" data-time="'+k+'"'+(group ? ' disabled' : ' aria-label="'+esc(t('stop.timeTap', { n:k + 1 }))+'"')+'>'+clock(s.from)+'</button>' +
         '<div class="rail"><span class="pin-n'+(v ? '' : ' none')+'">'+(v ? num : '–')+'</span></div>' +
@@ -2179,6 +2263,7 @@
     $('plan').querySelectorAll('[data-choose]').forEach(b => b.onclick = () => openPicker(+b.dataset.choose).catch(e => toast(e.message)));
     $('plan').querySelectorAll('[data-rate]').forEach(b => b.onclick = () => rate(b.dataset.rate, +b.dataset.vote).catch(e => toast(e.message)));
     $('plan').querySelectorAll('[data-tag]').forEach(b => b.onclick = () => toggleTag(b.dataset.venue, b.dataset.tag).catch(e => toast(e.message)));
+    $('plan').querySelectorAll('[data-note]').forEach(f => f.onsubmit = e => { e.preventDefault(); saveNote(f.dataset.note, f.querySelector('input').value).catch(err => toast(err.message)); });
     renderGroup();
     renderWeather();
     $('plan-tools').hidden = !!group;
@@ -2278,6 +2363,7 @@
     const L = LANGS.find(x => x[0] === lang);
     $('lang-label').textContent = L[3] + ' ' + L[1];
     $('explorers-p').textContent = t('about.explorersP', { areas:AREAS.length, cities:CITIES.length });
+    if (AREAS.length) showApp();
     if (!/^\/(p|v)\//.test(location.pathname)) document.title = 'Owlabout · ' + t('title.tag');   // plan/vote pages keep their own
   }
   function setLang(l){
@@ -2305,6 +2391,8 @@
     const today = new Date().toISOString().slice(0, 10), first = recall('no_first'), lastReturn = recall('no_return');
     track('visit');
     track('in_' + SOURCE);
+    if (standalone) track('app_open');
+    showGuide();
     if (!first) { remember('no_first', today); track('new'); }
     else if (first !== today && lastReturn !== today) { remember('no_return', today); track('return'); }
     // Offline support: plans you've opened keep working without signal (see sw.js).

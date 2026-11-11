@@ -24,17 +24,25 @@ const cityOnly = args.includes('--city') ? args[args.indexOf('--city') + 1] : nu
 const only = args.find(a => !a.startsWith('--') && a !== cityOnly) || null;
 const exists = f => access(f).then(() => true, () => false);
 
-function query(lat, lng) {
-  const around = `(around:${RADIUS_M},${lat},${lng})`;
-  return `[out:json][timeout:90];
-(
-  nwr${around}[amenity~"^(pub|bar|restaurant|fast_food|food_court|nightclub|music_venue|karaoke_box|theatre|arts_centre|events_venue)$"][name];
-  nwr${around}[leisure~"^(bowling_alley|amusement_arcade)$"][name];
-  nwr${around}[sport~"billiards|darts|shuffleboard"][name];
-  nwr${around}[shop=mall][name~"${FOOD_HALL.source}",i];
-  nwr${around}[amenity=marketplace][name~"${FOOD_HALL.source}",i];
-);
-out center tags;`;
+// One request per city: the same filters around every neighbourhood centre, joined into one
+// query, then split back into neighbourhoods here. 8 requests instead of 100.
+function query(points) {
+  const sets = points.flatMap(({ lat, lng }) => {
+    const around = `(around:${RADIUS_M},${lat},${lng})`;
+    return [
+      `nwr${around}[amenity~"^(pub|bar|restaurant|fast_food|food_court|nightclub|music_venue|karaoke_box|theatre|arts_centre|events_venue)$"][name];`,
+      `nwr${around}[leisure~"^(bowling_alley|amusement_arcade)$"][name];`,
+      `nwr${around}[sport~"billiards|darts|shuffleboard"][name];`,
+      `nwr${around}[shop=mall][name~"${FOOD_HALL.source}",i];`,
+      `nwr${around}[amenity=marketplace][name~"${FOOD_HALL.source}",i];`,
+    ];
+  });
+  return `[out:json][timeout:300][maxsize:1073741824];\n(\n  ${sets.join('\n  ')}\n);\nout center tags;`;
+}
+function distM(a, b) {
+  const r = x => x * Math.PI / 180, dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371000 * Math.asin(Math.sqrt(h));
 }
 
 const DRINKS = ['bar', 'pub', 'restaurant'];
@@ -75,65 +83,81 @@ function classify(t) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-for (const area of areas) {
-  if (only && area.id !== only) continue;
-  if (cityOnly && (area.city || 'london') !== cityOnly) continue;
-  if (missingOnly && await exists(new URL(`areas/${area.id}.json`, root))) continue;
-  process.stdout.write(`${area.name}… `);
+// One OSM element → one venue, or null if it isn't a night-out place or is marked as gone.
+function toVenue(el) {
+  const t = el.tags || {};
+  const lat = el.lat ?? el.center?.lat, lng = el.lon ?? el.center?.lon;
+  const vibes = classify(t);
+  if (!vibes.length || lat == null) return null;
+  // Marked as gone: closed in the name, hours of "closed"/"off", an end date that has passed,
+  // or flagged disused. (Most closures aren't marked at all; user reports catch those.)
+  const today = new Date().toISOString().slice(0, 10);
+  // A closed marker only counts when tagged onto the name, "Name (closed)" or "Name – Fechada", so places
+  // simply called La Ferme ("farm") or Cerrado stay.
+  if (/[([\-–—]\s*(permanently closed|closed|cerrad[oa]|fermée?|chius[oa]|fechad[oa]|geschlossen|gesloten)\b/i.test(t.name) ||
+      /^\s*(closed|off)\s*$|^\s*mo-su\s+off\s*$/i.test(t.opening_hours || '') ||
+      (t.end_date && t.end_date <= today) || t.disused === 'yes' || t.abandoned === 'yes') return null;
+  return {
+    id: el.type[0] + el.id,                       // n123 / w456 / r789
+    name: t.name,
+    lat: +lat.toFixed(6), lng: +lng.toFixed(6),
+    vibes,
+    street: [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ') || undefined,
+    postcode: t['addr:postcode'] || undefined,
+    hours: t.opening_hours || undefined,
+    website: t.website || t['contact:website'] || undefined,
+    phone: (t.phone || t['contact:phone'] || '').split(';')[0].trim() || undefined,   // for booking later
+    booking: ['yes', 'required', 'recommended'].includes(t.reservation) ? t.reservation : undefined,
+    // Free quality signal: the place has its own Wikipedia/Wikidata entry, or is a listed
+    // historic building. Chains are excluded, so this means "notable", not "big".
+    known: (!(t.brand || t['brand:wikidata']) && !!(t.wikidata || t.wikipedia || t.heritage || t.historic)) || undefined,
+  };
+}
+
+const todo = areas.filter(a => (!only || a.id === only) && (!cityOnly || (a.city || 'london') === cityOnly));
+const byCity = {};
+for (const a of todo) {
+  if (missingOnly && await exists(new URL(`areas/${a.id}.json`, root))) continue;
+  (byCity[a.city || 'london'] = byCity[a.city || 'london'] || []).push(a);
+}
+
+for (const [city, cityAreas] of Object.entries(byCity)) {
+  process.stdout.write(`${city} (${cityAreas.length} areas)… `);
   let res;
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 6; attempt++) {
     try {
       res = await fetch(ENDPOINTS[attempt % ENDPOINTS.length], {
         method: 'POST',
         headers: { 'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'data=' + encodeURIComponent(query(area.lat, area.lng)),
+        body: 'data=' + encodeURIComponent(query(cityAreas)),
       });
     } catch (e) {
       res = { ok: false, status: 'network error' };
     }
     if (![429, 502, 503, 504, 'network error'].includes(res.status)) break;
     process.stdout.write(`(${res.status}) `);
-    await sleep(attempt % ENDPOINTS.length === ENDPOINTS.length - 1 ? 30000 : 2000);
+    await sleep(attempt % ENDPOINTS.length === ENDPOINTS.length - 1 ? 30000 : 3000);
   }
-  if (!res.ok) { console.log(`failed: HTTP ${res.status}`); continue; }
+  if (!res.ok) { console.log(`failed: HTTP ${res.status}, kept the old files`); continue; }
   const data = await res.json();
-
-  const venues = [];
-  for (const el of data.elements || []) {
-    const t = el.tags || {};
-    const lat = el.lat ?? el.center?.lat, lng = el.lon ?? el.center?.lon;
-    const vibes = classify(t);
-    if (!vibes.length || lat == null) continue;
-    // Marked as gone: closed in the name, hours of "closed"/"off", an end date that has passed,
-    // or flagged disused. (Most closures aren't marked at all; user reports catch those.)
-    const today = new Date().toISOString().slice(0, 10);
-    // A closed marker only counts when tagged onto the name, "Name (closed)" or "Name – Fechada", so places
-    // simply called La Ferme ("farm") or Cerrado stay.
-    if (/[([\-–—]\s*(permanently closed|closed|cerrad[oa]|fermée?|chius[oa]|fechad[oa]|geschlossen|gesloten)\b/i.test(t.name) ||
-        /^\s*(closed|off)\s*$|^\s*mo-su\s+off\s*$/i.test(t.opening_hours || '') ||
-        (t.end_date && t.end_date <= today) || t.disused === 'yes' || t.abandoned === 'yes') continue;
-    venues.push({
-      id: el.type[0] + el.id,                       // n123 / w456 / r789
-      name: t.name,
-      lat: +lat.toFixed(6), lng: +lng.toFixed(6),
-      vibes,
-      street: [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ') || undefined,
-      postcode: t['addr:postcode'] || undefined,
-      hours: t.opening_hours || undefined,
-      website: t.website || t['contact:website'] || undefined,
-      // Free quality signal: the place has its own Wikipedia/Wikidata entry, or is a listed
-      // historic building. Chains are excluded, so this means "notable", not "big".
-      known: (!(t.brand || t['brand:wikidata']) && !!(t.wikidata || t.wikipedia || t.heritage || t.historic)) || undefined,
-    });
+  if (data.remark && /error|timed out/i.test(data.remark)) { console.log(`failed: ${data.remark.slice(0, 120)}, kept the old files`); continue; }
+  const all = [];
+  for (const el of data.elements) {
+    const v = toVenue(el);
+    if (v) all.push(v);
   }
-  const counts = {};
-  venues.forEach(v => v.vibes.forEach(x => counts[x] = (counts[x] || 0) + 1));
-  await writeFile(new URL(`areas/${area.id}.json`, root), JSON.stringify({
-    area: area.id,
-    fetched: new Date().toISOString(),
-    source: 'OpenStreetMap contributors, ODbL 1.0 — https://www.openstreetmap.org/copyright',
-    venues,
-  }));
-  console.log(`${venues.length} venues`, JSON.stringify(counts));
-  await sleep(3000);
+  console.log(`${all.length} venues`);
+  for (const area of cityAreas) {
+    const venues = all.filter(v => distM(area, v) <= RADIUS_M);
+    const counts = {};
+    venues.forEach(v => v.vibes.forEach(x => counts[x] = (counts[x] || 0) + 1));
+    await writeFile(new URL(`areas/${area.id}.json`, root), JSON.stringify({
+      area: area.id,
+      fetched: new Date().toISOString(),
+      source: 'OpenStreetMap contributors, ODbL 1.0 — https://www.openstreetmap.org/copyright',
+      venues,
+    }));
+    console.log(`  ${area.name}: ${venues.length} venues`, JSON.stringify(counts));
+  }
+  await sleep(5000);
 }
